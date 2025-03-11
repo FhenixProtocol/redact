@@ -1,0 +1,528 @@
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@font-face {
+  font-family: 'Reddit Sans';
+  src: url('/fonts/RedditSans-VariableFont_wght') format('ttf');
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Reddit Mono';
+  src: url('/fonts/RedditMono-VariableFont_wght') format('ttf');
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Birdman';
+  src: url('/fonts/BIRDMAN_.OTF') format('otf');
+  font-style: normal;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  :root {
+    --default-text-color: #000000;
+    --background: 199, 100%, 95%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --card-bg: #fafafa80;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --surface: #D9F0FF;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --primary-accent: #0073E6;
+    --primary-accent-rgb: 0, 115, 230;
+    --primary-accent-hover: #005BB5;
+    --primary-accent-disabled: #99CCFF;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --component-stroke: #80BFFF;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --button-hover: #D9D9D9;
+    --color-theme-white: #FFFFFF; 
+    --color-theme-black: #000000; 
+
+    --color-grey-100: #e3e3e3;
+    --color-grey-200: #d9d9d9;
+    --color-grey-300: #bdbdbd;
+    --color-grey-400: #a4a4a4;
+    --color-grey-500: #8e8e8e;
+    --color-grey-600: #707070;
+    --color-grey-700: #5f6368;
+    --color-grey-800: #4e4e4e;
+    --color-grey-900: #3a3a3a;
+
+    --color-info-100: #e3f2fd;
+    --color-info-300: #90caf9;
+    --color-info-500: #2196f3;
+    --color-info-700: #1976d2;
+    --color-info-900: #0d47a1;
+  
+    --color-success-100: #e8f5e9;
+    --color-success-300: #a5d6a7;
+    --color-success-500: #4caf50;
+    --color-success-700: #388e3c;
+    --color-success-900: #1b5e20;
+
+    --color-warning-100: #fff8e1;
+    --color-warning-300: #ffecb3;
+    --color-warning-500: #fb8c00;
+    --color-warning-700: #ffa726;
+    --color-warning-900: #ff8f00;
+
+    --color-error-100: #ffebee;
+    --color-error-300: #ef9a9a;
+    --color-error-500: #f44336;
+    --color-error-700: #d32f2f;
+    --color-error-900: #b71c1c;
+
+    --color-card-background: #fafafa;
+  
+    /* Animation Durations */
+    --modal-overlay-duration: 150ms;
+    --modal-content-duration: 150ms;
+    --modal-fade-duration: 150ms;
+  }
+  .dark {
+    --default-text-color: #ffffff;
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --card-bg: #1a1a1a80;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --surface: #1A1A1A;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --primary-accent: #3399FF;
+    --primary-accent-hover: #2673CC;
+    --primary-accent-disabled: #80bfff;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --component-stroke: #3399FF;    
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --button-hover: #333;    
+    --color-theme-white: #000000; /* Yes, it is confusing, but it is correct */
+    --color-theme-black: #FFFFFF; /* Yes, it is confusing, but it is correct */
+
+    --color-grey-100: #2b2b2b;
+    --color-grey-200: #333333;
+    --color-grey-300: #4a4a4a;
+    --color-grey-400: #595959;
+    --color-grey-500: #6e6e6e;
+    --color-grey-600: #787878;
+    --color-grey-700: #858585;
+    --color-grey-800: #9e9e9e;
+    --color-grey-900: #b0b0b0;
+
+    --color-info-100: #0d47a1;
+    --color-info-300: #1976d2;
+    --color-info-500: #2196f3;
+    --color-info-700: #90caf9;
+    --color-info-900: #e3f2fd;
+  
+    --color-success-100: #a5d6a7;
+    --color-success-300: #388e3c;
+    --color-success-500: #4caf50;
+    --color-success-700: #a5d6a7;
+    --color-success-900: #e8f5e9;
+
+    --color-warning-100: #ffecb3;
+    --color-warning-300: #ffa726;
+    --color-warning-500: #fb8c00;
+    --color-warning-700: #ffecb3;
+    --color-warning-900: #fff8e1;
+
+    --color-error-100: #ef9a9a;
+    --color-error-300: #e57373;
+    --color-error-500: #f44336;
+    --color-error-700: #c62828;
+    --color-error-900: #8b0000;
+  
+    --color-card-background: #fafafa;
+
+  }
+}
+
+@theme {
+
+  --font-reddit-sans: "Reddit Sans", sans-serif; 
+  --font-reddit-mono: "Reddit Mono", monospace;
+  --font-birdman: "Birdman", sans-serif;
+
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  --spacing-xxxl: 64px;
+  --spacing-xxxxl: 96px;
+
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 14px;
+  --text-sm--line-height: 20px;
+  --text-md: 16px;
+  --text-md--line-height: 24px;
+  --text-lg: 18px;
+  --text-lg--line-height: 28px;
+  --text-xl: 24px;
+  --text-xl--line-height: 32px;
+  --text-xxl: 32px;
+  --text-xxl--line-height: 40px;
+  --text-header-h6: 12px, 16px;
+  --text-header-h5: 14px, 20px;
+  --text-header-h4: 16px, 24px;
+  --text-header-h3: 18px, 28px;
+  --text-header-h2: 24px, 32px;
+  --text-header-h1: 32px, 40px;
+  --text-display: 64px, 72px;
+  --text-hero: 100px, 100px;
+  --text-button-xs: 12px, 16px;
+  --text-button-sm: 14px, 20px;
+  --text-caption-xs: 12px, 16px;
+  --text-caption-md: 14px, 20px;
+
+  --color-foreground: hsl(var(--foreground));
+  --color-default: var(--default-text-color);
+  --color-warning: hsl(var(--warning));
+  --color-success: hsl(var(--success));
+
+
+  --color-error: hsl(var(--error));
+
+  --color-gray-100: var(--color-grey-100);
+  --color-gray-200: var(--color-grey-200);
+  --color-gray-300: var(--color-grey-300);
+  --color-gray-400: var(--color-grey-400);
+  --color-gray-500: var(--color-grey-500);
+  --color-gray-600: var(--color-grey-600);
+  --color-gray-700: var(--color-grey-700);
+  --color-gray-800: var(--color-grey-800);
+  --color-gray-900: var(--color-grey-900);
+
+  --color-info-100: var(--color-info-100);
+  --color-info-300: var(--color-info-300);
+  --color-info-500: var(--color-info-500);
+  --color-info-700: var(--color-info-700);
+  --color-info-900: var(--color-info-900);
+
+  --color-success-100: var(--color-success-100);
+  --color-success-300: var(--color-success-300);
+  --color-success-500: var(--color-success-500);
+  --color-success-700: var(--color-success-700);
+  --color-success-900: var(--color-success-900);
+
+  --color-warning-100: var(--color-warning-100);
+  --color-warning-300: var(--color-warning-300);
+  --color-warning-500: var(--color-warning-500);
+  --color-warning-700: var(--color-warning-700);
+  --color-warning-900: var(--color-warning-900);
+
+  --color-error-100: var(--color-error-100);
+  --color-error-300: var(--color-error-300);
+  --color-error-500: var(--color-error-500);
+  --color-error-700: var(--color-error-700);
+  --color-error-900: var(--color-error-900);
+
+  --color-theme-white: var(--color-theme-white);
+  --color-theme-black: var(--color-theme-black);
+
+  --color-primary-accent: var(--primary-accent);
+  --color-primary-accent-hover: var(--primary-accent-hover);
+
+  --color-disable-accent: var(--primary-accent-disabled);
+
+  --color-surface: var(--surface);
+
+  --color-primary: #003366;
+  --color-primary-light: #003366;
+  --color-primary-dark: #e3e3e3;
+
+  --color-secondary: #8a8a8a;
+  --color-secondary-light: #8a8a8a;
+  --color-secondary-dark: #8a8a8a;
+
+  --color-card-bg: var(--card-bg);
+
+  --color-component-stroke: var(--component-stroke);
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-text-primary: #000000;
+
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-button-hover: var(--button-hover);
+
+  --border-color-primary-accent: #0073E6;
+  --border-color-primary-accent-dark: hsl(var(--primaryAccent-dark));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+
+}
+
+@theme inline {
+  --radius-inherit: inherit;
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--color-card-background);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  /*
+  ---break---
+*/
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  /*
+  ---break---
+*/
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+/* @font-face {
+  font-family: "Reddit Sans";
+  src: url(@fontsource-variable/reddit-sans/files/reddit-sans-latin-wght-normal.woff2) format('woff2-variations');
+} */
+
+@layer utilities {
+  .no-spinner {
+    @apply appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield];
+  }
+
+  .no-outline {
+    @apply focus:outline-none focus:right-0;
+  }
+
+  .button-shadow {
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+  }
+
+}
+
+
+
+
+
+:root {
+  --background: #E6F7FF;
+  --foreground: hsl(0 0% 3.9%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(0 0% 3.9%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(0 0% 3.9%);
+  --primary: hsl(0 0% 9%);
+  --primary-foreground: hsl(0 0% 98%);
+  --secondary: hsl(0 0% 96.1%);
+  --secondary-foreground: hsl(0 0% 9%);
+  --muted: hsl(0 0% 96.1%);
+  --muted-foreground: hsl(0 0% 45.1%);
+  --accent: hsl(0 0% 96.1%);
+  --accent-foreground: hsl(0 0% 9%);
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(0 0% 89.8%);
+  --input: hsl(0 0% 89.8%);
+  --ring: hsl(0 0% 3.9%);
+  --chart-1: hsl(12 76% 61%);
+  --chart-2: hsl(173 58% 39%);
+  --chart-3: hsl(197 37% 24%);
+  --chart-4: hsl(43 74% 66%);
+  --chart-5: hsl(27 87% 67%);
+  --radius: 0.6rem;
+}
+
+
+.dark {
+  --background: #141414;
+  --foreground: hsl(0 0% 98%);
+  --card: hsl(0 0% 3.9%);
+  --card-foreground: hsl(0 0% 98%);
+  --popover: hsl(0 0% 3.9%);
+  --popover-foreground: hsl(0 0% 98%);
+  --primary: hsl(0 0% 98%);
+  --primary-foreground: hsl(0 0% 9%);
+  --secondary: hsl(0 0% 14.9%);
+  --secondary-foreground: hsl(0 0% 98%);
+  --muted: hsl(0 0% 14.9%);
+  --muted-foreground: hsl(0 0% 63.9%);
+  --accent: hsl(0 0% 14.9%);
+  --accent-foreground: hsl(0 0% 98%);
+  --destructive: hsl(0 62.8% 30.6%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(0 0% 14.9%);
+  --input: hsl(0 0% 14.9%);
+  --ring: hsl(0 0% 83.1%);
+  --chart-1: hsl(220 70% 50%);
+  --chart-2: hsl(160 60% 45%);
+  --chart-3: hsl(30 80% 55%);
+  --chart-4: hsl(280 65% 60%);
+  --chart-5: hsl(340 75% 55%);
+} 
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  
+  body {
+    background: 
+      url('/bg-lines.svg') center bottom/cover no-repeat,
+      radial-gradient(circle at 0% 80%, rgba(255, 0, 0, 0.4) 0%, transparent 30%),
+      radial-gradient(circle at 60% 50%, rgba(255, 0, 0, 0.3) 0%, transparent 40%),
+      radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--primary-accent) 30%, transparent) 0%, transparent 40%),
+      var(--background); 
+
+    font-family: var(--font-reddit-sans);
+  }
+
+  .dark body {
+    background:
+      url('/bg-lines.svg') center bottom/cover no-repeat,
+      radial-gradient(circle at 0% 80%, rgba(255, 0, 0, 0.4) 0%, transparent 30%),
+      radial-gradient(circle at 60% 50%, rgba(255, 0, 0, 0.3) 0%, transparent 40%),
+      radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--primary-accent) 30%, transparent) 0%, transparent 40%),
+      var(--background); 
+  }  
+
+  /* Dark mode variant */
+  /* .dark body {
+    background: radial-gradient(circle at center, var(--color-gray-900) 0%, #000000 50%, var(--color-gray-700) 100%);
+  } */
+
+}
+
+/*
+  ---break---
+*/
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Modal Animations */
+@keyframes overlayShow {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes contentShow {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.1);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
