@@ -20,11 +20,11 @@ const Home: NextPage = () => {
         <div className=" flex flex-col items-center justify-center">
           <div className="flex flex-col gap-4">
             <div>
-              <h1 className="text-primary-accent text-4xl font-bold">
+              <h1 className="text-primary-accent text-5xl font-bold">
                 Redact Money.
               </h1>
-              <h2 className="text-primary text-3xl font-bold leading-tight">
-              Encrypt Your Tokens<br />
+              <h2 className="text-primary text-5xl font-bold leading-tight">
+                Encrypt Your Tokens<br />
                 To Discover FHE
               </h2>
             </div>

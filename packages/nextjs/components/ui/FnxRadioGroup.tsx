@@ -76,7 +76,7 @@ const RadioButtonGroup = ({ labels, Icons, values, value, onChange, className }:
               <RadioGroupItem id={val} value={val} className="sr-only" />
               <div className="flex items-center justify-center gap-2">
                 {idx == 0 && Icon && <Icon className="w-4 h-4" />} {/* Render the icon properly */}
-                <span className="text-sm font-bold">{labels[idx]}</span>
+                <span className="font-bold">{labels[idx]}</span>
                 {idx == 1 && Icon && <Icon className="w-4 h-4" />} {/* Render the icon properly */}
               </div>
             </Label>

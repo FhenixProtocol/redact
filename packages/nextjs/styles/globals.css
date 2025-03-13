@@ -101,6 +101,10 @@
     --modal-overlay-duration: 150ms;
     --modal-content-duration: 150ms;
     --modal-fade-duration: 150ms;
+
+    --color-primary: #003366; 
+
+ 
   }
   .dark {
     --default-text-color: #ffffff;
@@ -173,7 +177,8 @@
     --color-error-900: #8b0000;
   
     --color-card-background: #fafafa;
-
+    
+    --color-primary: #E6F7FF; 
   }
 }
 
@@ -183,39 +188,41 @@
   --font-reddit-mono: "Reddit Mono", monospace;
   --font-birdman: "Birdman", sans-serif;
 
-  --spacing-xs: 8px;
-  --spacing-sm: 12px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-xxl: 48px;
-  --spacing-xxxl: 64px;
-  --spacing-xxxxl: 96px;
+    /* Your spacing variables */
+  --spacing-xs: 0.5em;     /* 8px / 16px = 0.5em */
+  --spacing-sm: 0.75em;    /* 12px / 16px = 0.75em */
+  --spacing-md: 1em;       /* 16px / 16px = 1em */
+  --spacing-lg: 1.5em;     /* 24px / 16px = 1.5em */
+  --spacing-xl: 2em;       /* 32px / 16px = 2em */
+  --spacing-xxl: 3em;      /* 48px / 16px = 3em */
+  --spacing-xxxl: 4em;     /* 64px / 16px = 4em */
+  --spacing-xxxxl: 6em;    /* 96px / 16px = 6em */
 
-  --text-xs: 12px;
-  --text-xs--line-height: 16px;
-  --text-sm: 14px;
-  --text-sm--line-height: 20px;
-  --text-md: 16px;
-  --text-md--line-height: 24px;
-  --text-lg: 18px;
-  --text-lg--line-height: 28px;
-  --text-xl: 24px;
-  --text-xl--line-height: 32px;
-  --text-xxl: 32px;
-  --text-xxl--line-height: 40px;
-  --text-header-h6: 12px, 16px;
-  --text-header-h5: 14px, 20px;
-  --text-header-h4: 16px, 24px;
-  --text-header-h3: 18px, 28px;
-  --text-header-h2: 24px, 32px;
-  --text-header-h1: 32px, 40px;
-  --text-display: 64px, 72px;
-  --text-hero: 100px, 100px;
-  --text-button-xs: 12px, 16px;
-  --text-button-sm: 14px, 20px;
-  --text-caption-xs: 12px, 16px;
-  --text-caption-md: 14px, 20px;
+
+  --text-xs: 0.75em;                /* 12px / 16px = 0.75em */
+  --text-xs--line-height: 1em;      /* 16px / 16px = 1em */
+  --text-sm: 0.875em;               /* 14px / 16px = 0.875em */
+  --text-sm--line-height: 1.25em;   /* 20px / 16px = 1.25em */
+  --text-md: 1em;                   /* 16px / 16px = 1em */
+  --text-md--line-height: 1.5em;    /* 24px / 16px = 1.5em */
+  --text-lg: 1.125em;               /* 18px / 16px = 1.125em */
+  --text-lg--line-height: 1.75em;   /* 28px / 16px = 1.75em */
+  --text-xl: 1.5em;                 /* 24px / 16px = 1.5em */
+  --text-xl--line-height: 2em;      /* 32px / 16px = 2em */
+  --text-xxl: 2em;                  /* 32px / 16px = 2em */
+  --text-xxl--line-height: 2.5em;   /* 40px / 16px = 2.5em */
+  --text-header-h6: 0.75em, 1em;    /* 12px, 16px / 16px = 0.75em, 1em */
+  --text-header-h5: 0.875em, 1.25em; /* 14px, 20px / 16px = 0.875em, 1.25em */
+  --text-header-h4: 1em, 1.5em;     /* 16px, 24px / 16px = 1em, 1.5em */
+  --text-header-h3: 1.125em, 1.75em; /* 18px, 28px / 16px = 1.125em, 1.75em */
+  --text-header-h2: 1.5em, 2em;     /* 24px, 32px / 16px = 1.5em, 2em */
+  --text-header-h1: 2em, 2.5em;     /* 32px, 40px / 16px = 2em, 2.5em */
+  --text-display: 4em, 4.5em;       /* 64px, 72px / 16px = 4em, 4.5em */
+  --text-hero: 6.25em, 6.25em;      /* 100px, 100px / 16px = 6.25em, 6.25em */
+  --text-button-xs: 0.75em, 1em;    /* 12px, 16px / 16px = 0.75em, 1em */
+  --text-button-sm: 0.875em, 1.25em; /* 14px, 20px / 16px = 0.875em, 1.25em */
+  --text-caption-xs: 0.75em, 1em;   /* 12px, 16px / 16px = 0.75em, 1em */
+  --text-caption-md: 0.875em, 1.25em; /* 14px, 20px / 16px = 0.875em, 1.25em */
 
   --color-foreground: hsl(var(--foreground));
   --color-default: var(--default-text-color);
@@ -269,9 +276,6 @@
 
   --color-surface: var(--surface);
 
-  --color-primary: #003366;
-  --color-primary-light: #003366;
-  --color-primary-dark: #e3e3e3;
 
   --color-secondary: #8a8a8a;
   --color-secondary-light: #8a8a8a;
@@ -285,7 +289,7 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
-  --color-text-primary: #000000;
+  /* --color-text-primary: #000000; */
 
   --color-chart-2: hsl(var(--chart-2));
   --color-chart-3: hsl(var(--chart-3));
@@ -323,7 +327,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
+  --color-primary: var(--color-primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--color-card-background);
@@ -475,6 +479,20 @@
       var(--background); 
   }  
 
+  .logo {
+    height: 50px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    aspect-ratio: 3.84/1; /* 192/50 = 3.84 */
+    width: auto;
+    background-image: url('/logo-light.svg');
+  }
+  .dark .logo {
+    background-image: url('/logo-dark.svg');
+  }
+  
+  
+
   /* Dark mode variant */
   /* .dark body {
     background: radial-gradient(circle at center, var(--color-gray-900) 0%, #000000 50%, var(--color-gray-700) 100%);
@@ -525,4 +543,14 @@
   to {
     opacity: 1;
   }
+}
+
+/* Alternatively, you can set it on the html element */
+html {
+  font-size: 16px;
+}
+
+/* Or on the body element */
+body {
+  font-size: 16px;
 }

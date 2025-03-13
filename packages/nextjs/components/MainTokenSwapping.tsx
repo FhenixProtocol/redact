@@ -116,7 +116,8 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
                       <Button
                         onClick={() => handleSliderChange(100)}
                         uppercase={true}
-                        className="text-xs py-0 outline-none"
+                        noOutline={true}
+                        className="py-[1px]"
                         size="xs">
                         Max
                       </Button>
