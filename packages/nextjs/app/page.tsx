@@ -9,10 +9,12 @@ import { Modal } from "~~/components/ui/Modal";
 import { AddToken } from "~~/components/AddToken";
 import { MainTokenSwapping } from "~~/components/MainTokenSwapping";
 import { useState } from "react";
+import { useCofhe } from "~~/hooks/useCofhe";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  useCofhe(); // initialize the cofhejs instance
 
   return (
     <>

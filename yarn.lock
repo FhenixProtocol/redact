@@ -4991,6 +4991,7 @@ __metadata:
     blo: ~1.2.0
     burner-connector: 0.0.9
     class-variance-authority: ^0.7.1
+    cofhejs: ^0.2.0
     daisyui: 4.12.10
     eslint: ~8.57.1
     eslint-config-next: 15.2.2
@@ -6447,6 +6448,15 @@ __metadata:
   dependencies:
     undici-types: ~6.19.2
   checksum: 1a8bbb504efaffcef7b8491074a428e5c0b5425b0c0ffb13e7262cb8462c275e8cc5eaf90a38d8fbf52a1eeda7c01ab3b940673c43fc2414140779c973e40ec6
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^20.0.0":
+  version: 20.17.30
+  resolution: "@types/node@npm:20.17.30"
+  dependencies:
+    undici-types: ~6.19.2
+  checksum: 40253bc4a3f6adc5dc286824c1fc72a398280a7f6e76cfc22a9d68e42c70edb04c4af53c5709030b90d439bb4bbb29ad62e937d0b04ce2019b3297698bad55ef
   languageName: node
   linkType: hard
 
@@ -9136,6 +9146,24 @@ __metadata:
   version: 10.1.1
   resolution: "code-block-writer@npm:10.1.1"
   checksum: e048037acbcbda19fca62a3a63e4a64226ea6b5dc0fad7632d34a88c1165b29a357e5e19f0497811e9911472e824ab85f68176f40e439da87e051908956eb47c
+  languageName: node
+  linkType: hard
+
+"cofhejs@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "cofhejs@npm:0.2.0"
+  dependencies:
+    "@types/node": ^20.0.0
+    idb-keyval: ^6.2.1
+    immer: ^10.1.1
+    node-tfhe: 0.11.1
+    tfhe: 0.11.1
+    tweetnacl: ^1.0.3
+    tweetnacl-util: ^0.15.1
+    type-fest: ^4.26.1
+    zod: ^3.23.8
+    zustand: ^5.0.1
+  checksum: 893d93317453b7d9ff11cd149bbe45f93b95a107b52e6ebdd54e2ef584127fc5a2363c77de0b1240ebd7eb060bd7d9d4e4142398b6e81c8c27b9b95e4a34e1e4
   languageName: node
   linkType: hard
 
@@ -12637,6 +12665,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"immer@npm:^10.1.1":
+  version: 10.1.1
+  resolution: "immer@npm:10.1.1"
+  checksum: 07c67970b7d22aded73607193d84861bf786f07d47f7d7c98bb10016c7a88f6654ad78ae1e220b3c623695b133aabbf24f5eb8d9e8060cff11e89ccd81c9c10b
+  languageName: node
+  linkType: hard
+
 "immutable@npm:^4.0.0-rc.12":
   version: 4.3.7
   resolution: "immutable@npm:4.3.7"
@@ -15189,6 +15224,13 @@ __metadata:
   version: 1.0.0
   resolution: "node-mock-http@npm:1.0.0"
   checksum: debe29123026b301eb7ebad4ce0f2bb472264fc1bef504ec90d5bdf423cf344225118d8ffb47eebc652711012e29157684420cd7a373bfe9875acd429196bcb7
+  languageName: node
+  linkType: hard
+
+"node-tfhe@npm:0.11.1":
+  version: 0.11.1
+  resolution: "node-tfhe@npm:0.11.1"
+  checksum: d2152d8cdee822a97334d9a2e44a1751cb6495d914be069d1479aececded12097ee24aabb04f30d50cbc2138f1d09ddecb57c9158f411bb6d093bfdf7b03f451
   languageName: node
   linkType: hard
 
@@ -18438,6 +18480,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tfhe@npm:0.11.1":
+  version: 0.11.1
+  resolution: "tfhe@npm:0.11.1"
+  checksum: a47a5bf43b576bc5ac462af197726c64c7e5f36c8009e7818d75798273e1bc61f87cb910139dd7fa476d57bfee4575421543991f14d7863f70ef14e70976b72c
+  languageName: node
+  linkType: hard
+
 "thread-stream@npm:^0.15.1":
   version: 0.15.2
   resolution: "thread-stream@npm:0.15.2"
@@ -20134,7 +20183,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.22.4":
+"zod@npm:^3.22.4, zod@npm:^3.23.8":
   version: 3.24.2
   resolution: "zod@npm:3.24.2"
   checksum: c02455c09678c5055c636d64f9fcda2424fea0aa46ac7d9681e7f41990bc55f488bcd84b9d7cfef0f6e906f51f55b245239d92a9f726248aa74c5b84edf00c2d
@@ -20182,7 +20231,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zustand@npm:~5.0.0":
+"zustand@npm:^5.0.1, zustand@npm:~5.0.0":
   version: 5.0.3
   resolution: "zustand@npm:5.0.3"
   peerDependencies:

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "~~/components/ui/Button";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { FnxSelect } from "~~/components/ui/FnxSelect";
+import Image from "next/image";
 // import { Glow, GlowArea } from "~~/components/glow";
 import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
 import { useTokenSelector } from "~~/hooks/useTokenSelector";
@@ -14,6 +15,7 @@ import {
   CardContent,
 } from "~~/components/ui/FnxCard";
 import { useAccount } from 'wagmi';
+import { useCofhe } from "~~/hooks/useCofhe";
 
 type ActionType = "Encrypt" | "Decrypt";
 
@@ -24,6 +26,7 @@ interface MainTokenSwappingProps {
 export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
   const [selectedAction, setSelectedAction] = useState<ActionType | string>("Encrypt");
   const { isConnected } = useAccount();
+  const { isInitialized, isInitializing } = useCofhe();
 
   const {
     token,
@@ -54,6 +57,16 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
               <div className="text-lg font-semibold text-theme-black">
                 Connect your wallet to start swapping
+              </div>
+            </div> : <></>
+            }
+            {isConnected && !isInitialized ? 
+            <div className="absolute flex-col gap-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
+              <div className="text-lg font-semibold text-theme-black">
+                Waiting for Cofhe to initialize...
+              </div>
+              <div>
+                <Image src="/loading-cofhe.gif" alt="Loading Cofhe" width={300} height={100} className="mix-blend-multiply" />
               </div>
             </div> : <></>
             }
