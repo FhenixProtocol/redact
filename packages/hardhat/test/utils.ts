@@ -4,6 +4,16 @@ import hre, { ethers } from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { TypedDataDomain } from "ethers";
 
+// LOGS
+
+export const logState = (state: string) => {
+  console.log("Encrypt State - ", state);
+};
+
+export const nullLogState = () => null;
+
+// TICKS
+
 export const ticksToIndicated = async (token: FHERC20, ticks: bigint): Promise<bigint> => {
   const tick = await token.indicatorTick();
   return ticks * BigInt(tick);
@@ -12,6 +22,8 @@ export const ticksToIndicated = async (token: FHERC20, ticks: bigint): Promise<b
 export const tick = async (token: FHERC20): Promise<bigint> => {
   return token.indicatorTick();
 };
+
+// BALANCES
 
 const indicatedBalances = new Map<string, bigint>();
 const encBalances = new Map<string, bigint>();
@@ -78,6 +90,10 @@ type GeneratePermitOptions = {
   deadline?: bigint;
 };
 
+export const getNowTimestamp = () => {
+  return BigInt(Date.now()) / 1000n;
+};
+
 export const generateTransferFromPermit = async (
   options: GeneratePermitOptions,
 ): Promise<IFHERC20.FHERC20_EIP712_PermitStruct> => {
@@ -85,13 +101,11 @@ export const generateTransferFromPermit = async (
 
   const { name, version, chainId, verifyingContract } = await token.eip712Domain();
 
-  if (!nonce) nonce = await token.nonces(owner);
-  if (!deadline) deadline = BigInt(Date.now()) + BigInt(24 * 60 * 60);
+  // If nonce is not provided, get it from the token
+  if (nonce == null) nonce = await token.nonces(owner);
 
-  console.log("name", name);
-  console.log("version", version);
-  console.log("chainId", chainId);
-  console.log("verifyingContract", verifyingContract);
+  // If deadline is not provided, set it to 24 hours from now
+  if (deadline == null) deadline = getNowTimestamp() + BigInt(24 * 60 * 60);
 
   const domain: TypedDataDomain = {
     name,
@@ -117,8 +131,6 @@ export const generateTransferFromPermit = async (
     nonce: nonce,
     deadline: deadline,
   };
-
-  console.log("message", message);
 
   const signature = await signer.signTypedData(domain, types, message);
   const { v, r, s } = ethers.Signature.from(signature);

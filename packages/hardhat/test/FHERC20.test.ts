@@ -1,21 +1,14 @@
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
-import {
-  ConfidentialETH,
-  contracts,
-  ERC20_Harness,
-  FHEContract,
-  FHERC20_Harness,
-  WETH_Harness,
-} from "../typechain-types";
-import { cofhejs, Encryptable, FheTypes } from "cofhejs/node";
-import { RedactCore } from "../typechain-types";
+import { FHERC20_Harness } from "../typechain-types";
+import { cofhejs, Encryptable } from "cofhejs/node";
 import {
   expectFHERC20BalancesChange,
   prepExpectFHERC20BalancesChange,
   ticksToIndicated,
   tick,
   generateTransferFromPermit,
+  nullLogState,
 } from "./utils";
 import { ZeroAddress } from "ethers";
 
@@ -30,15 +23,11 @@ describe.only("FHERC20", function () {
     return { XFHE };
   };
 
-  const logState = (state: string) => {
-    console.log("Encrypt State - ", state);
-  };
-
   async function setupFixture() {
-    const [owner, bob, alice] = await ethers.getSigners();
+    const [owner, bob, alice, eve] = await ethers.getSigners();
     const { XFHE } = await deployContracts();
 
-    return { owner, bob, alice, XFHE };
+    return { owner, bob, alice, eve, XFHE };
   }
 
   describe("initialization", function () {
@@ -241,10 +230,8 @@ describe.only("FHERC20", function () {
 
       // Encrypt transfer value
       const transferValueRaw = ethers.parseEther("1");
-      const encTransferResult = await cofhejs.encrypt(logState, [Encryptable.uint128(transferValueRaw)] as const);
+      const encTransferResult = await cofhejs.encrypt(nullLogState, [Encryptable.uint128(transferValueRaw)] as const);
       const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
-
-      console.log("encTransferInput", encTransferInput);
 
       // encTransfer
 
@@ -274,7 +261,7 @@ describe.only("FHERC20", function () {
 
       // Encrypt transfer value
       const transferValueRaw = ethers.parseEther("1");
-      const encTransferResult = await cofhejs.encrypt(logState, [Encryptable.uint128(transferValueRaw)] as const);
+      const encTransferResult = await cofhejs.encrypt(nullLogState, [Encryptable.uint128(transferValueRaw)] as const);
       const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
 
       // encTransfer (reverts)
@@ -286,17 +273,23 @@ describe.only("FHERC20", function () {
   });
 
   describe("encTransferFrom", function () {
-    it("Should transfer from bob to alice", async function () {
-      const { XFHE, bob, alice } = await setupFixture();
+    const setupEncTransferFromFixture = async () => {
+      const { XFHE, bob, alice, eve } = await setupFixture();
 
       const mintValue = ethers.parseEther("10");
       await XFHE.mint(bob, mintValue);
       await XFHE.mint(alice, mintValue);
 
       // Encrypt transfer value
-      const transferValueRaw = ethers.parseEther("1");
-      const encTransferResult = await cofhejs.encrypt(logState, [Encryptable.uint128(transferValueRaw)] as const);
+      const transferValue = ethers.parseEther("1");
+      const encTransferResult = await cofhejs.encrypt(nullLogState, [Encryptable.uint128(transferValue)] as const);
       const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
+
+      return { XFHE, bob, alice, eve, encTransferInput, transferValue };
+    };
+
+    it("Should transfer from bob to alice", async function () {
+      const { XFHE, bob, alice, encTransferInput, transferValue } = await setupEncTransferFromFixture();
 
       // Generate encTransferFrom permit
       const permit = await generateTransferFromPermit({
@@ -320,14 +313,197 @@ describe.only("FHERC20", function () {
         XFHE,
         bob.address,
         -1n * (await ticksToIndicated(XFHE, 1n)),
-        -1n * transferValueRaw,
+        -1n * transferValue,
       );
       await expectFHERC20BalancesChange(
         XFHE,
         alice.address,
         1n * (await ticksToIndicated(XFHE, 1n)),
-        1n * transferValueRaw,
+        1n * transferValue,
       );
+    });
+
+    it("Should transfer from bob to alice (eve spender)", async function () {
+      const { XFHE, bob, alice, eve, encTransferInput, transferValue } = await setupEncTransferFromFixture();
+
+      // Generate encTransferFrom permit
+      const permit = await generateTransferFromPermit({
+        token: XFHE,
+        signer: bob,
+        owner: bob.address,
+        spender: eve.address,
+        valueHash: encTransferInput.ctHash,
+      });
+
+      // Success - Bob -> Alice
+
+      await prepExpectFHERC20BalancesChange(XFHE, bob.address);
+      await prepExpectFHERC20BalancesChange(XFHE, alice.address);
+
+      await expect(XFHE.connect(eve).encTransferFrom(bob.address, alice.address, encTransferInput, permit))
+        .to.emit(XFHE, "Transfer")
+        .withArgs(bob.address, alice.address, await tick(XFHE));
+
+      await expectFHERC20BalancesChange(
+        XFHE,
+        bob.address,
+        -1n * (await ticksToIndicated(XFHE, 1n)),
+        -1n * transferValue,
+      );
+      await expectFHERC20BalancesChange(
+        XFHE,
+        alice.address,
+        1n * (await ticksToIndicated(XFHE, 1n)),
+        1n * transferValue,
+      );
+    });
+
+    it("Should revert if invalid receiver", async function () {
+      const { XFHE, bob, alice, encTransferInput } = await setupEncTransferFromFixture();
+
+      // Generate encTransferFrom permit
+      const permit = await generateTransferFromPermit({
+        token: XFHE,
+        signer: bob,
+        owner: bob.address,
+        spender: alice.address,
+        valueHash: encTransferInput.ctHash,
+      });
+
+      await expect(
+        XFHE.connect(alice).encTransferFrom(bob.address, ZeroAddress, encTransferInput, permit),
+      ).to.be.revertedWithCustomError(XFHE, "ERC20InvalidReceiver");
+    });
+
+    it("Should revert if permit expired", async function () {
+      const { XFHE, bob, alice, encTransferInput } = await setupEncTransferFromFixture();
+
+      // Deadline passed - ERC2612ExpiredSignature
+
+      const permit = await generateTransferFromPermit({
+        token: XFHE,
+        signer: bob,
+        owner: bob.address,
+        spender: alice.address,
+        valueHash: encTransferInput.ctHash,
+        nonce: await XFHE.nonces(bob),
+        deadline: 0n,
+      });
+
+      // Hardhat time travel 1 second
+      await hre.network.provider.send("evm_increaseTime", [1]);
+      await hre.network.provider.send("evm_mine");
+
+      // Get hardhat timestamp
+      const latestBlock = await ethers.provider.getBlock("latest");
+      const timestamp = latestBlock?.timestamp;
+      expect(timestamp).to.be.greaterThan(permit.deadline);
+
+      // Expect revert
+      await expect(
+        XFHE.connect(alice).encTransferFrom(bob.address, alice.address, encTransferInput, permit),
+      ).to.be.revertedWithCustomError(XFHE, "ERC2612ExpiredSignature");
+    });
+
+    it("Should revert on owner mismatch", async function () {
+      const { XFHE, bob, alice, encTransferInput } = await setupEncTransferFromFixture();
+
+      // FHERC20EncTransferFromOwnerMismatch bob -> alice
+
+      const permit = await generateTransferFromPermit({
+        token: XFHE,
+        signer: bob,
+        owner: alice.address,
+        spender: alice.address,
+        valueHash: encTransferInput.ctHash,
+      });
+
+      // Expect revert
+
+      await expect(
+        XFHE.connect(bob).encTransferFrom(bob.address, alice.address, encTransferInput, permit),
+      ).to.be.revertedWithCustomError(XFHE, "FHERC20EncTransferFromOwnerMismatch");
+    });
+
+    it("Should revert on spender mismatch", async function () {
+      const { XFHE, bob, alice, eve, encTransferInput } = await setupEncTransferFromFixture();
+
+      // FHERC20EncTransferFromSpenderMismatch
+
+      const permit = await generateTransferFromPermit({
+        token: XFHE,
+        signer: bob,
+        owner: bob.address,
+        spender: eve.address,
+        valueHash: encTransferInput.ctHash,
+      });
+
+      // Expect revert
+
+      await expect(
+        XFHE.connect(alice).encTransferFrom(bob.address, alice.address, encTransferInput, permit),
+      ).to.be.revertedWithCustomError(XFHE, "FHERC20EncTransferFromSpenderMismatch");
+    });
+
+    it("Should revert on value_hash mismatch", async function () {
+      const { XFHE, bob, alice, encTransferInput } = await setupEncTransferFromFixture();
+
+      // FHERC20EncTransferFromValueHashMismatch
+
+      const permit = await generateTransferFromPermit({
+        token: XFHE,
+        signer: bob,
+        owner: bob.address,
+        spender: alice.address,
+        valueHash: encTransferInput.ctHash + 1n,
+      });
+
+      // Expect revert
+
+      await expect(
+        XFHE.connect(alice).encTransferFrom(bob.address, alice.address, encTransferInput, permit),
+      ).to.be.revertedWithCustomError(XFHE, "FHERC20EncTransferFromValueHashMismatch");
+    });
+
+    it("Should revert on signer not owner", async function () {
+      const { XFHE, bob, alice, encTransferInput } = await setupEncTransferFromFixture();
+
+      // Signer != owner - ERC2612InvalidSigner
+
+      const permit = await generateTransferFromPermit({
+        token: XFHE,
+        signer: alice,
+        owner: bob.address,
+        spender: alice.address,
+        valueHash: encTransferInput.ctHash,
+      });
+
+      // Expect revert
+
+      await expect(
+        XFHE.connect(alice).encTransferFrom(bob.address, alice.address, encTransferInput, permit),
+      ).to.be.revertedWithCustomError(XFHE, "ERC2612InvalidSigner");
+    });
+
+    it("Should revert on invalid nonce", async function () {
+      const { XFHE, bob, alice, encTransferInput } = await setupEncTransferFromFixture();
+
+      // Invalid nonce - ERC2612InvalidSigner
+
+      const permit = await generateTransferFromPermit({
+        token: XFHE,
+        signer: bob,
+        owner: bob.address,
+        spender: alice.address,
+        valueHash: encTransferInput.ctHash,
+        nonce: (await XFHE.nonces(bob)) + 1n,
+      });
+
+      // Expect revert
+
+      await expect(
+        XFHE.connect(alice).encTransferFrom(bob.address, alice.address, encTransferInput, permit),
+      ).to.be.revertedWithCustomError(XFHE, "ERC2612InvalidSigner");
     });
   });
 });
