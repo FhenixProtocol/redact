@@ -56,7 +56,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
     const details = await fetchDetails(address as Address);
     if (details) {
       setTokenDetails(details);
-      const result = await confidentialTokenExists(address as Address, true);
+      const result = await confidentialTokenExists(address as Address);
       console.log("confidentialTokenExists!!!!", result);
       setIsDeployNeeded(!result);
       
