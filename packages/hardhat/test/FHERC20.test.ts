@@ -24,6 +24,10 @@ describe.only("FHERC20", function () {
     return { XFHE };
   };
 
+  const logState = (state: string) => {
+    console.log("Encrypt State - ", state);
+  };
+
   async function setupFixture() {
     const [owner, bob, alice] = await ethers.getSigners();
     const { XFHE } = await deployContracts();
@@ -115,6 +119,160 @@ describe.only("FHERC20", function () {
       const { XFHE } = await setupFixture();
 
       await expect(XFHE.mint(ZeroAddress, ethers.parseEther("1"))).to.be.revertedWithCustomError(
+        XFHE,
+        "ERC20InvalidReceiver",
+      );
+    });
+  });
+
+  describe("burn", function () {
+    it("should burn", async function () {
+      const { XFHE, bob } = await setupFixture();
+
+      const mintValue = ethers.parseEther("10");
+      const burnValue = ethers.parseEther("1");
+
+      await XFHE.mint(bob, mintValue);
+
+      // Burn TX
+
+      expect(await XFHE.totalSupply()).to.equal(
+        await ticksToIndicated(XFHE, 5001n),
+        "Total indicated supply is 0.5001",
+      );
+      await hre.cofhe.mocks.expectPlaintext(await XFHE.encTotalSupply(), mintValue);
+
+      await prepExpectFHERC20BalancesChange(XFHE, bob.address);
+
+      await expect(XFHE.burn(bob, burnValue))
+        .to.emit(XFHE, "Transfer")
+        .withArgs(bob.address, ZeroAddress, await tick(XFHE));
+
+      await expectFHERC20BalancesChange(XFHE, bob.address, -1n * (await ticksToIndicated(XFHE, 1n)), -1n * burnValue);
+      await hre.cofhe.mocks.expectPlaintext(await XFHE.encTotalSupply(), mintValue - burnValue);
+
+      expect(await XFHE.totalSupply()).to.equal(
+        await ticksToIndicated(XFHE, 5000n),
+        "Total indicated supply reduced to .5000",
+      );
+    });
+    it("Should revert if burning from the zero address", async function () {
+      const { XFHE } = await setupFixture();
+      const burnValue = ethers.parseEther("1");
+      await expect(XFHE.burn(ZeroAddress, burnValue)).to.be.revertedWithCustomError(XFHE, "ERC20InvalidSender");
+    });
+  });
+
+  describe("ERC20 legacy functions", function () {
+    it("Should revert on legacy ERC20.transfer()", async function () {
+      const { XFHE, bob, alice } = await setupFixture();
+
+      const transferValue = ethers.parseEther("1");
+      await XFHE.mint(bob, transferValue);
+      await XFHE.mint(alice, transferValue);
+
+      // Transfer
+
+      await expect(XFHE.connect(bob).transfer(alice, transferValue)).to.be.revertedWithCustomError(
+        XFHE,
+        "FHERC20IncompatibleFunction",
+      );
+    });
+
+    it("Should revert on legacy ERC20.transferFrom()", async function () {
+      const { XFHE, bob, alice } = await setupFixture();
+
+      const transferValue = ethers.parseEther("1");
+      await XFHE.mint(bob, transferValue);
+      await XFHE.mint(alice, transferValue);
+
+      // TransferFrom
+
+      await expect(XFHE.connect(bob).transferFrom(alice, bob, transferValue)).to.be.revertedWithCustomError(
+        XFHE,
+        "FHERC20IncompatibleFunction",
+      );
+    });
+
+    it("Should revert on legacy ERC20.approve()", async function () {
+      const { XFHE, bob, alice } = await setupFixture();
+
+      const approveValue = ethers.parseEther("1");
+
+      await XFHE.mint(bob, approveValue);
+
+      // Approve
+
+      await expect(XFHE.connect(bob).approve(alice, approveValue)).to.be.revertedWithCustomError(
+        XFHE,
+        "FHERC20IncompatibleFunction",
+      );
+    });
+
+    it("Should revert on legacy ERC20.allowance()", async function () {
+      const { XFHE, bob, alice } = await setupFixture();
+
+      const allowanceValue = ethers.parseEther("1");
+      await XFHE.mint(bob, allowanceValue);
+
+      // Allowance
+
+      await expect(XFHE.allowance(bob, alice)).to.be.revertedWithCustomError(XFHE, "FHERC20IncompatibleFunction");
+    });
+  });
+
+  describe("encTransfer", function () {
+    it("Should transfer from bob to alice", async function () {
+      const { XFHE, bob, alice } = await setupFixture();
+
+      const mintValue = ethers.parseEther("10");
+
+      await XFHE.mint(bob, mintValue);
+      await XFHE.mint(alice, mintValue);
+
+      // Initialize bob in cofhejs
+      await hre.cofhe.expectResultSuccess(await hre.cofhe.initializeWithHardhatSigner(bob));
+
+      // Encrypt transfer value
+      const transferValueRaw = ethers.parseEther("1");
+      const encTransferResult = await cofhejs.encrypt(logState, [Encryptable.uint128(transferValueRaw)] as const);
+      const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
+
+      console.log("encTransferInput", encTransferInput);
+
+      // encTransfer
+
+      await prepExpectFHERC20BalancesChange(XFHE, bob.address);
+      await prepExpectFHERC20BalancesChange(XFHE, alice.address);
+
+      await expect(XFHE.connect(bob).encTransfer(alice.address, encTransferInput))
+        .to.emit(XFHE, "Transfer")
+        .withArgs(bob.address, alice.address, await tick(XFHE));
+
+      await expectFHERC20BalancesChange(
+        XFHE,
+        bob.address,
+        -1n * (await ticksToIndicated(XFHE, 1n)),
+        -1n * transferValueRaw,
+      );
+      await expectFHERC20BalancesChange(
+        XFHE,
+        alice.address,
+        1n * (await ticksToIndicated(XFHE, 1n)),
+        1n * transferValueRaw,
+      );
+    });
+
+    it("Should revert on transfer to 0 address", async function () {
+      const { XFHE, bob } = await setupFixture();
+
+      // Encrypt transfer value
+      const transferValueRaw = ethers.parseEther("1");
+      const encTransferResult = await cofhejs.encrypt(logState, [Encryptable.uint128(transferValueRaw)] as const);
+      const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
+
+      // encTransfer (reverts)
+      await expect(XFHE.connect(bob).encTransfer(ZeroAddress, encTransferInput)).to.be.revertedWithCustomError(
         XFHE,
         "ERC20InvalidReceiver",
       );
