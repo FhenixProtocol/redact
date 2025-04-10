@@ -2,8 +2,9 @@ import { expect } from "chai";
 import hre, { ethers } from "hardhat";
 import { FHEContract } from "../typechain-types";
 import { cofhejs, Encryptable, FheTypes } from "cofhejs/node";
+import { nullLogState } from "./utils";
 
-describe("YourContract", function () {
+describe("FHEContract", function () {
   // We define a fixture to reuse the same setup in every test.
 
   let fheContract: FHEContract;
@@ -13,10 +14,6 @@ describe("YourContract", function () {
     fheContract = (await fheContractFactory.deploy()) as FHEContract;
     await fheContract.waitForDeployment();
   });
-
-  const logState = (state: string) => {
-    console.log("Encrypt State - ", state);
-  };
 
   describe("Deployment", function () {
     it("Should have the right value on deploy", async function () {
@@ -32,7 +29,7 @@ describe("YourContract", function () {
       const targetValue = 10n;
 
       // Encrypt target value, and pass it to the contract
-      const encryptedInputResult = await cofhejs.encrypt(logState, [Encryptable.uint32(targetValue)] as const);
+      const encryptedInputResult = await cofhejs.encrypt(nullLogState, [Encryptable.uint32(targetValue)] as const);
       const [inputValue] = await hre.cofhe.expectResultSuccess(encryptedInputResult);
       await fheContract.setVal(inputValue);
 
@@ -55,7 +52,7 @@ describe("YourContract", function () {
       const operandValue = 2n;
 
       // Encrypt target value, and pass it to the contract
-      const encryptedInputResult = await cofhejs.encrypt(logState, [
+      const encryptedInputResult = await cofhejs.encrypt(nullLogState, [
         Encryptable.uint32(targetValue),
         Encryptable.uint32(operandValue),
       ] as const);

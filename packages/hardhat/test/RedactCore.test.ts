@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 import { ConfidentialETH, ERC20_Harness, WETH_Harness } from "../typechain-types";
 import { RedactCore } from "../typechain-types";
 
-describe.only("RedactCore", function () {
+describe("RedactCore", function () {
   // We define a fixture to reuse the same setup in every test.
   const deployContracts = async () => {
     // Deploy WETH
