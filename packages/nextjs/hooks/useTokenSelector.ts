@@ -13,6 +13,7 @@ export interface UseTokenSelectorReturn {
   depositValue: number;
   setDepositValue: (val: number) => void;
   selectedTokenBalance: string;
+  selectedTokenInfo: TokenListItem | undefined;
   processedTokens: Array<{
     value: string;
     name: string;
@@ -79,6 +80,7 @@ export function useTokenSelector(): UseTokenSelectorReturn {
     depositValue,
     setDepositValue,
     selectedTokenBalance,
+    selectedTokenInfo,
     processedTokens,
     handleSliderChange,
     handleDepositChange

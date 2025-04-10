@@ -16,7 +16,13 @@ import {
 } from "~~/components/ui/FnxCard";
 import { useAccount } from 'wagmi';
 import { useCofhe } from "~~/hooks/useCofhe";
-
+import { getPublicClient, getWalletClient } from '@wagmi/core'
+import { wagmiConfig } from '~~/services/web3/wagmiConfig'  // Adjust this import path as needed
+import { useReadContract } from 'wagmi'
+import { erc20Abi, parseUnits } from "viem";
+import { ConfidentialERC20Abi } from "~~/lib/abis";
+import { Spinner } from "./ui/Spinner";
+import { useTokenBalance } from "~~/hooks/useTokenBalance";
 type ActionType = "Encrypt" | "Decrypt";
 
 interface MainTokenSwappingProps {
@@ -25,8 +31,11 @@ interface MainTokenSwappingProps {
 
 export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
   const [selectedAction, setSelectedAction] = useState<ActionType | string>("Encrypt");
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const { isInitialized, isInitializing } = useCofhe();
+
+  const [isEncrypting, setIsEncrypting] = useState(false);
+  const [isDecrypting, setIsDecrypting] = useState(false);
 
   const {
     token,
@@ -35,9 +44,16 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
     depositValue,
     selectedTokenBalance,
     processedTokens,
+    selectedTokenInfo,
     handleSliderChange,
     handleDepositChange
   } = useTokenSelector();
+
+  // Get the token balance and refresh function at the component level
+  const { balance: tokenBalance, refreshBalance } = useTokenBalance({
+    tokenAddress: selectedTokenInfo?.address || "",
+    userAddress: address
+  });
 
   const availableActions: Record<ActionType, { icon: React.ComponentType<{ size?: number }> }> = {
     Encrypt: { icon: EyeOff },
@@ -46,6 +62,101 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
 
   const ActionIcon = availableActions[selectedAction as ActionType].icon;
 
+
+  // TODO: Move to other file
+  const handleAction = () => {
+    if (selectedAction === "Encrypt") {
+      handleEncrypt();
+    } else {
+      handleDecrypt();
+    }
+  }
+
+  const handleEncrypt = async () => {
+    console.log("Encrypt");
+    console.log(depositValue);
+    console.log(token);
+    console.log(selectedTokenInfo);
+    if (selectedTokenInfo) {
+      setIsEncrypting(true);
+      const publicClient = getPublicClient(wagmiConfig)
+      const walletClient = await getWalletClient(wagmiConfig);
+
+      const allowance = await publicClient.readContract({
+        address: selectedTokenInfo.address as `0x${string}`,
+        abi: erc20Abi,
+        functionName: 'allowance',
+        args: [
+          address as `0x${string}`, 
+          selectedTokenInfo.confidentialAddress as `0x${string}`
+        ]
+      })
+      console.log(allowance);
+
+      const amount = parseUnits(depositValue.toString(), selectedTokenInfo.decimals)
+      if (allowance < amount) {
+        console.log(`Not enough allowance for ${depositValue} ${selectedTokenInfo.symbol}`);
+        try {
+          const hash = await walletClient.writeContract({
+            address: selectedTokenInfo.address as `0x${string}`,
+            abi: erc20Abi,
+            functionName: 'approve',
+            args: [selectedTokenInfo.confidentialAddress, amount]
+          })
+          const receipt = await publicClient.waitForTransactionReceipt({ hash });
+          console.log("---- receipt ----");
+          console.log(receipt);
+          console.log("---- receipt ----");
+        } catch (error) {
+          console.log(error);
+          setIsEncrypting(false);
+          return;
+        }
+      }
+
+      try {
+        console.log(`Encrypting ${amount} ${selectedTokenInfo.symbol} for ${address}`);
+        const hash = await walletClient.writeContract({
+          address: selectedTokenInfo.confidentialAddress as `0x${string}`,
+          abi: ConfidentialERC20Abi,
+          functionName: 'encrypt',
+          args: [address, amount]
+        })
+
+        console.log(hash);
+  
+        const receipt = await publicClient.waitForTransactionReceipt({ hash });
+        console.log("---- receipt ----");
+        console.log(receipt);
+        console.log("---- receipt ----");
+        console.log("Transaction successful, refreshing balance");
+        refreshBalance();
+
+      
+      } catch (error) {
+        console.log(error);
+      }
+
+      setIsEncrypting(false);
+
+
+
+      // writeContract({
+      //   address: selectedTokenInfo.address as `0x${string}`,
+      //   abi: erc20Abi,
+      //   functionName: 'approve',
+      //   args: [selectedTokenInfo.confidentialAddress as `0x${string}`, amount]
+      // });
+
+    }
+  
+  }
+
+  const handleDecrypt = () => {
+    setIsDecrypting(true);
+    console.log("Decrypt");
+    setIsDecrypting(false);
+  }
 
   return (
     <div className="text-center inline-block">
@@ -149,11 +260,15 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
                   step={1}
                   showMarkers={true}
                   showMaxButton={false}
+                  disabled={isEncrypting || isDecrypting}
                 />
               </div>
             </CardContent>
             <CardFooter className="flex justify-center">
-              <Button className="w-full" icon={ActionIcon}>{selectedAction}</Button>
+              <Button className="w-full" icon={ActionIcon} onClick={handleAction} disabled={isEncrypting || isDecrypting}>
+                {isEncrypting || isDecrypting ? "Please wait..." : selectedAction}
+                {isEncrypting || isDecrypting && <Spinner />}
+              </Button>
             </CardFooter>
           </Card>
         </div>

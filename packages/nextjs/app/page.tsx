@@ -14,7 +14,7 @@ import { useCofhe } from "~~/hooks/useCofhe";
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  useCofhe(); // initialize the cofhejs instance
+  //useCofhe(); // initialize the cofhejs instance
 
   return (
     <>
