@@ -2,15 +2,15 @@
 
 pragma solidity ^0.8.25;
 
-import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {FHERC20} from "./FHERC20.sol";
-import {IWETH} from "./interfaces/IWETH.sol";
-import {euint128, FHE} from "@fhenixprotocol/cofhe-foundry-mocks/FHE.sol";
-import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import {ConfidentialClaim} from "./ConfidentialClaim.sol";
-import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { IERC20, IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { FHERC20 } from "./FHERC20.sol";
+import { IWETH } from "./interfaces/IWETH.sol";
+import { euint128, FHE } from "@fhenixprotocol/cofhe-contracts/FHE.sol";
+import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import { ConfidentialClaim } from "./ConfidentialClaim.sol";
+import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract ConfidentialETH is FHERC20, Ownable, ConfidentialClaim {
     using EnumerableSet for EnumerableSet.UintSet;
@@ -21,14 +21,7 @@ contract ConfidentialETH is FHERC20, Ownable, ConfidentialClaim {
 
     constructor(
         IWETH wETH_
-    )
-        Ownable(msg.sender)
-        FHERC20(
-            "Confidential Wrapped ETHER",
-            "eETH",
-            IERC20Metadata(address(wETH_)).decimals()
-        )
-    {
+    ) Ownable(msg.sender) FHERC20("Confidential Wrapped ETHER", "eETH", IERC20Metadata(address(wETH_)).decimals()) {
         wETH = wETH_;
     }
 
@@ -36,18 +29,10 @@ contract ConfidentialETH is FHERC20, Ownable, ConfidentialClaim {
 
     fallback() external payable {}
 
-    event EncryptedWETH(
-        address indexed from,
-        address indexed to,
-        uint128 value
-    );
+    event EncryptedWETH(address indexed from, address indexed to, uint128 value);
     event EncryptedETH(address indexed from, address indexed to, uint256 value);
     event DecryptedETH(address indexed from, address indexed to, uint128 value);
-    event ClaimedDecryptedETH(
-        address indexed from,
-        address indexed to,
-        uint128 value
-    );
+    event ClaimedDecryptedETH(address indexed from, address indexed to, uint128 value);
 
     /**
      * @dev The ETH transfer failed.
@@ -89,7 +74,7 @@ contract ConfidentialETH is FHERC20, Ownable, ConfidentialClaim {
         Claim memory claim = _handleClaim(ctHash);
 
         // Send the ETH to the recipient
-        (bool sent, ) = claim.to.call{value: claim.decryptedAmount}("");
+        (bool sent, ) = claim.to.call{ value: claim.decryptedAmount }("");
         if (!sent) revert ETHTransferFailed();
 
         emit ClaimedDecryptedETH(msg.sender, claim.to, claim.decryptedAmount);
