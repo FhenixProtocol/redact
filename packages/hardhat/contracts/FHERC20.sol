@@ -13,7 +13,7 @@ import { Nonces } from "@openzeppelin/contracts/utils/Nonces.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { IFHERC20 } from "./interfaces/IFHERC20.sol";
 import { IFHERC20Errors } from "./interfaces/IFHERC20Errors.sol";
-import { FHE, euint128, InEuint128, Utils } from "@fhenixprotocol/cofhe-foundry-mocks/FHE.sol";
+import { FHE, euint128, InEuint128, Utils } from "@fhenixprotocol/cofhe-contracts/FHE.sol";
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -262,8 +262,8 @@ abstract contract FHERC20 is IFHERC20, IFHERC20Errors, Context, EIP712, Nonces {
         if (from != permit.owner) revert FHERC20EncTransferFromOwnerMismatch(from, permit.owner);
         if (msg.sender != permit.spender) revert FHERC20EncTransferFromSpenderMismatch(msg.sender, permit.spender);
 
-        if (inValue.hash != permit.value_hash)
-            revert FHERC20EncTransferFromValueHashMismatch(inValue.hash, permit.value_hash);
+        if (inValue.ctHash != permit.value_hash)
+            revert FHERC20EncTransferFromValueHashMismatch(inValue.ctHash, permit.value_hash);
 
         bytes32 structHash = keccak256(
             abi.encode(

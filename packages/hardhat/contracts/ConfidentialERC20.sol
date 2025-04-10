@@ -3,13 +3,13 @@
 
 pragma solidity ^0.8.25;
 
-import {IERC20, IERC20Metadata, ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IFHERC20, FHERC20} from "./FHERC20.sol";
-import {euint128, FHE} from "@fhenixprotocol/cofhe-foundry-mocks/FHE.sol";
-import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import {ConfidentialClaim} from "./ConfidentialClaim.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { IERC20, IERC20Metadata, ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IFHERC20, FHERC20 } from "./FHERC20.sol";
+import { euint128, FHE } from "@fhenixprotocol/cofhe-contracts/FHE.sol";
+import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import { ConfidentialClaim } from "./ConfidentialClaim.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract ConfidentialERC20 is FHERC20, Ownable, ConfidentialClaim {
     using EnumerableSet for EnumerableSet.UintSet;
@@ -18,21 +18,9 @@ contract ConfidentialERC20 is FHERC20, Ownable, ConfidentialClaim {
     IERC20 private immutable _erc20;
     string private _symbol;
 
-    event EncryptedERC20(
-        address indexed from,
-        address indexed to,
-        uint128 value
-    );
-    event DecryptedERC20(
-        address indexed from,
-        address indexed to,
-        uint128 value
-    );
-    event ClaimedDecryptedERC20(
-        address indexed from,
-        address indexed to,
-        uint128 value
-    );
+    event EncryptedERC20(address indexed from, address indexed to, uint128 value);
+    event DecryptedERC20(address indexed from, address indexed to, uint128 value);
+    event ClaimedDecryptedERC20(address indexed from, address indexed to, uint128 value);
     event SymbolUpdated(string symbol);
 
     /**
@@ -51,10 +39,7 @@ contract ConfidentialERC20 is FHERC20, Ownable, ConfidentialClaim {
     )
         Ownable(msg.sender)
         FHERC20(
-            string.concat(
-                "Confidential ",
-                IERC20Metadata(address(erc20_)).name()
-            ),
+            string.concat("Confidential ", IERC20Metadata(address(erc20_)).name()),
             bytes(symbolOverride_).length == 0
                 ? string.concat("e", IERC20Metadata(address(erc20_)).symbol())
                 : symbolOverride_,

@@ -10,7 +10,7 @@ import { ContextUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/Co
 import { EIP712Upgradeable } from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import { NoncesUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/NoncesUpgradeable.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import { FHE, euint128, InEuint128, Utils } from "@fhenixprotocol/cofhe-foundry-mocks/FHE.sol";
+import { FHE, euint128, InEuint128, Utils } from "@fhenixprotocol/cofhe-contracts/FHE.sol";
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -308,8 +308,8 @@ abstract contract FHERC20Upgradeable is
         if (from != permit.owner) revert FHERC20EncTransferFromOwnerMismatch(from, permit.owner);
         if (msg.sender != permit.spender) revert FHERC20EncTransferFromSpenderMismatch(to, permit.spender);
 
-        if (inValue.hash != permit.value_hash)
-            revert FHERC20EncTransferFromValueHashMismatch(inValue.hash, permit.value_hash);
+        if (inValue.ctHash != permit.value_hash)
+            revert FHERC20EncTransferFromValueHashMismatch(inValue.ctHash, permit.value_hash);
 
         bytes32 structHash = keccak256(
             abi.encode(
