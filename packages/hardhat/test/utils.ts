@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { FHERC20, IFHERC20 } from "../typechain-types";
+import { ERC20, FHERC20, IFHERC20 } from "../typechain-types";
 import hre, { ethers } from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { TypedDataDomain } from "ethers";
@@ -63,11 +63,11 @@ export const expectFHERC20BalancesChange = async (
 
 const erc20Balances = new Map<string, bigint>();
 
-export const prepExpectERC20BalancesChange = async (token: FHERC20, account: string) => {
+export const prepExpectERC20BalancesChange = async (token: ERC20, account: string) => {
   erc20Balances.set(account, await token.balanceOf(account));
 };
 
-export const expectERC20BalancesChange = async (token: FHERC20, account: string, expectedChange: bigint) => {
+export const expectERC20BalancesChange = async (token: ERC20, account: string, expectedChange: bigint) => {
   const symbol = await token.symbol();
 
   const currBal = await token.balanceOf(account);

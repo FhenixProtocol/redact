@@ -12,7 +12,7 @@ import {
 } from "./utils";
 import { ZeroAddress } from "ethers";
 
-describe.only("FHERC20", function () {
+describe("FHERC20", function () {
   // We define a fixture to reuse the same setup in every test.
   const deployContracts = async () => {
     // Deploy wBTC
@@ -360,7 +360,7 @@ describe.only("FHERC20", function () {
       );
     });
 
-    it.only("Should transfer from bob to MockFherc20Vault", async function () {
+    it("Should transfer from bob to MockFherc20Vault", async function () {
       const { XFHE, bob, alice, eve, encTransferInput, transferValue } = await setupEncTransferFromFixture();
 
       const vaultFactory = await ethers.getContractFactory("MockFherc20Vault");
