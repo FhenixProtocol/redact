@@ -18,7 +18,6 @@ export const prepExpectFHERC20BalancesChange = async (token: FHERC20, account: s
   indicatedBalances.set(account, await token.balanceOf(account));
   const encBalanceHash = await token.encBalanceOf(account);
   const encBalance = await hre.cofhe.mocks.getPlaintext(encBalanceHash);
-  console.log({ encBalanceHash, encBalance });
   encBalances.set(account, encBalance);
 };
 
@@ -42,7 +41,6 @@ export const expectFHERC20BalancesChange = async (
   const currEncBalance = await hre.cofhe.mocks.getPlaintext(currEncBalanceHash);
   const prevEncBalance = encBalances.get(account)!;
   const encChange = currEncBalance - prevEncBalance;
-  console.log({ currEncBalance, prevEncBalance, encChange });
   expect(encChange).to.equal(
     expectedEncChange,
     `${symbol} (FHERC20) encrypted balance change for ${account} is incorrect. Expected: ${expectedEncChange}, received: ${encChange}`,
