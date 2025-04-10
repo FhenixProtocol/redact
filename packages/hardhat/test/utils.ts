@@ -1,6 +1,8 @@
 import { expect } from "chai";
-import { FHERC20 } from "../typechain-types";
-import hre from "hardhat";
+import { FHERC20, IFHERC20 } from "../typechain-types";
+import hre, { ethers } from "hardhat";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { TypedDataDomain } from "ethers";
 
 export const ticksToIndicated = async (token: FHERC20, ticks: bigint): Promise<bigint> => {
   const tick = await token.indicatorTick();
@@ -63,4 +65,71 @@ export const expectERC20BalancesChange = async (token: FHERC20, account: string,
     expectedChange,
     `${symbol} (ERC20) balance change for ${account} is incorrect. Expected: ${expectedChange}, received: ${delta}`,
   );
+};
+
+// EncTransferFromPermit
+type GeneratePermitOptions = {
+  signer: HardhatEthersSigner;
+  token: FHERC20;
+  owner: string;
+  spender: string;
+  valueHash: bigint;
+  nonce?: bigint;
+  deadline?: bigint;
+};
+
+export const generateTransferFromPermit = async (
+  options: GeneratePermitOptions,
+): Promise<IFHERC20.FHERC20_EIP712_PermitStruct> => {
+  let { token, signer, owner, spender, valueHash, nonce, deadline } = options;
+
+  const { name, version, chainId, verifyingContract } = await token.eip712Domain();
+
+  if (!nonce) nonce = await token.nonces(owner);
+  if (!deadline) deadline = BigInt(Date.now()) + BigInt(24 * 60 * 60);
+
+  console.log("name", name);
+  console.log("version", version);
+  console.log("chainId", chainId);
+  console.log("verifyingContract", verifyingContract);
+
+  const domain: TypedDataDomain = {
+    name,
+    version,
+    chainId,
+    verifyingContract,
+  };
+
+  const types = {
+    Permit: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+      { name: "value_hash", type: "uint256" },
+      { name: "nonce", type: "uint256" },
+      { name: "deadline", type: "uint256" },
+    ],
+  };
+
+  const message = {
+    owner,
+    spender,
+    value_hash: valueHash,
+    nonce: nonce,
+    deadline: deadline,
+  };
+
+  console.log("message", message);
+
+  const signature = await signer.signTypedData(domain, types, message);
+  const { v, r, s } = ethers.Signature.from(signature);
+
+  return {
+    owner,
+    spender,
+    value_hash: valueHash,
+    deadline: BigInt(Date.now()) + deadline,
+    v,
+    r,
+    s,
+  };
 };

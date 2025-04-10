@@ -10,7 +10,13 @@ import {
 } from "../typechain-types";
 import { cofhejs, Encryptable, FheTypes } from "cofhejs/node";
 import { RedactCore } from "../typechain-types";
-import { expectFHERC20BalancesChange, prepExpectFHERC20BalancesChange, ticksToIndicated, tick } from "./utils";
+import {
+  expectFHERC20BalancesChange,
+  prepExpectFHERC20BalancesChange,
+  ticksToIndicated,
+  tick,
+  generateTransferFromPermit,
+} from "./utils";
 import { ZeroAddress } from "ethers";
 
 describe.only("FHERC20", function () {
@@ -275,6 +281,52 @@ describe.only("FHERC20", function () {
       await expect(XFHE.connect(bob).encTransfer(ZeroAddress, encTransferInput)).to.be.revertedWithCustomError(
         XFHE,
         "ERC20InvalidReceiver",
+      );
+    });
+  });
+
+  describe("encTransferFrom", function () {
+    it("Should transfer from bob to alice", async function () {
+      const { XFHE, bob, alice } = await setupFixture();
+
+      const mintValue = ethers.parseEther("10");
+      await XFHE.mint(bob, mintValue);
+      await XFHE.mint(alice, mintValue);
+
+      // Encrypt transfer value
+      const transferValueRaw = ethers.parseEther("1");
+      const encTransferResult = await cofhejs.encrypt(logState, [Encryptable.uint128(transferValueRaw)] as const);
+      const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
+
+      // Generate encTransferFrom permit
+      const permit = await generateTransferFromPermit({
+        token: XFHE,
+        signer: bob,
+        owner: bob.address,
+        spender: alice.address,
+        valueHash: encTransferInput.ctHash,
+      });
+
+      // Success - Bob -> Alice
+
+      await prepExpectFHERC20BalancesChange(XFHE, bob.address);
+      await prepExpectFHERC20BalancesChange(XFHE, alice.address);
+
+      await expect(XFHE.connect(alice).encTransferFrom(bob.address, alice.address, encTransferInput, permit))
+        .to.emit(XFHE, "Transfer")
+        .withArgs(bob.address, alice.address, await tick(XFHE));
+
+      await expectFHERC20BalancesChange(
+        XFHE,
+        bob.address,
+        -1n * (await ticksToIndicated(XFHE, 1n)),
+        -1n * transferValueRaw,
+      );
+      await expectFHERC20BalancesChange(
+        XFHE,
+        alice.address,
+        1n * (await ticksToIndicated(XFHE, 1n)),
+        1n * transferValueRaw,
       );
     });
   });
