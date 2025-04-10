@@ -4,11 +4,11 @@
 pragma solidity ^0.8.25;
 
 import { IERC20, IERC20Metadata, ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable2Step.sol";
+import { EnumerableMap } from "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+import { Ownable, Ownable2Step } from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import { ConfidentialERC20 } from "./ConfidentialERC20.sol";
 import { ConfidentialETH } from "./ConfidentialETH.sol";
 import { IWETH } from "./interfaces/IWETH.sol";
-import { EnumerableMap } from "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
 contract RedactCore is Ownable2Step {
     using EnumerableMap for EnumerableMap.AddressToAddressMap;
