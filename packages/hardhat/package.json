@@ -17,7 +17,8 @@
     "hardhat-verify": "hardhat verify",
     "lint": "eslint --config ./.eslintrc.json --ignore-path ./.eslintignore ./*.ts ./deploy/**/*.ts ./scripts/**/*.ts ./test/**/*.ts",
     "lint-staged": "eslint --config ./.eslintrc.json --ignore-path ./.eslintignore",
-    "test": "REPORT_GAS=true hardhat test --network hardhat",
+    "test": "REPORT_GAS=false hardhat test --network hardhat",
+    "gas": "REPORT_GAS=true hardhat test --network hardhat",
     "verify": "hardhat etherscan-verify"
   },
   "dependencies": {
@@ -37,6 +38,7 @@
     "@nomicfoundation/hardhat-ethers": "~3.0.8",
     "@nomicfoundation/hardhat-network-helpers": "~1.0.11",
     "@nomicfoundation/hardhat-verify": "~2.0.10",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@typechain/ethers-v5": "~11.1.2",
     "@typechain/hardhat": "~9.1.0",
     "@types/eslint": "~8.56.12",
