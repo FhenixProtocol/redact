@@ -127,7 +127,7 @@ export const generateTransferFromPermit = async (
     owner,
     spender,
     value_hash: valueHash,
-    deadline: BigInt(Date.now()) + deadline,
+    deadline: deadline,
     v,
     r,
     s,
