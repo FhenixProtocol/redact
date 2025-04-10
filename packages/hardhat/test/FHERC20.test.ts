@@ -27,6 +27,8 @@ describe.only("FHERC20", function () {
     const [owner, bob, alice, eve] = await ethers.getSigners();
     const { XFHE } = await deployContracts();
 
+    await hre.cofhe.initializeWithHardhatSigner(owner);
+
     return { owner, bob, alice, eve, XFHE };
   }
 
@@ -353,6 +355,49 @@ describe.only("FHERC20", function () {
       await expectFHERC20BalancesChange(
         XFHE,
         alice.address,
+        1n * (await ticksToIndicated(XFHE, 1n)),
+        1n * transferValue,
+      );
+    });
+
+    it.only("Should transfer from bob to MockFherc20Vault", async function () {
+      const { XFHE, bob, alice, eve, encTransferInput, transferValue } = await setupEncTransferFromFixture();
+
+      const vaultFactory = await ethers.getContractFactory("MockFherc20Vault");
+      const Vault = await vaultFactory.deploy(XFHE.target);
+      await Vault.waitForDeployment();
+      const vaultAddress = await Vault.getAddress();
+
+      // Mint to vault (initialize indicator)
+      await XFHE.mint(vaultAddress, await ethers.parseEther("1"));
+
+      // Generate encTransferFrom permit
+      const permit = await generateTransferFromPermit({
+        token: XFHE,
+        signer: bob,
+        owner: bob.address,
+        spender: vaultAddress,
+        valueHash: encTransferInput.ctHash,
+      });
+
+      // Success - Bob -> Alice
+
+      await prepExpectFHERC20BalancesChange(XFHE, bob.address);
+      await prepExpectFHERC20BalancesChange(XFHE, vaultAddress);
+
+      await expect(Vault.connect(bob).deposit(encTransferInput, permit))
+        .to.emit(XFHE, "Transfer")
+        .withArgs(bob.address, vaultAddress, await tick(XFHE));
+
+      await expectFHERC20BalancesChange(
+        XFHE,
+        bob.address,
+        -1n * (await ticksToIndicated(XFHE, 1n)),
+        -1n * transferValue,
+      );
+      await expectFHERC20BalancesChange(
+        XFHE,
+        vaultAddress,
         1n * (await ticksToIndicated(XFHE, 1n)),
         1n * transferValue,
       );
