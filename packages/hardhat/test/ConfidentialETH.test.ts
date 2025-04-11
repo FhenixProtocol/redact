@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
-import { ConfidentialERC20, ConfidentialETH, ERC20_Harness, WETH_Harness } from "../typechain-types";
+import { ConfidentialETH, WETH_Harness } from "../typechain-types";
 import {
   expectERC20BalancesChange,
   expectFHERC20BalancesChange,
