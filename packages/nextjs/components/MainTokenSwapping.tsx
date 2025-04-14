@@ -23,6 +23,8 @@ import { erc20Abi, parseUnits } from "viem";
 import { ConfidentialERC20Abi } from "~~/lib/abis";
 import { Spinner } from "./ui/Spinner";
 import { useTokenBalance } from "~~/hooks/useTokenBalance";
+import { toast } from "react-hot-toast";
+
 type ActionType = "Encrypt" | "Decrypt";
 
 interface MainTokenSwappingProps {
@@ -36,6 +38,9 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
 
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(false);
+  
+  // Create a reusable variable for the loading state
+  const isProcessing = isEncrypting || isDecrypting;
 
   const {
     token,
@@ -77,79 +82,83 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
     console.log(depositValue);
     console.log(token);
     console.log(selectedTokenInfo);
-    if (selectedTokenInfo) {
-      setIsEncrypting(true);
-      const publicClient = getPublicClient(wagmiConfig)
-      const walletClient = await getWalletClient(wagmiConfig);
+    if (!selectedTokenInfo) {
+      console.log("No token selected");
+      //TODO: Change it when we have a better error handling
+      toast.error("No token selected");
+      return;
+    }
 
-      const allowance = await publicClient.readContract({
-        address: selectedTokenInfo.address as `0x${string}`,
-        abi: erc20Abi,
-        functionName: 'allowance',
-        args: [
-          address as `0x${string}`, 
-          selectedTokenInfo.confidentialAddress as `0x${string}`
-        ]
-      })
-      console.log(allowance);
+    setIsEncrypting(true);
+    const publicClient = getPublicClient(wagmiConfig)
+    const walletClient = await getWalletClient(wagmiConfig);
 
-      const amount = parseUnits(depositValue.toString(), selectedTokenInfo.decimals)
-      if (allowance < amount) {
-        console.log(`Not enough allowance for ${depositValue} ${selectedTokenInfo.symbol}`);
-        try {
-          const hash = await walletClient.writeContract({
-            address: selectedTokenInfo.address as `0x${string}`,
-            abi: erc20Abi,
-            functionName: 'approve',
-            args: [selectedTokenInfo.confidentialAddress, amount]
-          })
-          const receipt = await publicClient.waitForTransactionReceipt({ hash });
-          console.log("---- receipt ----");
-          console.log(receipt);
-          console.log("---- receipt ----");
-        } catch (error) {
-          console.log(error);
-          setIsEncrypting(false);
-          return;
-        }
-      }
+    const allowance = await publicClient.readContract({
+      address: selectedTokenInfo.address as `0x${string}`,
+      abi: erc20Abi,
+      functionName: 'allowance',
+      args: [
+        address as `0x${string}`, 
+        selectedTokenInfo.confidentialAddress as `0x${string}`
+      ]
+    })
+    console.log(allowance);
 
+    const amount = parseUnits(depositValue.toString(), selectedTokenInfo.decimals)
+    if (allowance < amount) {
+      console.log(`Not enough allowance for ${depositValue} ${selectedTokenInfo.symbol}`);
       try {
-        console.log(`Encrypting ${amount} ${selectedTokenInfo.symbol} for ${address}`);
         const hash = await walletClient.writeContract({
-          address: selectedTokenInfo.confidentialAddress as `0x${string}`,
-          abi: ConfidentialERC20Abi,
-          functionName: 'encrypt',
-          args: [address, amount]
+          address: selectedTokenInfo.address as `0x${string}`,
+          abi: erc20Abi,
+          functionName: 'approve',
+          args: [selectedTokenInfo.confidentialAddress, amount]
         })
-
-        console.log(hash);
-  
         const receipt = await publicClient.waitForTransactionReceipt({ hash });
         console.log("---- receipt ----");
         console.log(receipt);
         console.log("---- receipt ----");
-        console.log("Transaction successful, refreshing balance");
-        refreshBalance();
-
-      
       } catch (error) {
         console.log(error);
+        setIsEncrypting(false);
+        return;
       }
-
-      setIsEncrypting(false);
-
-
-
-      // writeContract({
-      //   address: selectedTokenInfo.address as `0x${string}`,
-      //   abi: erc20Abi,
-      //   functionName: 'approve',
-      //   args: [selectedTokenInfo.confidentialAddress as `0x${string}`, amount]
-      // });
-
     }
-  
+
+    try {
+      console.log(`Encrypting ${amount} ${selectedTokenInfo.symbol} for ${address}`);
+      const hash = await walletClient.writeContract({
+        address: selectedTokenInfo.confidentialAddress as `0x${string}`,
+        abi: ConfidentialERC20Abi,
+        functionName: 'encrypt',
+        args: [address, amount]
+      })
+
+      console.log(hash);
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      console.log("---- receipt ----");
+      console.log(receipt);
+      console.log("---- receipt ----");
+      console.log("Transaction successful, refreshing balance");
+      refreshBalance();
+
+    
+    } catch (error) {
+      console.log(error);
+    }
+
+    setIsEncrypting(false);
+
+
+
+    // writeContract({
+    //   address: selectedTokenInfo.address as `0x${string}`,
+    //   abi: erc20Abi,
+    //   functionName: 'approve',
+    //   args: [selectedTokenInfo.confidentialAddress as `0x${string}`, amount]
+    // });
+
   }
 
   const handleDecrypt = () => {
@@ -260,14 +269,14 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
                   step={1}
                   showMarkers={true}
                   showMaxButton={false}
-                  disabled={isEncrypting || isDecrypting}
+                  disabled={isProcessing}
                 />
               </div>
             </CardContent>
             <CardFooter className="flex justify-center">
-              <Button className="w-full" icon={ActionIcon} onClick={handleAction} disabled={isEncrypting || isDecrypting}>
-                {isEncrypting || isDecrypting ? "Please wait..." : selectedAction}
-                {isEncrypting || isDecrypting && <Spinner />}
+              <Button className="w-full" icon={ActionIcon} onClick={handleAction} disabled={isProcessing}>
+                {isProcessing ? "Please wait..." : selectedAction}
+                {isProcessing && <Spinner />}
               </Button>
             </CardFooter>
           </Card>

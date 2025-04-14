@@ -2,7 +2,7 @@ import { useReadContract } from 'wagmi'
 import { formatUnits, erc20Abi } from 'viem'
 import { Address } from 'viem'
 import { TokenListItem, useTokenStore} from '~~/services/store/tokenStore'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { getPublicClient } from '@wagmi/core'
 import { wagmiConfig } from '~~/services/web3/wagmiConfig'  // Adjust this import path as needed
 import { getTokenLogo } from '~~/lib/tokenUtils'
@@ -150,6 +150,8 @@ export function useAllTokenBalances(userAddress?: Address) {
   const { tokens } = useTokenStore();
   const [tokenBalances, setTokenBalances] = useState<TokenBalanceInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPrivateBalances, setIsLoadingPrivateBalances] = useState(true);
+  const initialFetchDone = useRef(false);
 
   // Function to fetch all balances
   const fetchBalances = async () => {
@@ -165,6 +167,7 @@ export function useAllTokenBalances(userAddress?: Address) {
       
       setTokenBalances(emptyBalances);
       setIsLoading(false);
+      setIsLoadingPrivateBalances(false);
       return;
     }
 
@@ -172,7 +175,8 @@ export function useAllTokenBalances(userAddress?: Address) {
     try {
       const publicClient = getPublicClient(wagmiConfig);
       
-      const balancePromises = tokens.map(async (token: TokenListItem) => {
+      // First fetch all public balances quickly
+      const publicBalancePromises = tokens.map(async (token: TokenListItem) => {
         // Get public balance from regular ERC20
         const publicBalanceData = await publicClient.readContract({
           address: token.address as Address,
@@ -181,56 +185,84 @@ export function useAllTokenBalances(userAddress?: Address) {
           args: [userAddress]
         });
 
-        // Get private balance from confidential contract
-        let privateBalance = BigInt(0);
-        if (token.confidentialAddress) {
-          try {
-            // Read private balance from the confidential contract
-            const privateBalanceData = await publicClient.readContract({
-              address: token.confidentialAddress as Address,
-              abi: ConfidentialERC20Abi, // Make sure this ABI has the right function
-              functionName: 'encBalanceOf', // Or whatever function returns private balance
-              args: [userAddress]
-            });
-            const encryptedData = privateBalanceData as bigint || BigInt(0);
-            console.log("Unsealing data...");
-            const unsealedData = await cofhejs.unseal(encryptedData, FheTypes.Uint128) as any;
-            console.log("Unsealed data:", unsealedData);
-            if (unsealedData.data) {
-              privateBalance = BigInt(unsealedData.data);
-            }
-          } catch (error) {
-            console.error(`Error fetching private balance for ${token.symbol}:`, error);
-          }
-        }
-
         return {
           symbol: token.symbol,
           publicBalance: formatUnits(publicBalanceData || BigInt(0), token.decimals),
-          privateBalance: formatUnits(privateBalance, token.decimals),
+          privateBalance: '0', // Will be updated later
           logo: getTokenLogo(token.symbol, token.image),
           isCustom: token.isCustom || false,
           address: token.address
         };
       });
 
-      const balances = await Promise.all(balancePromises);
-      setTokenBalances(balances);
+      // Set public balances first so UI can show them immediately
+      const publicBalances = await Promise.all(publicBalancePromises);
+      setTokenBalances(publicBalances);
+      setIsLoading(false);
+      
+      // Then fetch private balances in the background
+      setIsLoadingPrivateBalances(true);
+      
+      // Create a map of current balances for easy updating
+      const balancesMap = new Map(publicBalances.map(balance => [balance.address, balance]));
+      
+      // Process private balances one by one to avoid overwhelming the system
+      for (const token of tokens) {
+        if (token.confidentialAddress) {
+          try {
+            // Read private balance from the confidential contract
+            const privateBalanceData = await publicClient.readContract({
+              address: token.confidentialAddress as Address,
+              abi: ConfidentialERC20Abi,
+              functionName: 'encBalanceOf',
+              args: [userAddress]
+            }) as bigint;
+
+            if (privateBalanceData > BigInt(0)) {
+              const encryptedData = privateBalanceData as bigint || BigInt(0);
+              console.log("Unsealing data...");
+              const unsealedData = await cofhejs.unseal(encryptedData, FheTypes.Uint128) as any;
+              console.log("Unsealed data:", unsealedData);
+              if (unsealedData.data) {
+                const privateBalance = formatUnits(BigInt(unsealedData.data), token.decimals);
+                const currentBalance = balancesMap.get(token.address);
+                
+                if (currentBalance) {
+                  const updatedBalance = {...currentBalance, privateBalance};
+                  balancesMap.set(token.address, updatedBalance);
+                  
+                  // Update the state with the latest balances
+                  setTokenBalances(Array.from(balancesMap.values()));
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Error fetching private balance for ${token.symbol}:`, error);
+          }
+        }
+      }
+      
+      setIsLoadingPrivateBalances(false);
     } catch (error) {
       console.error('Error fetching balances:', error);
-    } finally {
       setIsLoading(false);
+      setIsLoadingPrivateBalances(false);
     }
   };
 
   // Initial fetch
   useEffect(() => {
-    fetchBalances();
+    if (!initialFetchDone.current && tokens && tokens.length > 0 && userAddress) {
+      console.log("Fetching balances...");
+      fetchBalances();
+      initialFetchDone.current = true;
+    }
   }, [tokens, userAddress]);
 
   return {
     tokenBalances,
     isLoading,
+    isLoadingPrivateBalances,
     refreshBalances: fetchBalances
   };
 } 
