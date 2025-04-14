@@ -9,10 +9,13 @@ import { getTokenLogo } from '~~/lib/tokenUtils'
 import { ConfidentialERC20Abi, RedactCoreAbi } from '~~/lib/abis'
 import { REDACT_CORE_ADDRESS } from '~~/lib/common'
 import { cofhejs, FheAllUTypes, FheTypes } from 'cofhejs/web'
+import { useCofhe } from "~~/hooks/useCofhe"
+
 interface UseTokenBalanceProps {
   tokenAddress?: string;  // Make it optional
   userAddress?: Address;
-  decimals?: number;
+  decimals: number;
+  isPrivate?: boolean;  // Add isPrivate parameter
 }
 
 export interface TokenBalanceInfo {
@@ -31,8 +34,21 @@ export interface TokenDetails {
   address: Address
 }
 
-export function useTokenBalance({ tokenAddress, userAddress, decimals = 18 }: UseTokenBalanceProps) {
+export function useTokenBalance({ tokenAddress, userAddress, decimals, isPrivate = false }: UseTokenBalanceProps) {
+  const [privateBalance, setPrivateBalance] = useState<string>('0');
+  const [isLoadingPrivate, setIsLoadingPrivate] = useState(false);
+  const { tokens } = useTokenStore();
+  const isMounted = useRef(true);
+  const { isInitialized } = useCofhe();
   
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+  
+
   if (!tokenAddress) {
     return {
       balance: '0',
@@ -42,26 +58,88 @@ export function useTokenBalance({ tokenAddress, userAddress, decimals = 18 }: Us
     }
   }
   
+  // For public balance
   const { data: balance, isError, isLoading, refetch } = useReadContract({
     address: tokenAddress,
     abi: erc20Abi,
     functionName: 'balanceOf',
     args: [userAddress as Address],
-    //enabled: Boolean(tokenAddress && userAddress),
-  })
+  });
+
+  // Function to fetch private balance
+  const fetchPrivateBalance = async () => {
+    if (!tokenAddress || !userAddress || !isMounted.current || !isInitialized) {
+      console.log("Cannot fetch private balance - conditions not met:", {
+        tokenAddress: !!tokenAddress,
+        userAddress: !!userAddress,
+        isMounted: isMounted.current,
+        isInitialized
+      });
+      return;
+    }
+    
+    setIsLoadingPrivate(true);
+    try {
+      const selectedToken = tokens.find(t => t.address === tokenAddress);
+      
+      if (!selectedToken?.confidentialAddress) {
+        if (isMounted.current) setPrivateBalance('0');
+        return;
+      }
+      
+      const publicClient = getPublicClient(wagmiConfig);
+      
+      const privateBalanceData = await publicClient.readContract({
+        address: selectedToken.confidentialAddress as Address,
+        abi: ConfidentialERC20Abi,
+        functionName: 'encBalanceOf',
+        args: [userAddress]
+      }) as bigint;
+
+      if (privateBalanceData > BigInt(0)) {
+        const encryptedData = privateBalanceData as bigint || BigInt(0);
+        const unsealedData = await cofhejs.unseal(encryptedData, FheTypes.Uint128) as any;
+        
+        if (unsealedData.data && isMounted.current) {
+          const formattedBalance = formatUnits(BigInt(unsealedData.data), decimals);
+          setPrivateBalance(formattedBalance);
+        }
+      } else {
+        if (isMounted.current) setPrivateBalance('0');
+      }
+    } catch (error) {
+      if (isMounted.current) setPrivateBalance('0');
+    } finally {
+      if (isMounted.current) setIsLoadingPrivate(false);
+    }
+  };
+
+  // Fetch private balance when needed and cofhejs is initialized
+  useEffect(() => {
+    if (isPrivate && tokenAddress && userAddress && isInitialized) {
+      console.log("Fetching private balance - cofhejs is initialized");
+      fetchPrivateBalance();
+    }
+  }, [isPrivate, tokenAddress, userAddress, decimals, isInitialized]);
 
   // Function to refresh balances
   const refreshBalance = async () => {
-    console.log("Refreshing balance for token:", tokenAddress);
+    if (isPrivate) {
+      await fetchPrivateBalance();
+      return;
+    }
     return await refetch();
   };
 
-  return {
-    balance: balance ? formatUnits(balance, decimals) : '0',
-    isError,
-    isLoading,
+  // Create the return value
+  const returnValue = {
+    balance: isPrivate ? privateBalance : (balance ? formatUnits(balance, decimals) : '0'),
+    isError: isPrivate ? false : isError,
+    isLoading: isPrivate ? isLoadingPrivate : isLoading,
     refreshBalance
-  }
+  };
+
+  return returnValue;
 }
 
 export async function confidentialTokenExists(erc20Address: Address) : Promise<boolean> {

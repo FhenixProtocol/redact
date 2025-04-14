@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "~~/components/ui/Button";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { FnxSelect } from "~~/components/ui/FnxSelect";
@@ -47,17 +47,24 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
     setToken,
     sliderValue,
     depositValue,
+    withdrawValue,
     selectedTokenBalance,
-    processedTokens,
+    selectedPrivateTokenBalance,
+    isLoadingPrivateBalance,
     selectedTokenInfo,
+    processedTokens,
     handleSliderChange,
-    handleDepositChange
+    handleDepositChange,
+    handleWithdrawChange
   } = useTokenSelector();
+
 
   // Get the token balance and refresh function at the component level
   const { balance: tokenBalance, refreshBalance } = useTokenBalance({
     tokenAddress: selectedTokenInfo?.address || "",
-    userAddress: address
+    userAddress: address,
+    decimals: selectedTokenInfo?.decimals || 18,
+    isPrivate: selectedAction === "Decrypt"
   });
 
   const availableActions: Record<ActionType, { icon: React.ComponentType<{ size?: number }> }> = {
@@ -66,7 +73,6 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
   };
 
   const ActionIcon = availableActions[selectedAction as ActionType].icon;
-
 
   // TODO: Move to other file
   const handleAction = () => {
@@ -161,9 +167,44 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
 
   }
 
-  const handleDecrypt = () => {
+  const handleDecrypt = async () => {
     setIsDecrypting(true);
     console.log("Decrypt");
+    
+    if (!selectedTokenInfo) {
+      console.log("No token selected");
+      toast.error("No token selected");
+      setIsDecrypting(false);
+      return;
+    }
+
+    try {
+      console.log(`Decrypting ${withdrawValue} ${selectedTokenInfo.symbol} for ${address}`);
+      const publicClient = getPublicClient(wagmiConfig);
+      const walletClient = await getWalletClient(wagmiConfig);
+      
+      const amount = parseUnits(withdrawValue.toString(), selectedTokenInfo.decimals);
+      
+      const hash = await walletClient.writeContract({
+        address: selectedTokenInfo.confidentialAddress as `0x${string}`,
+        abi: ConfidentialERC20Abi,
+        functionName: 'decrypt',
+        args: [address, amount]
+      });
+
+      console.log(hash);
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      console.log("---- receipt ----");
+      console.log(receipt);
+      console.log("---- receipt ----");
+      console.log("Transaction successful, refreshing balance");
+      refreshBalance();
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to decrypt tokens");
+    }
+
     setIsDecrypting(false);
   }
 
@@ -209,12 +250,18 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
 
                 <div className="mb-5 w-full flex content-stretch rounded-2xl border border-[#3399FF] p-4">
                   <div className="flex flex-col items-start flex-1">
-                    <div className="text-sm text-[#336699] font-semibold">You Deposit</div>
+                    <div className="text-sm text-[#336699] font-semibold">
+                      {selectedAction === "Encrypt" ? "You Deposit" : "You Withdraw"}
+                    </div>
                     <input
                       type="number"
-                      value={depositValue}
-                      onChange={(e) => handleDepositChange(e.target.value)}
-                      className="w-20 text-lg text-primary-accent font-bold outline-none no-spinner"
+                      value={selectedAction === "Encrypt" ? depositValue : withdrawValue}
+                      onChange={(e) => 
+                        selectedAction === "Encrypt" 
+                          ? handleDepositChange(e.target.value) 
+                          : handleWithdrawChange(e.target.value)
+                      }
+                      className="w-30 text-lg text-primary-accent font-bold outline-none no-spinner"
                     />
                     <div className="text-xs text-[#336699]">$ Fiat amount</div>
                   </div>
@@ -244,14 +291,21 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
                     />
                     <div className="flex justify-between items-center w-full">
                       <div className="text-xs text-[#336699]">
-                        Balance: {selectedTokenBalance}
+                        Balance: {
+                          selectedAction === "Encrypt" 
+                            ? selectedTokenBalance
+                            : isLoadingPrivateBalance
+                              ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0px' }}>Loading...</span>
+                              : selectedPrivateTokenBalance
+                        }
                       </div>
                       <Button
-                        onClick={() => handleSliderChange(100)}
+                        onClick={() => handleSliderChange(100, selectedAction === "Decrypt")}
                         uppercase={true}
                         noOutline={true}
-                        className="py-[1px]"
-                        size="xs">
+                        className="py-[1px] ml-1"
+                        size="xs"
+                        disabled={selectedAction === "Decrypt" && isLoadingPrivateBalance}>
                         Max
                       </Button>
                     </div>
@@ -262,21 +316,30 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
                   value={sliderValue}
                   onValueChange={(val) => {
                     if (val[0] !== undefined) {
-                      handleSliderChange(val[0]);
+                      handleSliderChange(val[0], selectedAction === "Decrypt");
                     }
                   }}
                   max={100}
                   step={1}
                   showMarkers={true}
                   showMaxButton={false}
-                  disabled={isProcessing}
+                  disabled={isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)}
                 />
               </div>
             </CardContent>
             <CardFooter className="flex justify-center">
-              <Button className="w-full" icon={ActionIcon} onClick={handleAction} disabled={isProcessing}>
-                {isProcessing ? "Please wait..." : selectedAction}
-                {isProcessing && <Spinner />}
+              <Button 
+                className="w-full" 
+                icon={ActionIcon} 
+                onClick={handleAction} 
+                disabled={isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)}>
+                {isProcessing 
+                  ? "Please wait..." 
+                  : (selectedAction === "Decrypt" && isLoadingPrivateBalance) 
+                    ? "Loading balance..." 
+                    : selectedAction
+                }
+                {(isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)) && <Spinner />}
               </Button>
             </CardFooter>
           </Card>
