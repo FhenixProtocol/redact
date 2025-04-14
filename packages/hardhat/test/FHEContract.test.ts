@@ -29,7 +29,7 @@ describe("FHEContract", function () {
       const targetValue = 10n;
 
       // Encrypt target value, and pass it to the contract
-      const encryptedInputResult = await cofhejs.encrypt(nullLogState, [Encryptable.uint32(targetValue)] as const);
+      const encryptedInputResult = await cofhejs.encrypt([Encryptable.uint32(targetValue)] as const);
       const [inputValue] = await hre.cofhe.expectResultSuccess(encryptedInputResult);
       await fheContract.setVal(inputValue);
 
@@ -52,7 +52,7 @@ describe("FHEContract", function () {
       const operandValue = 2n;
 
       // Encrypt target value, and pass it to the contract
-      const encryptedInputResult = await cofhejs.encrypt(nullLogState, [
+      const encryptedInputResult = await cofhejs.encrypt([
         Encryptable.uint32(targetValue),
         Encryptable.uint32(operandValue),
       ] as const);

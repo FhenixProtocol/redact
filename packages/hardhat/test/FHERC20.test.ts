@@ -232,7 +232,7 @@ describe("FHERC20", function () {
 
       // Encrypt transfer value
       const transferValueRaw = ethers.parseEther("1");
-      const encTransferResult = await cofhejs.encrypt(nullLogState, [Encryptable.uint128(transferValueRaw)] as const);
+      const encTransferResult = await cofhejs.encrypt([Encryptable.uint128(transferValueRaw)] as const);
       const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
 
       // encTransfer
@@ -263,7 +263,7 @@ describe("FHERC20", function () {
 
       // Encrypt transfer value
       const transferValueRaw = ethers.parseEther("1");
-      const encTransferResult = await cofhejs.encrypt(nullLogState, [Encryptable.uint128(transferValueRaw)] as const);
+      const encTransferResult = await cofhejs.encrypt([Encryptable.uint128(transferValueRaw)] as const);
       const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
 
       // encTransfer (reverts)
@@ -284,7 +284,7 @@ describe("FHERC20", function () {
 
       // Encrypt transfer value
       const transferValue = ethers.parseEther("1");
-      const encTransferResult = await cofhejs.encrypt(nullLogState, [Encryptable.uint128(transferValue)] as const);
+      const encTransferResult = await cofhejs.encrypt([Encryptable.uint128(transferValue)] as const);
       const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
 
       return { XFHE, bob, alice, eve, encTransferInput, transferValue };
