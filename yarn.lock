@@ -3666,6 +3666,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nomicfoundation/hardhat-toolbox@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@nomicfoundation/hardhat-toolbox@npm:5.0.0"
+  peerDependencies:
+    "@nomicfoundation/hardhat-chai-matchers": ^2.0.0
+    "@nomicfoundation/hardhat-ethers": ^3.0.0
+    "@nomicfoundation/hardhat-ignition-ethers": ^0.15.0
+    "@nomicfoundation/hardhat-network-helpers": ^1.0.0
+    "@nomicfoundation/hardhat-verify": ^2.0.0
+    "@typechain/ethers-v6": ^0.5.0
+    "@typechain/hardhat": ^9.0.0
+    "@types/chai": ^4.2.0
+    "@types/mocha": ">=9.1.0"
+    "@types/node": ">=18.0.0"
+    chai: ^4.2.0
+    ethers: ^6.4.0
+    hardhat: ^2.11.0
+    hardhat-gas-reporter: ^1.0.8
+    solidity-coverage: ^0.8.1
+    ts-node: ">=8.0.0"
+    typechain: ^8.3.0
+    typescript: ">=4.5.0"
+  checksum: 18890eaf1cc130afb7dc83ea48cb6ef23c499eb5d28c3fbb36e706082383a320118ee6d4491ede64acf684d2f1ffa117cf84ad80d8ebde9fa52a443f8780a898
+  languageName: node
+  linkType: hard
+
 "@nomicfoundation/hardhat-verify@npm:~2.0.10":
   version: 2.0.13
   resolution: "@nomicfoundation/hardhat-verify@npm:2.0.13"
@@ -4031,17 +4057,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts@npm:^5.0.0":
+"@openzeppelin/contracts@npm:^5.0.0, @openzeppelin/contracts@npm:^5.2.0":
   version: 5.3.0
   resolution: "@openzeppelin/contracts@npm:5.3.0"
   checksum: 1d1629c42d170e070c112779c33b3b81c133995695271bc62a696160b598b56455a3c56d1f976a42ee3dd426c4ad984451b1752139f2b7897c9e1ba56c1947da
-  languageName: node
-  linkType: hard
-
-"@openzeppelin/contracts@npm:~5.0.2":
-  version: 5.0.2
-  resolution: "@openzeppelin/contracts@npm:5.0.2"
-  checksum: 0cce6fc284bd1d89e2a447027832a62f1356b44ee31088899453e10349a63a62df2f07da63d76e4c41aad9c86b96b650b2b6fc85439ef276850dda1170a047fd
   languageName: node
   linkType: hard
 
@@ -4972,11 +4991,13 @@ __metadata:
     "@nomicfoundation/hardhat-chai-matchers": ~2.0.7
     "@nomicfoundation/hardhat-ethers": ~3.0.8
     "@nomicfoundation/hardhat-network-helpers": ~1.0.11
+    "@nomicfoundation/hardhat-toolbox": ^5.0.0
     "@nomicfoundation/hardhat-verify": ~2.0.10
-    "@openzeppelin/contracts": ~5.0.2
+    "@openzeppelin/contracts": ^5.2.0
     "@typechain/ethers-v5": ~11.1.2
     "@typechain/ethers-v6": ~0.5.1
     "@typechain/hardhat": ~9.1.0
+    "@types/chai": ^4.2.0
     "@types/eslint": ~8.56.12
     "@types/mocha": ~10.0.8
     "@types/prettier": ~3.0.0
@@ -4984,8 +5005,8 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ~8.8.1
     "@typescript-eslint/parser": ~8.8.1
     chai: ~4.5.0
-    cofhe-hardhat-plugin: ^0.2.1-alpha.0
-    cofhejs: ^0.2.0
+    cofhe-hardhat-plugin: ^0.2.1-alpha.1
+    cofhejs: ^0.2.1-alpha.0
     dotenv: ~16.4.5
     envfile: ~7.1.0
     eslint: ~8.57.1
@@ -5035,7 +5056,7 @@ __metadata:
     blo: ~1.2.0
     burner-connector: 0.0.9
     class-variance-authority: ^0.7.1
-    cofhejs: ^0.2.0
+    cofhejs: ^0.2.1-alpha.0
     daisyui: 4.12.10
     eslint: ~8.57.1
     eslint-config-next: 15.2.2
@@ -6357,6 +6378,13 @@ __metadata:
   dependencies:
     "@types/deep-eql": "*"
   checksum: 53d813cbca3755c025381ad4ac8b51b17897df90316350247f9527bdba3adb48b3b1315308fbd717d9013d8e60375c0ab4bd004dc72330133486ff5db4cb0b2c
+  languageName: node
+  linkType: hard
+
+"@types/chai@npm:^4.2.0":
+  version: 4.3.20
+  resolution: "@types/chai@npm:4.3.20"
+  checksum: 7c5b0c9148f1a844a8d16cb1e16c64f2e7749cab2b8284155b9e494a6b34054846e22fb2b38df6b290f9bf57e6beebb2e121940c5896bc086ad7bab7ed429f06
   languageName: node
   linkType: hard
 
@@ -9204,9 +9232,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cofhe-hardhat-plugin@npm:^0.2.1-alpha.0":
-  version: 0.2.1-alpha.0
-  resolution: "cofhe-hardhat-plugin@npm:0.2.1-alpha.0"
+"cofhe-hardhat-plugin@npm:^0.2.1-alpha.1":
+  version: 0.2.1-alpha.1
+  resolution: "cofhe-hardhat-plugin@npm:0.2.1-alpha.1"
   dependencies:
     "@fhenixprotocol/cofhe-contracts": 0.0.13
     "@fhenixprotocol/cofhe-mock-contracts": ^0.2.1-alpha.0
@@ -9217,16 +9245,16 @@ __metadata:
     fast-glob: ^3.3.2
   peerDependencies:
     "@nomicfoundation/hardhat-ethers": ^3.0.5
-    cofhejs: ^0.2.0
+    cofhejs: ^0.2.1-alpha.0
     ethers: ^6.10.0
     hardhat: ^2.11.0
-  checksum: 7cfb745d9e3939d5c8adc3aec6a0e5a27c39069eab63868f9b5563b229099661d5f34084c04c84e700211daaa00cb53199e1e9bb24b6e3de33a824d8b53ccbaf
+  checksum: 03b52498fb930b99a876a51dd8fcc1dad0ff8ab96eab689b9ec05c3cca4a1bcacc099956643974662814997e1b4b84197ff8764c2efb2e1f1026ebc6e7097417
   languageName: node
   linkType: hard
 
-"cofhejs@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "cofhejs@npm:0.2.0"
+"cofhejs@npm:^0.2.1-alpha.0":
+  version: 0.2.1-alpha.0
+  resolution: "cofhejs@npm:0.2.1-alpha.0"
   dependencies:
     "@types/node": ^20.0.0
     idb-keyval: ^6.2.1
@@ -9238,7 +9266,7 @@ __metadata:
     type-fest: ^4.26.1
     zod: ^3.23.8
     zustand: ^5.0.1
-  checksum: 893d93317453b7d9ff11cd149bbe45f93b95a107b52e6ebdd54e2ef584127fc5a2363c77de0b1240ebd7eb060bd7d9d4e4142398b6e81c8c27b9b95e4a34e1e4
+  checksum: c7043703523b99902013f95cb5ca49227e186b3e95111ef27c9e531a326c22ddd694f7a83cc713af8b1e362889e6a827632f8b20c26843575517fe7f4a3d8206
   languageName: node
   linkType: hard
 
