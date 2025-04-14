@@ -2,15 +2,17 @@ import { useReadContract } from 'wagmi'
 import { formatUnits, erc20Abi } from 'viem'
 import { Address } from 'viem'
 import { TokenListItem, useTokenStore} from '~~/services/store/tokenStore'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { getPublicClient } from '@wagmi/core'
 import { wagmiConfig } from '~~/services/web3/wagmiConfig'  // Adjust this import path as needed
 import { getTokenLogo } from '~~/lib/tokenUtils'
-
+import { ConfidentialERC20Abi, RedactCoreAbi } from '~~/lib/abis'
+import { REDACT_CORE_ADDRESS } from '~~/lib/common'
+import { cofhejs, FheAllUTypes, FheTypes } from 'cofhejs/web'
 interface UseTokenBalanceProps {
-  tokenAddress: Address
-  userAddress?: Address
-  decimals?: number
+  tokenAddress?: string;  // Make it optional
+  userAddress?: Address;
+  decimals?: number;
 }
 
 export interface TokenBalanceInfo {
@@ -30,6 +32,16 @@ export interface TokenDetails {
 }
 
 export function useTokenBalance({ tokenAddress, userAddress, decimals = 18 }: UseTokenBalanceProps) {
+  
+  if (!tokenAddress) {
+    return {
+      balance: '0',
+      isError: true,
+      isLoading: false,
+      refreshBalance: () => Promise.resolve() 
+    }
+  }
+  
   const { data: balance, isError, isLoading, refetch } = useReadContract({
     address: tokenAddress,
     abi: erc20Abi,
@@ -38,47 +50,34 @@ export function useTokenBalance({ tokenAddress, userAddress, decimals = 18 }: Us
     //enabled: Boolean(tokenAddress && userAddress),
   })
 
+  // Function to refresh balances
+  const refreshBalance = async () => {
+    console.log("Refreshing balance for token:", tokenAddress);
+    return await refetch();
+  };
+
   return {
     balance: balance ? formatUnits(balance, decimals) : '0',
     isError,
     isLoading,
-    refetch
+    refreshBalance
   }
 }
 
-export async function confidentialTokenExists(erc20Address: Address, fakeResult: boolean = false) : Promise<boolean> {
-  console.log("confidentialTokenExists", erc20Address);
-  return fakeResult;
-  // // TODO: Replace with real information
-  // const REDACT_CORE_ADDRESS = "0x0000000000000000000000000000000000000000"
-  // const REDACT_CORE_ABI = [
-  //   {
-  //     inputs: [],
-  //     name: "getFherc20",
-  //     outputs: [
-  //       {
-  //         internalType: "address",
-  //         name: "",
-  //         type: "address"
-  //       }
-  //     ],
-  //     stateMutability: "view",      
-  //   }
-  // ]
-
-  // const publicClient = getPublicClient(config)
-  // const data = await publicClient.readContract({
-  //   address: REDACT_CORE_ADDRESS,
-  //   abi: REDACT_CORE_ABI,
-  //   functionName: 'getFherc20',
-  //   args: [erc20Address]
-  // })
+export async function confidentialTokenExists(erc20Address: Address) : Promise<boolean> {
+  const publicClient = getPublicClient(wagmiConfig)
+  const data = await publicClient.readContract({
+    address: REDACT_CORE_ADDRESS,
+    abi: RedactCoreAbi,
+    functionName: 'getFherc20',
+    args: [erc20Address]
+  })
   
-  // // Check if the returned address is not the zero address
-  // if (data) {
-  //   return data !== "0x0000000000000000000000000000000000000000";
-  // }
-  // return false;
+  // Check if the returned address is not the zero address
+  if (data) {
+    return data !== "0x0000000000000000000000000000000000000000";
+  }
+  return false;
 }
 
 export function useTokenDetails() {
@@ -148,11 +147,14 @@ export function useTokenDetails() {
 }
 
 export function useAllTokenBalances(userAddress?: Address) {
-  const { tokens } = useTokenStore()
-  const [tokenBalances, setTokenBalances] = useState<TokenBalanceInfo[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { tokens } = useTokenStore();
+  const [tokenBalances, setTokenBalances] = useState<TokenBalanceInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPrivateBalances, setIsLoadingPrivateBalances] = useState(true);
+  const initialFetchDone = useRef(false);
 
-  useEffect(() => {
+  // Function to fetch all balances
+  const fetchBalances = async () => {
     if (!tokens || !userAddress) {
       const emptyBalances = tokens?.map((token: TokenListItem) => ({
         symbol: token.symbol,
@@ -163,48 +165,104 @@ export function useAllTokenBalances(userAddress?: Address) {
         address: token.address
       })) || [];
       
-      setTokenBalances(emptyBalances)
-      setIsLoading(false)
-      return
+      setTokenBalances(emptyBalances);
+      setIsLoading(false);
+      setIsLoadingPrivateBalances(false);
+      return;
     }
 
-    const fetchBalances = async () => {
-      setIsLoading(true)
-      try {
-        const publicClient = getPublicClient(wagmiConfig)
-        
-        const balancePromises = tokens.map(async (token: TokenListItem) => {
-          const data = await publicClient.readContract({
-            address: token.address as Address,
-            abi: erc20Abi,
-            functionName: 'balanceOf',
-            args: [userAddress]
-          })
+    setIsLoading(true);
+    try {
+      const publicClient = getPublicClient(wagmiConfig);
+      
+      // First fetch all public balances quickly
+      const publicBalancePromises = tokens.map(async (token: TokenListItem) => {
+        // Get public balance from regular ERC20
+        const publicBalanceData = await publicClient.readContract({
+          address: token.address as Address,
+          abi: erc20Abi,
+          functionName: 'balanceOf',
+          args: [userAddress]
+        });
 
-          return {
-            symbol: token.symbol,
-            publicBalance: formatUnits(data || BigInt(0), token.decimals),
-            privateBalance: '0',
-            logo: getTokenLogo(token.symbol, token.image),
-            isCustom: token.isCustom || false,
-            address: token.address
+        return {
+          symbol: token.symbol,
+          publicBalance: formatUnits(publicBalanceData || BigInt(0), token.decimals),
+          privateBalance: '0', // Will be updated later
+          logo: getTokenLogo(token.symbol, token.image),
+          isCustom: token.isCustom || false,
+          address: token.address
+        };
+      });
+
+      // Set public balances first so UI can show them immediately
+      const publicBalances = await Promise.all(publicBalancePromises);
+      setTokenBalances(publicBalances);
+      setIsLoading(false);
+      
+      // Then fetch private balances in the background
+      setIsLoadingPrivateBalances(true);
+      
+      // Create a map of current balances for easy updating
+      const balancesMap = new Map(publicBalances.map(balance => [balance.address, balance]));
+      
+      // Process private balances one by one to avoid overwhelming the system
+      for (const token of tokens) {
+        if (token.confidentialAddress) {
+          try {
+            // Read private balance from the confidential contract
+            const privateBalanceData = await publicClient.readContract({
+              address: token.confidentialAddress as Address,
+              abi: ConfidentialERC20Abi,
+              functionName: 'encBalanceOf',
+              args: [userAddress]
+            }) as bigint;
+
+            if (privateBalanceData > BigInt(0)) {
+              const encryptedData = privateBalanceData as bigint || BigInt(0);
+              console.log("Unsealing data...");
+              const unsealedData = await cofhejs.unseal(encryptedData, FheTypes.Uint128) as any;
+              console.log("Unsealed data:", unsealedData);
+              if (unsealedData.data) {
+                const privateBalance = formatUnits(BigInt(unsealedData.data), token.decimals);
+                const currentBalance = balancesMap.get(token.address);
+                
+                if (currentBalance) {
+                  const updatedBalance = {...currentBalance, privateBalance};
+                  balancesMap.set(token.address, updatedBalance);
+                  
+                  // Update the state with the latest balances
+                  setTokenBalances(Array.from(balancesMap.values()));
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Error fetching private balance for ${token.symbol}:`, error);
           }
-        })
-
-        const balances = await Promise.all(balancePromises)
-        setTokenBalances(balances)
-      } catch (error) {
-        console.error('Error fetching balances:', error)
-      } finally {
-        setIsLoading(false)
+        }
       }
+      
+      setIsLoadingPrivateBalances(false);
+    } catch (error) {
+      console.error('Error fetching balances:', error);
+      setIsLoading(false);
+      setIsLoadingPrivateBalances(false);
     }
+  };
 
-    fetchBalances()
-  }, [tokens, userAddress])
+  // Initial fetch
+  useEffect(() => {
+    if (!initialFetchDone.current && tokens && tokens.length > 0 && userAddress) {
+      console.log("Fetching balances...");
+      fetchBalances();
+      initialFetchDone.current = true;
+    }
+  }, [tokens, userAddress]);
 
   return {
     tokenBalances,
-    isLoading
-  }
+    isLoading,
+    isLoadingPrivateBalances,
+    refreshBalances: fetchBalances
+  };
 } 
