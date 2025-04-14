@@ -194,7 +194,7 @@ export function useAllTokenBalances(userAddress?: Address) {
             });
             const encryptedData = privateBalanceData as bigint || BigInt(0);
             console.log("Unsealing data...");
-            const unsealedData = await cofhejs.unseal(encryptedData, FheTypes.Int128) as any;
+            const unsealedData = await cofhejs.unseal(encryptedData, FheTypes.Uint128) as any;
             console.log("Unsealed data:", unsealedData);
             if (unsealedData.data) {
               privateBalance = BigInt(unsealedData.data);
