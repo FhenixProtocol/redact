@@ -1,7 +1,8 @@
 import React from "react";
 import { PermitsPage } from "./PermitsPage";
-import { AddModeratorOutlined, DescriptionOutlined } from "@mui/icons-material";
+import { AddModeratorOutlined, DescriptionOutlined, LogoutOutlined } from "@mui/icons-material";
 import { Moon, Sun } from "lucide-react";
+import { useDisconnect } from "wagmi";
 import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
 import { Switcher } from "~~/components/ui/Switcher";
@@ -9,6 +10,7 @@ import { useTheme } from "~~/hooks/useTheme";
 
 export function SettingsPage({ pushPage }: DrawerChildProps) {
   const { theme, setTheme } = useTheme();
+  const { disconnectAsync } = useDisconnect();
 
   const handleThemeChange = (value: number) => {
     const newTheme = value === 0 ? "light" : "dark";
@@ -16,7 +18,7 @@ export function SettingsPage({ pushPage }: DrawerChildProps) {
   };
 
   return (
-    <div className="p-4 flex flex-col gap-4">
+    <div className="p-4 pb-0 flex flex-col gap-4 h-full">
       <Button
         size="md"
         iconSize="lg"
@@ -46,6 +48,10 @@ export function SettingsPage({ pushPage }: DrawerChildProps) {
         onValueChange={handleThemeChange}
         className=""
       />
+      <div className="flex justify-between flex-1"></div>
+      <Button size="md" iconSize="lg" variant="surface" icon={LogoutOutlined} onClick={() => disconnectAsync()}>
+        Disconnect Wallet
+      </Button>
     </div>
   );
 }
