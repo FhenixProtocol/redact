@@ -136,6 +136,12 @@ export function useTokenBalance({ tokenAddress, userAddress, decimals, isPrivate
     return await refetch();
   };
 
+  return {
+    balance: balance ? formatUnits(balance, decimals) : "0",
+    isError,
+    isLoading,
+    refreshBalance,
+  };
   // Create the return value
   const returnValue = {
     balance: isPrivate ? privateBalance : balance ? formatUnits(balance, decimals) : "0",
@@ -337,6 +343,7 @@ export function useAllTokenBalances(userAddress?: Address) {
       fetchBalances();
       initialFetchDone.current = true;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokens, userAddress]);
 
   return {

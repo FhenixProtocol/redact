@@ -120,9 +120,9 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, initialPages, classNam
           )}
         </AnimatePresence>
       </div>
-      <div className="p-4">
-        <p className="text-sm text-gray-600">
-          {currentPage?.id !== "settings-page" ? (
+      {currentPage?.id !== "settings-page" && (
+        <div className="p-4">
+          <p className="text-sm text-gray-600">
             <Settings
               className="cursor-pointer"
               onClick={() => {
@@ -133,9 +133,9 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, initialPages, classNam
                 });
               }}
             />
-          ) : null}
-        </p>
-      </div>
+          </p>
+        </div>
+      )}
     </div>
   );
 };
