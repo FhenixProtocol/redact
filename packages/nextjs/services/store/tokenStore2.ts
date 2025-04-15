@@ -7,7 +7,7 @@ import { immer } from "zustand/middleware/immer";
 import { RedactCoreAbi } from "~~/lib/abis";
 import { REDACT_CORE_ADDRESS, chunk } from "~~/lib/common";
 
-type ChainRecord<T> = Record<string, T>;
+type ChainRecord<T> = Record<number, T>;
 type AddressRecord<T> = Record<Address, T>;
 
 interface TokenItemData {
@@ -50,15 +50,15 @@ export const useTokenStore = create<TokenStore>()(
   ),
 );
 
-export const addArbitraryToken = async (chain: string, address: string) => {
+const _addArbitraryToken = async (chain: number, address: string) => {
   useTokenStore.setState(state => {
     state.arbitraryTokens[chain] = [...(state.arbitraryTokens[chain] ?? []), address];
   });
 
-  await fetchToken(chain, address);
+  await _fetchToken(chain, address);
 };
 
-export const fetchInitialTokens = async (chain: string) => {
+const _fetchInitialTokens = async (chain: number) => {
   const tokenListAddresses: string[] = [];
   const arbitraryTokenAddresses = useTokenStore.getState().arbitraryTokens[chain] ?? [];
 
@@ -66,7 +66,7 @@ export const fetchInitialTokens = async (chain: string) => {
 
   useTokenStore.setState({ loadingTokens: true });
 
-  const confidentialPairs = await fetchTokenData(chain, addresses);
+  const confidentialPairs = await _fetchTokenData(chain, addresses);
   const tokens = Object.values(confidentialPairs);
 
   useTokenStore.setState(state => {
@@ -75,8 +75,8 @@ export const fetchInitialTokens = async (chain: string) => {
   });
 };
 
-export const fetchToken = async (chain: string, address: string) => {
-  const confidentialPairs = await fetchTokenData(chain, [address]);
+const _fetchToken = async (chain: number, address: string) => {
+  const confidentialPairs = await _fetchTokenData(chain, [address]);
   const token = Object.values(confidentialPairs)[0];
 
   useTokenStore.setState(state => {
@@ -114,7 +114,7 @@ export async function fetchConfidentialTokenPairs(addresses: Address[]) {
   return confidentialPairs;
 }
 
-export async function fetchTokenData(chain: string, addresses: Address[]) {
+async function _fetchTokenData(chain: number, addresses: Address[]) {
   const addressMap: Record<string, boolean> = {};
   for (const address of addresses) {
     addressMap[address] = true;
@@ -212,3 +212,26 @@ export async function fetchTokenData(chain: string, addresses: Address[]) {
 
   return confidentialPairs;
 }
+
+// With Injected Chain
+
+const _getChainId = async () => {
+  const publicClient = getPublicClient(wagmiConfig);
+  return await publicClient.getChainId();
+};
+
+export const addArbitraryToken = async (address: string) => {
+  const chain = await _getChainId();
+  await _addArbitraryToken(chain, address);
+  await _fetchInitialTokens(chain);
+};
+
+export const fetchInitialTokens = async () => {
+  const chain = await _getChainId();
+  await _fetchInitialTokens(chain);
+};
+
+export const fetchToken = async (address: string) => {
+  const chain = await _getChainId();
+  await _fetchToken(chain, address);
+};
