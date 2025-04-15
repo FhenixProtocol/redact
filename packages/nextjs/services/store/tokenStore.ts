@@ -3,7 +3,6 @@ import { create } from "zustand";
 import { getPublicClient, waitForTransactionReceipt } from "wagmi/actions";
 import { writeContract } from "wagmi/actions";
 import { RedactCoreAbi } from "~~/lib/abis";
-import { Address } from "viem";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 import { getTokenLogo } from "~~/lib/tokenUtils";
 import { REDACT_CORE_ADDRESS } from "~~/lib/common";
@@ -29,7 +28,8 @@ interface TokenStore {
   removeToken: (token: string) => void;
   updateTokenBalance: (tokenAddress: string, publicBalance?: string, privateBalance?: string) => void;
   setTokenLoading: (tokenAddress: string, isLoadingPublic?: boolean, isLoadingPrivate?: boolean) => void;
-  deployToken: (newToken: TokenListItem) => Promise<string | null>;
+  deployToken: (newToken: TokenListItem) => Promise<{ error: string | null; data: string | null }>;
+  checkIsStablecoin: (tokenAddress: string) => Promise<boolean>;
 }
 
 export function getTokenList(): TokenListItem[] {
@@ -118,9 +118,45 @@ export const useTokenStore = create<TokenStore>(set => ({
     }));
   },
   
-  // New function to deploy a confidential token
-  deployToken: async (newToken: TokenListItem) => {
+  /**
+   * Checks if a token is recognized as a stablecoin by the RedactCore contract
+   * @param tokenAddress The address of the ERC20 token to check
+   * @returns A promise that resolves to true if the token is a stablecoin, false otherwise
+   */
+  checkIsStablecoin: async (tokenAddress: string): Promise<boolean> => {
     try {
+      const publicClient = getPublicClient(wagmiConfig);
+      
+      // Call the getIsStablecoin function on the RedactCore contract
+      const isStablecoin = await publicClient.readContract({
+        address: REDACT_CORE_ADDRESS,
+        abi: RedactCoreAbi,
+        functionName: 'getIsStablecoin',
+        args: [tokenAddress],
+      });
+      
+      console.log(`Token ${tokenAddress} is stablecoin:`, isStablecoin);
+      return isStablecoin as boolean;
+    } catch (error) {
+      console.error('Error checking if token is stablecoin:', error);
+      return false; // Default to false if there's an error
+    }
+  },
+  
+  // New function to deploy a confidential token
+  deployToken: async (newToken: TokenListItem): Promise<{ error: string | null; data: string | null }> => {
+    try {
+      // First check if the token is a stablecoin
+      const { checkIsStablecoin } = useTokenStore.getState();
+      const isStablecoin = await checkIsStablecoin(newToken.address);
+      
+      if (isStablecoin) {
+        return { 
+          error: 'Stablecoins are not supported yet, please wait for FHED (coming soon)', 
+          data: null 
+        };
+      }
+      
       // Call the deployFherc20 function on the RedactCore contract
       const hash = await writeContract(wagmiConfig, {
         address: REDACT_CORE_ADDRESS,
@@ -160,13 +196,22 @@ export const useTokenStore = create<TokenStore>(set => ({
         const { addToken } = useTokenStore.getState();
 
         addToken(newToken);
-        return confidentialAddress;
+        return {
+          data: confidentialAddress,
+          error: null
+        };
       }
       
-      return null;
+      return {
+        data: null,
+        error: 'Failed to deploy confidential token'
+      };
     } catch (error) {
       console.error('Error deploying confidential token:', error);
-      return null;
+      return {
+        data: null,
+        error: 'Failed to deploy confidential token'
+      };
     }
   },
 }));

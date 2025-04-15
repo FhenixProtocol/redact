@@ -34,7 +34,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
   const [tokenDetails, setTokenDetails] = useState<TokenDetails | null>(null);
   const { isError, isLoading, fetchDetails } = useTokenDetails();
   const [isDeployNeeded, setIsDeployNeeded] = useState<boolean>(false);
-  
+  const [deployError, setDeployError] = useState<string | null>(null);
   const { addToken, deployToken } = useTokenStore();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,8 +45,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
       setIsValidInput(true);
       search(value);
     } else {
-      setIsValidInput(false);
-      setTokenDetails(null);
+      resetData();
     }
   };
 
@@ -75,6 +74,16 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
     }
   };
 
+  const resetData = (resetDeployError: boolean = true) => {
+    setTokenAddress("");
+    setIsAddingToken(false);
+    setTokenDetails(null);
+    if (resetDeployError) {
+      setDeployError(null);
+    }
+    setInputValue("");
+  };
+
   const handleAdd = async () => {
     if (tokenDetails) {
       setIsAddingToken(true);
@@ -94,11 +103,18 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
           confidentialAddress: "0x0000000000000000000000000000000000000000",
         };
         if (isDeployNeeded) {
-          await deployToken(newToken);
+          const result = await deployToken(newToken);
+          if (result.error) {
+            //toast.error(result.error);
+            console.log("Error deploying token", result.error);
+            setDeployError(result.error);
+            setIsAddingToken(false);
+            return;
+          }
         } else {
           addToken(newToken);
         }
-  
+
         // const updatedTokens = [...existingTokens, newToken];
         // localStorage.setItem('tokenList', JSON.stringify(updatedTokens));
 
@@ -110,10 +126,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
           onAddToken(tokenDetails);
         }
 
-        setTokenAddress("");
-        setIsAddingToken(false);
-        setTokenDetails(null);
-        setInputValue("");
+        resetData();
       } else {
         toast.error("Token already exists in the list");
         console.log("Token already exists in the list");
@@ -170,11 +183,17 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
                 <>
                   <ReportProblemOutlined className="text-warning-500" />
                   <div className="text-xs text-primary font-semibold">
-                    Confidential token does not exist.
-                    <br />
-                    You can deploy it by clicking the {'"'}Deploy Token{'"'} button.
-                    <br />
-                    This can cost you some gas fees.
+                    {deployError ? (
+                      <div className="text-red-500 mt-2">{deployError}</div>
+                    ) : (
+                      <>
+                        Confidential token does not exist.
+                        <br />
+                        You can deploy it by clicking the {'"'}Deploy Token{'"'} button.
+                        <br />
+                        This can cost you some gas fees.
+                      </>
+                    )}
                   </div>
                 </>
               )}
@@ -200,9 +219,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
           icon={ClearOutlined}
           uppercase={true}
           onClick={() => {
-            setTokenAddress("");
-            setTokenDetails(null);
-            setIsAddingToken(false);
+            resetData();
             if (onClose) onClose();
           }}
         >
