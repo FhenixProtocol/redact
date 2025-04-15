@@ -1,0 +1,184 @@
+import { wagmiConfig } from "../web3/wagmiConfig";
+import { Address, erc20Abi } from "viem";
+import { getPublicClient } from "wagmi/actions";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
+import { RedactCoreAbi } from "~~/lib/abis";
+import { REDACT_CORE_ADDRESS, chunk } from "~~/lib/common";
+
+type ChainRecord<T> = Record<string, T>;
+type AddressRecord<T> = Record<Address, T>;
+
+interface TokenItemData {
+  address: Address;
+  name: string;
+  symbol: string;
+  decimals: number;
+  image?: string;
+}
+
+interface ConfidentialTokenPair {
+  publicToken: TokenItemData;
+  confidentialToken?: TokenItemData;
+  confidentialTokenDeployed: boolean;
+  isStablecoin: boolean;
+  isWETH: boolean;
+}
+
+interface TokenStore {
+  loadingTokens: boolean;
+  tokens: ChainRecord<ConfidentialTokenPair[]>;
+  arbitraryTokens: ChainRecord<string[]>;
+}
+
+export const useTokenStore = create<TokenStore>()(
+  persist(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    immer(set => ({
+      loadingTokens: false,
+      tokens: {},
+      arbitraryTokens: {},
+    })),
+    {
+      name: "token-store",
+    },
+  ),
+);
+
+export const addArbitraryToken = (chain: string, address: string) => {
+  const existingTokens: ChainRecord<string> = JSON.parse(localStorage.getItem("arbitraryTokens") || "{}");
+  existingTokens[chain] = address;
+};
+
+export const fetchInitialTokens = async (chain: string) => {
+  const tokenListAddresses: string[] = [];
+  const arbitraryTokenAddresses = useTokenStore.getState().arbitraryTokens[chain] ?? [];
+
+  const addresses = [...tokenListAddresses, ...arbitraryTokenAddresses];
+
+  useTokenStore.setState({ loadingTokens: true });
+
+  const confidentialPairs = await fetchTokenData(addresses);
+  const tokens = Object.values(confidentialPairs);
+
+  useTokenStore.setState(state => {
+    state.tokens[chain] = tokens;
+    state.loadingTokens = false;
+  });
+};
+
+export const fetchToken = async (chain: string, address: string) => {
+  const confidentialPairs = await fetchTokenData([address]);
+  const token = Object.values(confidentialPairs)[0];
+
+  useTokenStore.setState(state => {
+    state.tokens[chain] = [...(state.tokens[chain] ?? []), token];
+  });
+};
+
+export async function fetchConfidentialTokenPairs(addresses: Address[]) {
+  const publicClient = getPublicClient(wagmiConfig);
+
+  const results = await publicClient.multicall({
+    contracts: addresses.flatMap(address => [
+      {
+        address: REDACT_CORE_ADDRESS,
+        abi: RedactCoreAbi,
+        functionName: "getFherc20",
+        args: [address],
+      },
+    ]),
+  });
+
+  const confidentialPairs: AddressRecord<string> = {};
+
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
+
+    if (result.status === "failure") continue;
+
+    const address = addresses[i];
+    const fherc20 = result.result as Address;
+
+    confidentialPairs[address] = fherc20;
+  }
+
+  return confidentialPairs;
+}
+
+export async function fetchTokenData(addresses: Address[]) {
+  // Fetch and list confidential tokens
+  const confidentialAddressPairs = await fetchConfidentialTokenPairs(addresses);
+  const confidentialTokenAddresses = Object.values(confidentialAddressPairs);
+
+  // Fetch public token data
+  const publicClient = getPublicClient(wagmiConfig);
+  const result = await publicClient.multicall({
+    contracts: [...confidentialTokenAddresses, ...addresses].flatMap(address => [
+      {
+        address,
+        abi: erc20Abi,
+        functionName: "name",
+      },
+      {
+        address,
+        abi: erc20Abi,
+        functionName: "symbol",
+      },
+      {
+        address,
+        abi: erc20Abi,
+        functionName: "decimals",
+      },
+    ]),
+  });
+
+  // Create map of token addresses to token data (includes confidential tokens)
+  const tokenDetails: AddressRecord<TokenItemData> = {};
+
+  const results = chunk(result, 3);
+
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
+    const address = addresses[i];
+
+    const [name, symbol, decimals] = result;
+
+    const error =
+      name.status === "failure"
+        ? name.error
+        : symbol.status === "failure"
+          ? symbol.error
+          : decimals.status === "failure"
+            ? decimals.error
+            : null;
+
+    if (error) continue;
+
+    tokenDetails[address] = {
+      name: name.result as string,
+      symbol: symbol.result as string,
+      decimals: decimals.result as number,
+      address,
+    };
+  }
+
+  // Create map of confidential pairs
+  const confidentialPairs: AddressRecord<ConfidentialTokenPair> = {};
+
+  for (let i = 0; i < addresses.length; i++) {
+    const address = addresses[i];
+    const confidentialTokenAddress = confidentialAddressPairs[address];
+
+    confidentialPairs[address] = {
+      publicToken: tokenDetails[address],
+      confidentialToken: confidentialTokenAddress ? tokenDetails[confidentialTokenAddress] : undefined,
+      confidentialTokenDeployed: !!confidentialTokenAddress,
+      isStablecoin: false,
+      isWETH: false,
+    };
+  }
+
+  return confidentialPairs;
+}
