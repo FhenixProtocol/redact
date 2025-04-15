@@ -1,6 +1,6 @@
 import defaultTokenList from "../../public/token-list.json";
 import { create } from "zustand";
-
+import { getTokenLogo } from "~~/lib/tokenUtils";
 interface TokenListItem {
   name: string;
   symbol: string;
@@ -46,6 +46,12 @@ export function getTokenList(): TokenListItem[] {
       allTokens.push(customToken);
     }
   });
+  
+  // Fix image URLs for all tokens
+  allTokens.forEach(token => {
+    token.image = token.image ? token.image : getTokenLogo(token.symbol)
+  });
+  
   return allTokens;
 }
 
@@ -59,6 +65,8 @@ export const useTokenStore = create<TokenStore>(set => ({
     const existingTokens: TokenListItem[] = JSON.parse(localStorage.getItem("tokenList") || "[]");
 
     newToken.isCustom = true;
+    // Fix the image URL before adding
+    newToken.image = newToken.image ? newToken.image : getTokenLogo(newToken.symbol)
 
     const updatedTokens = [...existingTokens, newToken];
     localStorage.setItem("tokenList", JSON.stringify(updatedTokens));
