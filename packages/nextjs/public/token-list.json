@@ -1,18 +1,18 @@
 [
-    {
-        "name": "USD Coin",
-        "symbol": "USDC",
-        "decimals": 6,
-        "image": "",
-        "address": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-        "confidentialAddress": "0x12acE372d1cc6754641F153230173401c18A97cf"
-    },
-    {
-        "name": "Euro Coin",
-        "symbol": "EURC",
-        "decimals": 6,
-        "image": "https://assets.coingecko.com/coins/images/26045/standard/euro.png",
-        "address": "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4",
-        "confidentialAddress": "0x1e1E10d7C78181dCCd502745CADC3Af1FA4e7ed1"
-    }
+  {
+    "name": "USD Coin",
+    "symbol": "USDC",
+    "decimals": 6,
+    "image": "",
+    "address": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+    "confidentialAddress": "0x12acE372d1cc6754641F153230173401c18A97cf"
+  },
+  {
+    "name": "Euro Coin",
+    "symbol": "EURC",
+    "decimals": 6,
+    "image": "https://assets.coingecko.com/coins/images/26045/standard/euro.png",
+    "address": "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4",
+    "confidentialAddress": "0x1e1E10d7C78181dCCd502745CADC3Af1FA4e7ed1"
+  }
 ]

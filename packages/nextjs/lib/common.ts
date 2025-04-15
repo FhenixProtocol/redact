@@ -1,8 +1,9 @@
-"use client"
+"use client";
 
-import { formatEther, parseEther } from 'viem'
-import { getPublicClient, estimateGas, } from '@wagmi/core'
-import { wagmiConfig } from '~~/services/web3/wagmiConfig';
+import { estimateGas, getPublicClient } from "@wagmi/core";
+import { formatEther, parseEther } from "viem";
+import tokenListData from "~~/public/token-list.json";
+import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
 // TODO: Use scaffold-eth hooks
 export const REDACT_CORE_ADDRESS = "0x3087103FB1638156758CFE89A489c890E522B82e" as `0x${string}`;
@@ -14,7 +15,7 @@ export const truncateAddress = (address: string, start: number = 6, end: number 
 export function customFormatEther(
   wei: bigint,
   maxDecimals: number = 18,
-  rounding: "floor" | "ceil" | "round" = "round"
+  rounding: "floor" | "ceil" | "round" = "round",
 ): string {
   // This `scale` represents the factor to truncate/round to `maxDecimals`.
   // For example, if maxDecimals=4, scale = 10^(18 - 4) = 10^14.
@@ -31,10 +32,7 @@ export function customFormatEther(
   // e.g. if this >= 5, we round up in "round" mode.
   const firstDecimal = (remainder * 10n) / scale; // an integer in [0..9]
 
-  if (
-    rounding === "ceil" ||
-    (rounding === "round" && firstDecimal >= 5n)
-  ) {
+  if (rounding === "ceil" || (rounding === "round" && firstDecimal >= 5n)) {
     integerPart += 1n;
   }
 
@@ -47,13 +45,13 @@ export function customFormatEther(
 }
 
 export async function getGasPrice() {
-  const publicClient = getPublicClient(wagmiConfig)
-  const gasPrice = await publicClient.getGasPrice()
+  const publicClient = getPublicClient(wagmiConfig);
+  const gasPrice = await publicClient.getGasPrice();
 
-  const gasUnits  = await estimateGas(wagmiConfig, {
-    to: '0xd2135CfB216b74109775236E36d4b433F1DF507B' as `0x${string}`,
-    value: parseEther('0.01'),
-  })
+  const gasUnits = await estimateGas(wagmiConfig, {
+    to: "0xd2135CfB216b74109775236E36d4b433F1DF507B" as `0x${string}`,
+    value: parseEther("0.01"),
+  });
 
   return gasPrice * gasUnits;
 }
@@ -72,13 +70,11 @@ interface Token {
   address: string;
 }
 
-import tokenListData from "~~/public/token-list.json";
-
 export function transformTokensToItems(tokens: Token[]) {
   return tokens.map(token => ({
     value: token.symbol,
     name: token.symbol,
-    logo: token.image
+    logo: token.image,
   }));
 }
 

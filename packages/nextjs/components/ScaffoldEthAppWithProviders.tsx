@@ -1,31 +1,30 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { useTheme } from "next-themes";
 import { Toaster } from "react-hot-toast";
 import { WagmiProvider, useAccount } from "wagmi";
+import Drawer, { DrawerPage } from "~~/components/Drawer";
 import { Footer } from "~~/components/Footer";
 import { Header } from "~~/components/Header";
+import { WalletLister } from "~~/components/WalletConnectorsList";
+import { WalletMainPanel } from "~~/components/menu-pages/WalletMainPage";
 import { BlockieAvatar } from "~~/components/scaffold-eth";
 import { useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
-import { wagmiConfig } from "~~/services/web3/wagmiConfig";
-import Drawer, { DrawerPage } from "~~/components/Drawer";
-import { WalletMainPanel } from "~~/components/menu-pages/WalletMainPage";
-import { WalletLister } from "~~/components/WalletConnectorsList";
 import { truncateAddress } from "~~/lib/common";
-import { useRouter } from "next/navigation";
 import { useGlobalState } from "~~/services/store/store";
-
+import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
   const { address, isConnected } = useAccount();
   const [drawerTitle, setDrawerTitle] = useState("Menu");
   const router = useRouter();
-  
+
   // Get drawer state from global state
   const isDrawerOpen = useGlobalState(state => state.isDrawerOpen);
   const setIsDrawerOpen = useCallback((open: boolean) => {
@@ -42,7 +41,7 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!address) {
-      router.push('/');
+      router.push("/");
     }
   }, [address, router]);
 
@@ -61,20 +60,20 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
           component: <WalletLister />,
         },
       ];
-      
+
   return (
     <>
       <div className="relative min-h-screen">
         <div className="grid grid-rows-[auto_1fr_auto] min-h-screen relative">
-        <Header />
-        <main className="relative p-4 flex justify-center items-center">{children}</main>
-        <Footer />
-        <Drawer
-          className="bg-background"
-          isOpen={isDrawerOpen}
-          onClose={() => setIsDrawerOpen(false)}
-          initialPages={initialPages}
-        />
+          <Header />
+          <main className="relative p-4 flex justify-center items-center">{children}</main>
+          <Footer />
+          <Drawer
+            className="bg-background"
+            isOpen={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+            initialPages={initialPages}
+          />
         </div>
       </div>
       <Toaster />

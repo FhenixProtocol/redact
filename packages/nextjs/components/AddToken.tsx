@@ -1,18 +1,17 @@
 import React, { useState } from "react";
+import Image from "next/image";
+import { ClearOutlined, ReportProblemOutlined } from "@mui/icons-material";
+import { AnimatePresence, motion } from "framer-motion";
+import { PlusIcon } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { type Address, isAddress } from "viem";
 import { Button } from "~~/components/ui/Button";
 import { FnxInput } from "~~/components/ui/FnxInput";
-import { Spinner } from "~~/components/ui/Spinner"
-import Image from "next/image";
-
-import { PlusIcon } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
-import { confidentialTokenExists, useTokenDetails, type TokenDetails } from "~~/hooks/useTokenBalance";
-import { type Address, isAddress } from "viem";
+import { Spinner } from "~~/components/ui/Spinner";
+import { type TokenDetails, confidentialTokenExists, useTokenDetails } from "~~/hooks/useTokenBalance";
+import { getTokenLogo } from "~~/lib/tokenUtils";
 // import { cn } from "~~/lib/utils";
 import { useTokenStore } from "~~/services/store/tokenStore";
-import { toast } from "react-hot-toast";
-import { getTokenLogo } from "~~/lib/tokenUtils";
-import { ReportProblemOutlined, ClearOutlined } from '@mui/icons-material';
 
 interface AddTokenProps {
   onAddToken?: (token: TokenDetails) => void;
@@ -36,7 +35,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
   const [tokenDetails, setTokenDetails] = useState<TokenDetails | null>(null);
   const { isError, isLoading, fetchDetails } = useTokenDetails();
   const [isDeployNeeded, setIsDeployNeeded] = useState<boolean>(false);
-  const { addToken} = useTokenStore();
+  const { addToken } = useTokenStore();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -59,10 +58,9 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
       const result = await confidentialTokenExists(address as Address);
       console.log("confidentialTokenExists!!!!", result);
       setIsDeployNeeded(!result);
-      
     } else {
-      toast.error('Token not found');
-      console.log('Token not found');
+      toast.error("Token not found");
+      console.log("Token not found");
     }
   };
 
@@ -72,25 +70,21 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
     if (details) {
       setTokenDetails(details);
     } else {
-      toast.error('Token not found');
-      console.log('Token not found');
+      toast.error("Token not found");
+      console.log("Token not found");
     }
   };
 
   const handleAdd = () => {
     if (tokenDetails) {
-      
       if (isDeployNeeded) {
         //TODO: Deploy token here and continue if success
-      
       }
 
-      const existingTokens: TokenListItem[] = JSON.parse(
-        localStorage.getItem('tokenList') || '[]'
-      );
+      const existingTokens: TokenListItem[] = JSON.parse(localStorage.getItem("tokenList") || "[]");
 
       const tokenExists = existingTokens.some(
-        token => token.address.toLowerCase() === tokenDetails.address.toLowerCase()
+        token => token.address.toLowerCase() === tokenDetails.address.toLowerCase(),
       );
 
       if (!tokenExists) {
@@ -100,7 +94,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
           decimals: tokenDetails.decimals,
           address: tokenDetails.address,
           image: "",
-          confidentialAddress: "0x0000000000000000000000000000000000000000"
+          confidentialAddress: "0x0000000000000000000000000000000000000000",
         };
         addToken(newToken);
 
@@ -120,17 +114,15 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
         setTokenDetails(null);
         setInputValue("");
       } else {
-        toast.error('Token already exists in the list');
-        console.log('Token already exists in the list');
+        toast.error("Token already exists in the list");
+        console.log("Token already exists in the list");
       }
     }
   };
   const SpinnerIcon = () => <Spinner size={16} />;
 
-  const tokenLogo = tokenDetails
-    ? getTokenLogo(tokenDetails.symbol, "") 
-    : "/token-icons/default-token.webp";  
-    
+  const tokenLogo = tokenDetails ? getTokenLogo(tokenDetails.symbol, "") : "/token-icons/default-token.webp";
+
   return (
     <div className="w-full flex flex-col gap-2">
       <div className="text-[18px] text-primary font-semibold">Token contract address:</div>
@@ -140,8 +132,8 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
         placeholder="0x..."
         value={inputValue}
         onChange={handleInputChange}
-        className={`w-full  ${!isValidInput ? 'border-red-500' : ''}`}
-        error={!isValidInput ? 'Invalid address format' : undefined}
+        className={`w-full  ${!isValidInput ? "border-red-500" : ""}`}
+        error={!isValidInput ? "Invalid address format" : undefined}
         fadeEnd={true}
       />
       <AnimatePresence>
@@ -173,12 +165,14 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              {isDeployNeeded && (  
+              {isDeployNeeded && (
                 <>
                   <ReportProblemOutlined className="text-warning-500" />
                   <div className="text-xs text-primary font-semibold">
-                    Confidential token does not exist.<br />
-                    You can deploy it by clicking the "Deploy Token" button.<br/>
+                    Confidential token does not exist.
+                    <br />
+                    You can deploy it by clicking the "Deploy Token" button.
+                    <br />
                     This can cost you some gas fees.
                   </div>
                 </>

@@ -1,22 +1,22 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @plugin 'tailwindcss-animate';
 
 @font-face {
-  font-family: 'Reddit Sans';
-  src: url('/fonts/RedditSans-VariableFont_wght') format('ttf');
+  font-family: "Reddit Sans";
+  src: url("/fonts/RedditSans-VariableFont_wght") format("ttf");
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Reddit Mono';
-  src: url('/fonts/RedditMono-VariableFont_wght') format('ttf');
+  font-family: "Reddit Mono";
+  src: url("/fonts/RedditMono-VariableFont_wght") format("ttf");
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Birdman';
-  src: url('/fonts/BIRDMAN_.OTF') format('otf');
+  font-family: "Birdman";
+  src: url("/fonts/BIRDMAN_.OTF") format("otf");
   font-style: normal;
 }
 
@@ -32,13 +32,13 @@
     --card-bg: #fafafa80;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --surface: #D9F0FF;
+    --surface: #d9f0ff;
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
-    --primary-accent: #0073E6;
+    --primary-accent: #0073e6;
     --primary-accent-rgb: 0, 115, 230;
-    --primary-accent-hover: #005BB5;
-    --primary-accent-disabled: #99CCFF;
+    --primary-accent-hover: #005bb5;
+    --primary-accent-disabled: #99ccff;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
@@ -47,7 +47,7 @@
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --component-stroke: #80BFFF;
+    --component-stroke: #80bfff;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
@@ -57,9 +57,9 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    --button-hover: #D9D9D9;
-    --color-theme-white: #FFFFFF; 
-    --color-theme-black: #000000; 
+    --button-hover: #d9d9d9;
+    --color-theme-white: #ffffff;
+    --color-theme-black: #000000;
 
     --color-grey-100: #e3e3e3;
     --color-grey-200: #d9d9d9;
@@ -76,7 +76,7 @@
     --color-info-500: #2196f3;
     --color-info-700: #1976d2;
     --color-info-900: #0d47a1;
-  
+
     --color-success-100: #e8f5e9;
     --color-success-300: #a5d6a7;
     --color-success-500: #4caf50;
@@ -96,15 +96,13 @@
     --color-error-900: #b71c1c;
 
     --color-card-background: #fafafa;
-  
+
     /* Animation Durations */
     --modal-overlay-duration: 150ms;
     --modal-content-duration: 150ms;
     --modal-fade-duration: 150ms;
 
-    --color-primary: #003366; 
-
- 
+    --color-primary: #003366;
   }
   .dark {
     --default-text-color: #ffffff;
@@ -115,11 +113,11 @@
     --card-bg: #1a1a1a80;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --surface: #1A1A1A;
+    --surface: #1a1a1a;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
-    --primary-accent: #3399FF;
-    --primary-accent-hover: #2673CC;
+    --primary-accent: #3399ff;
+    --primary-accent-hover: #2673cc;
     --primary-accent-disabled: #80bfff;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
@@ -129,7 +127,7 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --component-stroke: #3399FF;    
+    --component-stroke: #3399ff;
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
@@ -138,9 +136,9 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --button-hover: #333;    
+    --button-hover: #333;
     --color-theme-white: #000000; /* Yes, it is confusing, but it is correct */
-    --color-theme-black: #FFFFFF; /* Yes, it is confusing, but it is correct */
+    --color-theme-black: #ffffff; /* Yes, it is confusing, but it is correct */
 
     --color-grey-100: #2b2b2b;
     --color-grey-200: #333333;
@@ -157,7 +155,7 @@
     --color-info-500: #2196f3;
     --color-info-700: #90caf9;
     --color-info-900: #e3f2fd;
-  
+
     --color-success-100: #a5d6a7;
     --color-success-300: #388e3c;
     --color-success-500: #4caf50;
@@ -175,60 +173,57 @@
     --color-error-500: #f44336;
     --color-error-700: #c62828;
     --color-error-900: #8b0000;
-  
+
     --color-card-background: #fafafa;
-    
-    --color-primary: #E6F7FF; 
+
+    --color-primary: #e6f7ff;
   }
 }
 
 @theme {
-
-  --font-reddit-sans: "Reddit Sans", sans-serif; 
+  --font-reddit-sans: "Reddit Sans", sans-serif;
   --font-reddit-mono: "Reddit Mono", monospace;
   --font-birdman: "Birdman", sans-serif;
 
-    /* Your spacing variables */
-  --spacing-xs: 0.5em;     /* 8px / 16px = 0.5em */
-  --spacing-sm: 0.75em;    /* 12px / 16px = 0.75em */
-  --spacing-md: 1em;       /* 16px / 16px = 1em */
-  --spacing-lg: 1.5em;     /* 24px / 16px = 1.5em */
-  --spacing-xl: 2em;       /* 32px / 16px = 2em */
-  --spacing-xxl: 3em;      /* 48px / 16px = 3em */
-  --spacing-xxxl: 4em;     /* 64px / 16px = 4em */
-  --spacing-xxxxl: 6em;    /* 96px / 16px = 6em */
+  /* Your spacing variables */
+  --spacing-xs: 0.5em; /* 8px / 16px = 0.5em */
+  --spacing-sm: 0.75em; /* 12px / 16px = 0.75em */
+  --spacing-md: 1em; /* 16px / 16px = 1em */
+  --spacing-lg: 1.5em; /* 24px / 16px = 1.5em */
+  --spacing-xl: 2em; /* 32px / 16px = 2em */
+  --spacing-xxl: 3em; /* 48px / 16px = 3em */
+  --spacing-xxxl: 4em; /* 64px / 16px = 4em */
+  --spacing-xxxxl: 6em; /* 96px / 16px = 6em */
 
-
-  --text-xs: 0.75em;                /* 12px / 16px = 0.75em */
-  --text-xs--line-height: 1em;      /* 16px / 16px = 1em */
-  --text-sm: 0.875em;               /* 14px / 16px = 0.875em */
-  --text-sm--line-height: 1.25em;   /* 20px / 16px = 1.25em */
-  --text-md: 1em;                   /* 16px / 16px = 1em */
-  --text-md--line-height: 1.5em;    /* 24px / 16px = 1.5em */
-  --text-lg: 1.125em;               /* 18px / 16px = 1.125em */
-  --text-lg--line-height: 1.75em;   /* 28px / 16px = 1.75em */
-  --text-xl: 1.5em;                 /* 24px / 16px = 1.5em */
-  --text-xl--line-height: 2em;      /* 32px / 16px = 2em */
-  --text-xxl: 2em;                  /* 32px / 16px = 2em */
-  --text-xxl--line-height: 2.5em;   /* 40px / 16px = 2.5em */
-  --text-header-h6: 0.75em, 1em;    /* 12px, 16px / 16px = 0.75em, 1em */
+  --text-xs: 0.75em; /* 12px / 16px = 0.75em */
+  --text-xs--line-height: 1em; /* 16px / 16px = 1em */
+  --text-sm: 0.875em; /* 14px / 16px = 0.875em */
+  --text-sm--line-height: 1.25em; /* 20px / 16px = 1.25em */
+  --text-md: 1em; /* 16px / 16px = 1em */
+  --text-md--line-height: 1.5em; /* 24px / 16px = 1.5em */
+  --text-lg: 1.125em; /* 18px / 16px = 1.125em */
+  --text-lg--line-height: 1.75em; /* 28px / 16px = 1.75em */
+  --text-xl: 1.5em; /* 24px / 16px = 1.5em */
+  --text-xl--line-height: 2em; /* 32px / 16px = 2em */
+  --text-xxl: 2em; /* 32px / 16px = 2em */
+  --text-xxl--line-height: 2.5em; /* 40px / 16px = 2.5em */
+  --text-header-h6: 0.75em, 1em; /* 12px, 16px / 16px = 0.75em, 1em */
   --text-header-h5: 0.875em, 1.25em; /* 14px, 20px / 16px = 0.875em, 1.25em */
-  --text-header-h4: 1em, 1.5em;     /* 16px, 24px / 16px = 1em, 1.5em */
+  --text-header-h4: 1em, 1.5em; /* 16px, 24px / 16px = 1em, 1.5em */
   --text-header-h3: 1.125em, 1.75em; /* 18px, 28px / 16px = 1.125em, 1.75em */
-  --text-header-h2: 1.5em, 2em;     /* 24px, 32px / 16px = 1.5em, 2em */
-  --text-header-h1: 2em, 2.5em;     /* 32px, 40px / 16px = 2em, 2.5em */
-  --text-display: 4em, 4.5em;       /* 64px, 72px / 16px = 4em, 4.5em */
-  --text-hero: 6.25em, 6.25em;      /* 100px, 100px / 16px = 6.25em, 6.25em */
-  --text-button-xs: 0.75em, 1em;    /* 12px, 16px / 16px = 0.75em, 1em */
+  --text-header-h2: 1.5em, 2em; /* 24px, 32px / 16px = 1.5em, 2em */
+  --text-header-h1: 2em, 2.5em; /* 32px, 40px / 16px = 2em, 2.5em */
+  --text-display: 4em, 4.5em; /* 64px, 72px / 16px = 4em, 4.5em */
+  --text-hero: 6.25em, 6.25em; /* 100px, 100px / 16px = 6.25em, 6.25em */
+  --text-button-xs: 0.75em, 1em; /* 12px, 16px / 16px = 0.75em, 1em */
   --text-button-sm: 0.875em, 1.25em; /* 14px, 20px / 16px = 0.875em, 1.25em */
-  --text-caption-xs: 0.75em, 1em;   /* 12px, 16px / 16px = 0.75em, 1em */
+  --text-caption-xs: 0.75em, 1em; /* 12px, 16px / 16px = 0.75em, 1em */
   --text-caption-md: 0.875em, 1.25em; /* 14px, 20px / 16px = 0.875em, 1.25em */
 
   --color-foreground: hsl(var(--foreground));
   --color-default: var(--default-text-color);
   --color-warning: hsl(var(--warning));
   --color-success: hsl(var(--success));
-
 
   --color-error: hsl(var(--error));
 
@@ -276,7 +271,6 @@
 
   --color-surface: var(--surface);
 
-
   --color-secondary: #8a8a8a;
   --color-secondary-light: #8a8a8a;
   --color-secondary-dark: #8a8a8a;
@@ -298,14 +292,12 @@
 
   --color-button-hover: var(--button-hover);
 
-  --border-color-primary-accent: #0073E6;
+  --border-color-primary-accent: #0073e6;
   --border-color-primary-accent-dark: hsl(var(--primaryAccent-dark));
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
-
-
 }
 
 @theme inline {
@@ -390,15 +382,10 @@
   .button-shadow {
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
   }
-
 }
 
-
-
-
-
 :root {
-  --background: #E6F7FF;
+  --background: #e6f7ff;
   --foreground: hsl(0 0% 3.9%);
   --card: hsl(0 0% 100%);
   --card-foreground: hsl(0 0% 3.9%);
@@ -425,7 +412,6 @@
   --radius: 0.6rem;
 }
 
-
 .dark {
   --background: #141414;
   --foreground: hsl(0 0% 98%);
@@ -451,33 +437,32 @@
   --chart-3: hsl(30 80% 55%);
   --chart-4: hsl(280 65% 60%);
   --chart-5: hsl(340 75% 55%);
-} 
+}
 
 @layer base {
   * {
     @apply border-border;
   }
 
-  
   body {
-    background: 
-      url('/bg-lines.svg') center bottom/cover no-repeat,
+    background:
+      url("/bg-lines.svg") center bottom/cover no-repeat,
       radial-gradient(circle at 0% 80%, rgba(255, 0, 0, 0.4) 0%, transparent 30%),
       radial-gradient(circle at 60% 50%, rgba(255, 0, 0, 0.3) 0%, transparent 40%),
       radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--primary-accent) 30%, transparent) 0%, transparent 40%),
-      var(--background); 
+      var(--background);
 
     font-family: var(--font-reddit-sans);
   }
 
   .dark body {
     background:
-      url('/bg-lines.svg') center bottom/cover no-repeat,
+      url("/bg-lines.svg") center bottom/cover no-repeat,
       radial-gradient(circle at 0% 80%, rgba(255, 0, 0, 0.4) 0%, transparent 30%),
       radial-gradient(circle at 60% 50%, rgba(255, 0, 0, 0.3) 0%, transparent 40%),
       radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--primary-accent) 30%, transparent) 0%, transparent 40%),
-      var(--background); 
-  }  
+      var(--background);
+  }
 
   .logo {
     height: 50px;
@@ -485,26 +470,21 @@
     background-size: contain;
     aspect-ratio: 3.84/1; /* 192/50 = 3.84 */
     width: auto;
-    background-image: url('/logo-light.svg');
+    background-image: url("/logo-light.svg");
   }
   .dark .logo {
-    background-image: url('/logo-dark.svg');
+    background-image: url("/logo-dark.svg");
   }
-  
-  
 
   /* Dark mode variant */
   /* .dark body {
     background: radial-gradient(circle at center, var(--color-gray-900) 0%, #000000 50%, var(--color-gray-700) 100%);
   } */
-
 }
 
 /*
   ---break---
 */
-
-
 
 @layer base {
   * {

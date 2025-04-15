@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from "react";
 
 export function useTheme() {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
     // Always return 'light' during SSR
-    if (typeof window === 'undefined') return 'light';
+    if (typeof window === "undefined") return "light";
 
     // Get saved theme from localStorage
-    const savedTheme = localStorage.getItem('theme');
-    console.log('Initial savedTheme:', savedTheme);
+    const savedTheme = localStorage.getItem("theme");
+    console.log("Initial savedTheme:", savedTheme);
 
     // If there's a saved theme, use it
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-      console.log('Using saved theme:', savedTheme);
+    if (savedTheme === "light" || savedTheme === "dark") {
+      console.log("Using saved theme:", savedTheme);
       return savedTheme;
     }
 
@@ -20,19 +20,19 @@ export function useTheme() {
     // const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     // const systemTheme = prefersDark ? 'dark' : 'light';
     // console.log('Using system theme:', systemTheme);
-    
+
     // // Save the system preference
     // localStorage.setItem('theme', systemTheme);
     // return systemTheme;
-    return 'light';
+    return "light";
   });
 
   // Synchronize theme changes with document and localStorage
   useEffect(() => {
-    console.log('Theme changed to:', theme);
+    console.log("Theme changed to:", theme);
     document.documentElement.className = theme;
-    localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   return { theme, setTheme };
-} 
+}
