@@ -10,7 +10,6 @@ import { FnxInput } from "~~/components/ui/FnxInput";
 import { Spinner } from "~~/components/ui/Spinner";
 import { type TokenDetails, confidentialTokenExists, useTokenDetails } from "~~/hooks/useTokenBalance";
 import { getTokenLogo } from "~~/lib/tokenUtils";
-// import { cn } from "~~/lib/utils";
 import { useTokenStore } from "~~/services/store/tokenStore";
 
 interface AddTokenProps {
@@ -121,7 +120,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
   };
   const SpinnerIcon = () => <Spinner size={16} />;
 
-  const tokenLogo = tokenDetails ? getTokenLogo(tokenDetails.symbol, "") : "/token-icons/default-token.webp";
+  const tokenLogo = tokenDetails ? getTokenLogo(tokenDetails.symbol) : "/token-icons/default-token.webp";
 
   return (
     <div className="w-full flex flex-col gap-2">
@@ -171,7 +170,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
                   <div className="text-xs text-primary font-semibold">
                     Confidential token does not exist.
                     <br />
-                    You can deploy it by clicking the "Deploy Token" button.
+                    You can deploy it by clicking the {'"'}Deploy Token{'"'} button.
                     <br />
                     This can cost you some gas fees.
                   </div>

@@ -7,6 +7,7 @@ export function getTokenLogo(symbol: string): string {
   // Only run this check in the browser
   if (typeof window !== "undefined") {
     const extensions = ["png", "jpg", "jpeg", "svg", "webp"];
+    let extensionMatched = false;
 
     for (const ext of extensions) {
       try {
@@ -17,9 +18,17 @@ export function getTokenLogo(symbol: string): string {
         if (response.status === 200) {
           return `/token-icons/${symbol.toLowerCase()}.${ext}`;
         }
-      } catch (error) {
-        console.error(`Error checking for ${symbol}.${ext}:`, error);
+
+        extensionMatched = true;
+      } catch {
+        console.error(`Error checking for ${symbol}.${ext}`);
+        // Empty catch block
       }
+    }
+
+    if (!extensionMatched) {
+      console.error(`No matching token icon found for ${symbol}`);
+      return defaultLogo;
     }
   }
 
