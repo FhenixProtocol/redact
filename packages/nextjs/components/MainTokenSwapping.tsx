@@ -19,6 +19,7 @@ import { useTokenBalance } from "~~/hooks/useTokenBalance";
 import { useTokenSelector } from "~~/hooks/useTokenSelector";
 import { ConfidentialERC20Abi } from "~~/lib/abis";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
+import { useTokenStore } from "~~/services/store/tokenStore";
 
 type ActionType = "Encrypt" | "Decrypt";
 
@@ -90,6 +91,18 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
     }
 
     setIsEncrypting(true);
+
+    // Check if token is stablecoin
+    const isStablecoin = await useTokenStore.getState().checkIsStablecoin(selectedTokenInfo.address);
+    if (isStablecoin) {
+      //TODO: Change it when we have a better error handling
+      toast.error("Stablecoins are not supported yet, please wait for FHED (coming soon)");
+      setIsEncrypting(false);
+      return;
+    }
+
+
+    
     const publicClient = getPublicClient(wagmiConfig);
     const walletClient = await getWalletClient(wagmiConfig);
 
