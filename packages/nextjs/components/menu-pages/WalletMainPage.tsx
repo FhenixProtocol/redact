@@ -11,7 +11,6 @@ import { useAccount, useBalance } from "wagmi";
 import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
 import { TokenAccordion, TokenData } from "~~/components/ui/FnxAccordion";
-import { TokenBalanceInfo, useAllTokenBalances } from "~~/hooks/useTokenBalance";
 import { customFormatEther, truncateAddress } from "~~/lib/common";
 import { useTokenStore } from "~~/services/store/tokenStore";
 
@@ -21,7 +20,7 @@ import { useTokenStore } from "~~/services/store/tokenStore";
  */
 export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   const { address } = useAccount();
-  const { tokenBalances } = useAllTokenBalances(address);
+  const { tokens } = useTokenStore();
   const {
     data: balanceData,
     isError,
@@ -72,6 +71,20 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
       balanceText = `${customFormatEther(balanceData.value, 4)} ${balanceData.symbol}`;
     }
   }
+
+
+  // Map tokens from the store to the format expected by TokenAccordion
+  const tokenDataForAccordion = tokens.map((token) => ({
+    symbol: token.symbol,
+    publicBalance: token.publicBalance || "0",
+    privateBalance: token.privateBalance || "0",
+    icon: token.image,
+    isCustom: token.isCustom || false,
+    address: token.address,
+    isLoadingPublic: token.isLoadingPublic || false,
+    isLoadingPrivate: token.isLoadingPrivate || false,
+  }));
+
   return (
     <div className="flex flex-col gap-2">
       <div className="text-xxl font-bold text-primary self-center">{balanceText}</div>
@@ -99,14 +112,7 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
       </div>
       <div>
         <TokenAccordion
-          tokens={tokenBalances.map((token: TokenBalanceInfo) => ({
-            symbol: token.symbol,
-            publicBalance: token.publicBalance,
-            privateBalance: token.privateBalance,
-            icon: token.logo,
-            isCustom: token.isCustom,
-            address: token.address,
-          }))}
+          tokens={tokenDataForAccordion}
           editMode={isManageTokensOpen}
           onRemove={(token: string) => {
             removeToken(token);

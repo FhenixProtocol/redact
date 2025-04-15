@@ -1,6 +1,6 @@
 import defaultTokenList from "../../public/token-list.json";
 import { create } from "zustand";
-
+import { getTokenLogo } from "~~/lib/tokenUtils";
 interface TokenListItem {
   name: string;
   symbol: string;
@@ -9,6 +9,10 @@ interface TokenListItem {
   address: string;
   confidentialAddress: string;
   isCustom?: boolean;
+  publicBalance?: string;
+  privateBalance?: string;
+  isLoadingPublic?: boolean;
+  isLoadingPrivate?: boolean;
 }
 
 interface TokenStore {
@@ -16,6 +20,8 @@ interface TokenStore {
   updateTokens: () => void;
   addToken: (newToken: TokenListItem) => void;
   removeToken: (token: string) => void;
+  updateTokenBalance: (tokenAddress: string, publicBalance?: string, privateBalance?: string) => void;
+  setTokenLoading: (tokenAddress: string, isLoadingPublic?: boolean, isLoadingPrivate?: boolean) => void;
 }
 
 export function getTokenList(): TokenListItem[] {
@@ -40,6 +46,12 @@ export function getTokenList(): TokenListItem[] {
       allTokens.push(customToken);
     }
   });
+  
+  // Fix image URLs for all tokens
+  allTokens.forEach(token => {
+    token.image = token.image ? token.image : getTokenLogo(token.symbol)
+  });
+  
   return allTokens;
 }
 
@@ -53,6 +65,8 @@ export const useTokenStore = create<TokenStore>(set => ({
     const existingTokens: TokenListItem[] = JSON.parse(localStorage.getItem("tokenList") || "[]");
 
     newToken.isCustom = true;
+    // Fix the image URL before adding
+    newToken.image = newToken.image ? newToken.image : getTokenLogo(newToken.symbol)
 
     const updatedTokens = [...existingTokens, newToken];
     localStorage.setItem("tokenList", JSON.stringify(updatedTokens));
@@ -66,6 +80,34 @@ export const useTokenStore = create<TokenStore>(set => ({
     localStorage.setItem("tokenList", JSON.stringify(filteredTokens));
 
     set({ tokens: getTokenList() });
+  },
+  
+  updateTokenBalance: (tokenAddress: string, publicBalance?: string, privateBalance?: string) => {
+    set(state => ({
+      tokens: state.tokens.map(token => 
+        token.address === tokenAddress 
+          ? { 
+              ...token, 
+              ...(publicBalance !== undefined && { publicBalance }), 
+              ...(privateBalance !== undefined && { privateBalance })
+            } 
+          : token
+      )
+    }));
+  },
+
+  setTokenLoading: (tokenAddress: string, isLoadingPublic?: boolean, isLoadingPrivate?: boolean) => {
+    set(state => ({
+      tokens: state.tokens.map(token => 
+        token.address === tokenAddress 
+          ? { 
+              ...token, 
+              ...(isLoadingPublic !== undefined && { isLoadingPublic }), 
+              ...(isLoadingPrivate !== undefined && { isLoadingPrivate })
+            } 
+          : token
+      )
+    }));
   },
 }));
 
