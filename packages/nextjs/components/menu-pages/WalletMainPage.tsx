@@ -11,7 +11,6 @@ import { useAccount, useBalance } from "wagmi";
 import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
 import { TokenAccordion, TokenData } from "~~/components/ui/FnxAccordion";
-import { useAllTokenBalances } from "~~/hooks/useTokenBalance";
 import { customFormatEther, truncateAddress } from "~~/lib/common";
 import { useTokenStore } from "~~/services/store/tokenStore";
 
@@ -22,7 +21,6 @@ import { useTokenStore } from "~~/services/store/tokenStore";
 export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   const { address } = useAccount();
   const { tokens } = useTokenStore();
-  const { isLoadingPublic, isLoadingPrivate, refreshBalances } = useAllTokenBalances(address);
   const {
     data: balanceData,
     isError,

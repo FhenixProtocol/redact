@@ -11,6 +11,8 @@ export interface TokenData {
   privateBalance?: string; // Array of encrypted balances to show in accordion content
   isCustom?: boolean;
   address: string;
+  isLoadingPublic?: boolean;
+  isLoadingPrivate?: boolean;
 }
 
 interface TokenAccordionProps {
@@ -30,6 +32,13 @@ export function TokenAccordion({
   editMode = false,
   children,
 }: TokenAccordionProps) {
+  // Helper function to calculate total balance
+  const calculateTotalBalance = (token: TokenData) => {
+    const publicAmount = parseFloat(token.publicBalance || "0");
+    const privateAmount = parseFloat(token.privateBalance || "0");
+    return (publicAmount + privateAmount).toString();
+  };
+
   return (
     <Accordion type="multiple" className="w-full flex flex-col">
       <div className="flex justify-center px-4 py-2 font-bold text-md">
@@ -50,17 +59,6 @@ export function TokenAccordion({
                       onRemove(token.address);
                     }}
                   />
-                  // <Button
-                  //   variant="ghost"
-                  //   size="sm"
-                  //   className="p-1 h-6 w-6 hover:bg-red-100 hover:text-red-500"
-                  //   onClick={(e) => {
-                  //     e.stopPropagation(); // Prevent accordion from opening
-                  //     onRemove(token);
-                  //   }}
-                  // >
-
-                  // </Button>
                 )}
                 {token.icon && (
                   <Image
@@ -79,7 +77,14 @@ export function TokenAccordion({
                 {token.isCustom && <span className="text-[8px] text-gray-500">Custom</span>}
               </div>
               <div className="flex items-center gap-2">
-                <span>{token.publicBalance}</span>
+                {/* Display total balance (sum of public and private) */}
+                <span>
+                  {token.isLoadingPublic || token.isLoadingPrivate ? (
+                    "Loading..."
+                  ) : (
+                    calculateTotalBalance(token)
+                  )}
+                </span>
               </div>
             </div>
           </AccordionTrigger>
@@ -87,7 +92,7 @@ export function TokenAccordion({
             <div className="flex flex-col gap-2 py-2 px-4 bg">
               <div className="flex justify-between items-center">
                 <div className="flex-2">
-                  {token.publicBalance && <span className="text-sm text-gray-500">{token.publicBalance}</span>}
+                  <span className="text-sm text-gray-500">Public: {token.isLoadingPublic ? "Loading..." : token.publicBalance || "0"}</span>
                 </div>
                 <div className="flex-1 flex justify-end">
                   {onEncrypt && (
@@ -106,7 +111,7 @@ export function TokenAccordion({
 
               <div className="flex justify-between items-center">
                 <div className="flex-2">
-                  {token.privateBalance && <span className="text-sm text-gray-500">{token.privateBalance}</span>}
+                  <span className="text-sm text-gray-500">Private: {token.isLoadingPrivate ? "Loading..." : token.privateBalance || "0"}</span>
                 </div>
                 <div className="flex-1 flex justify-end">
                   {onDecrypt && (
