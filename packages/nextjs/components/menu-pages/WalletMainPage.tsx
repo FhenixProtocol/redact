@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AddToken } from "../AddToken";
 import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
@@ -13,6 +13,7 @@ import { Button } from "~~/components/ui/Button";
 import { TokenAccordion, TokenData } from "~~/components/ui/FnxAccordion";
 import { customFormatEther, truncateAddress } from "~~/lib/common";
 import { useTokenStore } from "~~/services/store/tokenStore";
+import { useAllTokenBalances } from "~~/hooks/useTokenBalance";
 
 /**
  * Main panel that shows the user's balance and has buttons for "Send" or "Receive."
@@ -28,6 +29,17 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   } = useBalance({
     address,
   });
+
+  // Add the useAllTokenBalances hook
+  const { refreshBalances, isLoadingPublic, isLoadingPrivate } = useAllTokenBalances(address);
+
+  // Use useEffect to fetch balances when component mounts
+  useEffect(() => {
+    if (address) {
+      refreshBalances();
+    }
+  }, [address]);
+
   const [isManageTokensOpen, setIsManageTokensOpen] = useState(false);
   const { removeToken } = useTokenStore();
 
@@ -72,8 +84,7 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
     }
   }
 
-
-  // Map tokens from the store to the format expected by TokenAccordion
+  // Update the tokenDataForAccordion to use the loading states
   const tokenDataForAccordion = tokens.map((token) => ({
     symbol: token.symbol,
     publicBalance: token.publicBalance || "0",
@@ -81,8 +92,8 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
     icon: token.image,
     isCustom: token.isCustom || false,
     address: token.address,
-    isLoadingPublic: token.isLoadingPublic || false,
-    isLoadingPrivate: token.isLoadingPrivate || false,
+    isLoadingPublic: token.isLoadingPublic || isLoadingPublic,
+    isLoadingPrivate: token.isLoadingPrivate || isLoadingPrivate,
   }));
 
   return (
@@ -153,6 +164,15 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
           </div>
         </TokenAccordion>
       </div>
+
+      {/* You might want to add a refresh button somewhere */}
+      <Button
+        variant="ghost"
+        onClick={refreshBalances}
+        disabled={isLoadingPublic || isLoadingPrivate}
+      >
+        Refresh Balances
+      </Button>
     </div>
   );
 }
