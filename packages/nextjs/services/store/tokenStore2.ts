@@ -16,6 +16,10 @@ interface TokenItemData {
   symbol: string;
   decimals: number;
   image?: string;
+
+  // State
+  loading: boolean;
+  error: string | null;
 }
 
 interface ConfidentialTokenPair {
@@ -62,7 +66,7 @@ export const fetchInitialTokens = async (chain: string) => {
 
   useTokenStore.setState({ loadingTokens: true });
 
-  const confidentialPairs = await fetchTokenData(addresses);
+  const confidentialPairs = await fetchTokenData(chain, addresses);
   const tokens = Object.values(confidentialPairs);
 
   useTokenStore.setState(state => {
@@ -72,7 +76,7 @@ export const fetchInitialTokens = async (chain: string) => {
 };
 
 export const fetchToken = async (chain: string, address: string) => {
-  const confidentialPairs = await fetchTokenData([address]);
+  const confidentialPairs = await fetchTokenData(chain, [address]);
   const token = Object.values(confidentialPairs)[0];
 
   useTokenStore.setState(state => {
@@ -110,15 +114,38 @@ export async function fetchConfidentialTokenPairs(addresses: Address[]) {
   return confidentialPairs;
 }
 
-export async function fetchTokenData(addresses: Address[]) {
+export async function fetchTokenData(chain: string, addresses: Address[]) {
+  const addressMap: Record<string, boolean> = {};
+  for (const address of addresses) {
+    addressMap[address] = true;
+  }
+
+  // Mark as loading
+  useTokenStore.setState(state => {
+    const tokens = state.tokens[chain];
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+
+      if (!addressMap[token.publicToken.address]) continue;
+
+      token.publicToken.loading = true;
+      token.publicToken.error = null;
+      if (token.confidentialToken) {
+        token.confidentialToken.loading = true;
+        token.confidentialToken.error = null;
+      }
+    }
+  });
+
   // Fetch and list confidential tokens
   const confidentialAddressPairs = await fetchConfidentialTokenPairs(addresses);
   const confidentialTokenAddresses = Object.values(confidentialAddressPairs);
+  const allAddresses = [...confidentialTokenAddresses, ...addresses];
 
   // Fetch public token data
   const publicClient = getPublicClient(wagmiConfig);
   const result = await publicClient.multicall({
-    contracts: [...confidentialTokenAddresses, ...addresses].flatMap(address => [
+    contracts: allAddresses.flatMap(address => [
       {
         address,
         abi: erc20Abi,
@@ -157,13 +184,13 @@ export async function fetchTokenData(addresses: Address[]) {
             ? decimals.error
             : null;
 
-    if (error) continue;
-
     tokenDetails[address] = {
-      name: name.result as string,
-      symbol: symbol.result as string,
-      decimals: decimals.result as number,
+      name: (name.result ?? "") as string,
+      symbol: (symbol.result ?? "") as string,
+      decimals: (decimals.result ?? 0) as number,
       address,
+      loading: false,
+      error: error?.message ?? null,
     };
   }
 
