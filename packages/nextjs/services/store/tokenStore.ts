@@ -9,6 +9,10 @@ interface TokenListItem {
   address: string;
   confidentialAddress: string;
   isCustom?: boolean;
+  publicBalance?: string;
+  privateBalance?: string;
+  isLoadingPublic?: boolean;
+  isLoadingPrivate?: boolean;
 }
 
 interface TokenStore {
@@ -16,6 +20,8 @@ interface TokenStore {
   updateTokens: () => void;
   addToken: (newToken: TokenListItem) => void;
   removeToken: (token: string) => void;
+  updateTokenBalance: (tokenAddress: string, publicBalance?: string, privateBalance?: string) => void;
+  setTokenLoading: (tokenAddress: string, isLoadingPublic?: boolean, isLoadingPrivate?: boolean) => void;
 }
 
 export function getTokenList(): TokenListItem[] {
@@ -66,6 +72,34 @@ export const useTokenStore = create<TokenStore>(set => ({
     localStorage.setItem("tokenList", JSON.stringify(filteredTokens));
 
     set({ tokens: getTokenList() });
+  },
+  
+  updateTokenBalance: (tokenAddress: string, publicBalance?: string, privateBalance?: string) => {
+    set(state => ({
+      tokens: state.tokens.map(token => 
+        token.address === tokenAddress 
+          ? { 
+              ...token, 
+              ...(publicBalance !== undefined && { publicBalance }), 
+              ...(privateBalance !== undefined && { privateBalance })
+            } 
+          : token
+      )
+    }));
+  },
+
+  setTokenLoading: (tokenAddress: string, isLoadingPublic?: boolean, isLoadingPrivate?: boolean) => {
+    set(state => ({
+      tokens: state.tokens.map(token => 
+        token.address === tokenAddress 
+          ? { 
+              ...token, 
+              ...(isLoadingPublic !== undefined && { isLoadingPublic }), 
+              ...(isLoadingPrivate !== undefined && { isLoadingPrivate })
+            } 
+          : token
+      )
+    }));
   },
 }));
 
