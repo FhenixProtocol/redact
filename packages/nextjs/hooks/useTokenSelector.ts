@@ -1,13 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useCofhe } from "./useCofhe";
 import { Address } from "viem";
 import { useAccount } from "wagmi";
-import { useTokenBalance } from "~~/hooks/useTokenBalance";
-import { getTokenLogo } from "~~/lib/tokenUtils";
-import { TokenListItem, useTokenStore } from "~~/services/store/tokenStore";
-import { useEffect, useMemo, useState } from "react";
-import { Address } from "viem";
-import { useAccount } from "wagmi";
-import { useCofhe } from "~~/hooks/useCofhe";
 import { useTokenBalance } from "~~/hooks/useTokenBalance";
 import { getTokenLogo } from "~~/lib/tokenUtils";
 import { TokenListItem, useTokenStore } from "~~/services/store/tokenStore";
@@ -48,7 +42,6 @@ export function useTokenSelector(): UseTokenSelectorReturn {
   const { balance: selectedTokenBalance } = useTokenBalance({
     tokenAddress: selectedTokenInfo?.address as Address,
     userAddress: address,
-    decimals: selectedTokenInfo?.decimals,
     decimals: selectedTokenInfo?.decimals || 18,
     isPrivate: false,
   });
@@ -153,7 +146,7 @@ export function useTokenSelector(): UseTokenSelectorReturn {
     return tokens.map((token: TokenListItem) => ({
       value: token.symbol,
       name: token.symbol,
-      logo: getTokenLogo(token.symbol, token.image),
+      logo: token.image ? token.image : getTokenLogo(token.symbol),
     }));
   }, [tokens]);
 
@@ -172,7 +165,6 @@ export function useTokenSelector(): UseTokenSelectorReturn {
     selectedTokenInfo,
     processedTokens,
     handleSliderChange,
-    handleDepositChange,
     handleDepositChange,
     handleWithdrawChange,
   };

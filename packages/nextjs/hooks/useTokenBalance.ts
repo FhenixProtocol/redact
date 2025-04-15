@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { getPublicClient } from "@wagmi/core";
-import { FheAllUTypes, FheTypes, cofhejs } from "cofhejs/web";
+import { FheTypes, cofhejs } from "cofhejs/web";
 import { erc20Abi, formatUnits } from "viem";
 import { Address } from "viem";
 import { useReadContract } from "wagmi";
 import { useCofhe } from "~~/hooks/useCofhe";
 import { ConfidentialERC20Abi, RedactCoreAbi } from "~~/lib/abis";
 import { REDACT_CORE_ADDRESS } from "~~/lib/common";
-// Adjust this import path as needed
 import { getTokenLogo } from "~~/lib/tokenUtils";
 import { TokenListItem, useTokenStore } from "~~/services/store/tokenStore";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
@@ -136,12 +135,6 @@ export function useTokenBalance({ tokenAddress, userAddress, decimals, isPrivate
     return await refetch();
   };
 
-  return {
-    balance: balance ? formatUnits(balance, decimals) : "0",
-    isError,
-    isLoading,
-    refreshBalance,
-  };
   // Create the return value
   const returnValue = {
     balance: isPrivate ? privateBalance : balance ? formatUnits(balance, decimals) : "0",
@@ -275,7 +268,7 @@ export function useAllTokenBalances(userAddress?: Address) {
           symbol: token.symbol,
           publicBalance: formatUnits(publicBalanceData || BigInt(0), token.decimals),
           privateBalance: "0", // Will be updated later
-          logo: getTokenLogo(token.symbol, token.image),
+          logo: token.image ? token.image : getTokenLogo(token.symbol),
           isCustom: token.isCustom || false,
           address: token.address,
         };
