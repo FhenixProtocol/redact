@@ -1,6 +1,13 @@
 import defaultTokenList from "../../public/token-list.json";
 import { create } from "zustand";
+import { getPublicClient, waitForTransactionReceipt } from "wagmi/actions";
+import { writeContract } from "wagmi/actions";
+import { RedactCoreAbi } from "~~/lib/abis";
+import { Address } from "viem";
+import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 import { getTokenLogo } from "~~/lib/tokenUtils";
+import { REDACT_CORE_ADDRESS } from "~~/lib/common";
+
 interface TokenListItem {
   name: string;
   symbol: string;
@@ -22,6 +29,7 @@ interface TokenStore {
   removeToken: (token: string) => void;
   updateTokenBalance: (tokenAddress: string, publicBalance?: string, privateBalance?: string) => void;
   setTokenLoading: (tokenAddress: string, isLoadingPublic?: boolean, isLoadingPrivate?: boolean) => void;
+  deployToken: (newToken: TokenListItem) => Promise<string | null>;
 }
 
 export function getTokenList(): TokenListItem[] {
@@ -108,6 +116,58 @@ export const useTokenStore = create<TokenStore>(set => ({
           : token
       )
     }));
+  },
+  
+  // New function to deploy a confidential token
+  deployToken: async (newToken: TokenListItem) => {
+    try {
+      // Call the deployFherc20 function on the RedactCore contract
+      const hash = await writeContract(wagmiConfig, {
+        address: REDACT_CORE_ADDRESS,
+        abi: RedactCoreAbi,
+        functionName: 'deployFherc20',
+        args: [newToken.address],
+      });
+      
+      console.log('Deployment transaction hash:', hash);
+      
+      // Wait for the transaction to be mined
+      const receipt = await waitForTransactionReceipt(wagmiConfig, { hash });
+      console.log('Transaction receipt:', receipt);
+      
+      // Find the Fherc20Deployed event in the logs
+      const publicClient = getPublicClient(wagmiConfig);
+      const logs = await publicClient.getContractEvents({
+        address: REDACT_CORE_ADDRESS,
+        abi: RedactCoreAbi,
+        eventName: 'Fherc20Deployed',
+        fromBlock: receipt.blockNumber,
+        toBlock: receipt.blockNumber,
+      });
+      
+      // Find the event that matches our token address
+      const deployEvent = logs.find(log => 
+        log.args.erc20?.toLowerCase() === newToken.address.toLowerCase()
+      );
+      
+      if (deployEvent && deployEvent.args.fherc20) {
+        const confidentialAddress = deployEvent.args.fherc20 as string;
+        console.log('Confidential token deployed at:', confidentialAddress);
+        
+
+        newToken.confidentialAddress = confidentialAddress;
+
+        const { addToken } = useTokenStore.getState();
+
+        addToken(newToken);
+        return confidentialAddress;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error deploying confidential token:', error);
+      return null;
+    }
   },
 }));
 

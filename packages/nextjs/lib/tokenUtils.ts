@@ -2,7 +2,7 @@
 
 export function getTokenLogo(symbol: string): string {
   // Default fallback image
-  const defaultLogo = "/default-token-icon.png";
+  const defaultLogo = "/token-icons/default-token.webp";
 
   // Only run this check in the browser
   if (typeof window !== "undefined") {

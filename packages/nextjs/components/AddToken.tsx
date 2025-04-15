@@ -27,14 +27,15 @@ interface TokenListItem {
 }
 
 export function AddToken({ onAddToken, onClose }: AddTokenProps) {
-  const [, setIsAddingToken] = useState(false);
+  const [isAddingToken, setIsAddingToken] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [tokenAddress, setTokenAddress] = useState<string>("");
   const [isValidInput, setIsValidInput] = useState<boolean>(true);
   const [tokenDetails, setTokenDetails] = useState<TokenDetails | null>(null);
   const { isError, isLoading, fetchDetails } = useTokenDetails();
   const [isDeployNeeded, setIsDeployNeeded] = useState<boolean>(false);
-  const { addToken } = useTokenStore();
+  
+  const { addToken, deployToken } = useTokenStore();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -74,12 +75,9 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
     }
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (tokenDetails) {
-      if (isDeployNeeded) {
-        //TODO: Deploy token here and continue if success
-      }
-
+      setIsAddingToken(true);
       const existingTokens: TokenListItem[] = JSON.parse(localStorage.getItem("tokenList") || "[]");
 
       const tokenExists = existingTokens.some(
@@ -95,8 +93,12 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
           image: "",
           confidentialAddress: "0x0000000000000000000000000000000000000000",
         };
-        addToken(newToken);
-
+        if (isDeployNeeded) {
+          await deployToken(newToken);
+        } else {
+          addToken(newToken);
+        }
+  
         // const updatedTokens = [...existingTokens, newToken];
         // localStorage.setItem('tokenList', JSON.stringify(updatedTokens));
 
@@ -187,10 +189,10 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
           className="flex-1 text-white"
           uppercase={true}
           onClick={!tokenDetails ? handleSearch : handleAdd}
-          disabled={isLoading || isError || !tokenDetails}
+          disabled={isLoading || isError || !tokenDetails || isAddingToken}
           icon={isLoading ? SpinnerIcon : PlusIcon}
         >
-          {isLoading ? "Loading..." : isDeployNeeded ? "Deploy Token" : "Add Token"}
+          {isLoading ? "Loading..." : isAddingToken ? "Adding Token..." : isDeployNeeded ? "Deploy Token" : "Add Token"}
         </Button>
         <Button
           variant="surface"
