@@ -46,9 +46,12 @@ export const useTokenStore = create<TokenStore>()(
   ),
 );
 
-export const addArbitraryToken = (chain: string, address: string) => {
-  const existingTokens: ChainRecord<string> = JSON.parse(localStorage.getItem("arbitraryTokens") || "{}");
-  existingTokens[chain] = address;
+export const addArbitraryToken = async (chain: string, address: string) => {
+  useTokenStore.setState(state => {
+    state.arbitraryTokens[chain] = [...(state.arbitraryTokens[chain] ?? []), address];
+  });
+
+  await fetchToken(chain, address);
 };
 
 export const fetchInitialTokens = async (chain: string) => {
