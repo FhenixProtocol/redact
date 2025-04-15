@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { usePublicClient, useWalletClient } from 'wagmi';
-import { cofhejs, FheTypes, Environment, Permit, Encryptable } from 'cofhejs/web'
+import { useEffect, useState } from "react";
+import { Encryptable, Environment, FheTypes, Permit, cofhejs } from "cofhejs/web";
+import { usePublicClient, useWalletClient } from "wagmi";
 
 // Track initialization state globally
 let isInitializedGlobally = false;
@@ -23,37 +23,37 @@ export function useCofhe(config?: Partial<CofheConfig>) {
   const [permit, setPermit] = useState<Permit | undefined>(undefined);
 
   // Add checks to ensure we're in a browser environment
-  const isBrowser = typeof window !== 'undefined';
+  const isBrowser = typeof window !== "undefined";
 
   // Initialize when wallet is connected
   useEffect(() => {
     // Only run initialization in browser environment
     if (!isBrowser && !isInitializing) return;
-    
+
     const initialize = async () => {
       if (isInitializedGlobally || isInitializing || !publicClient || !walletClient) return;
       try {
         setIsInitializing(true);
-        
+
         const defaultConfig = {
           environment: "TESTNET" as Environment,
           verifierUrl: undefined,
           ignoreErrors: false,
-          generatePermit: true
+          generatePermit: true,
         };
-        
+
         // Merge default config with user-provided config
         const mergedConfig = { ...defaultConfig, ...config };
-        
+
         const result = await cofhejs.initializeWithViem({
           viemClient: publicClient,
           viemWalletClient: walletClient,
           environment: mergedConfig.environment,
           verifierUrl: mergedConfig.verifierUrl,
           ignoreErrors: mergedConfig.ignoreErrors,
-          generatePermit: mergedConfig.generatePermit
+          generatePermit: mergedConfig.generatePermit,
         });
-        
+
         if (result.success) {
           console.log("Cofhe initialized successfully");
           isInitializedGlobally = true;
@@ -64,8 +64,8 @@ export function useCofhe(config?: Partial<CofheConfig>) {
           setError(new Error(result.error));
         }
       } catch (err) {
-        console.error('Failed to initialize Cofhe:', err);
-        setError(err instanceof Error ? err : new Error('Unknown error initializing Cofhe'));
+        console.error("Failed to initialize Cofhe:", err);
+        setError(err instanceof Error ? err : new Error("Unknown error initializing Cofhe"));
       } finally {
         setIsInitializing(false);
       }
@@ -82,9 +82,9 @@ export function useCofhe(config?: Partial<CofheConfig>) {
     // Expose the original library functions directly
     ...cofhejs,
     FheTypes,
-    Encryptable
+    Encryptable,
   };
 }
 
 // Export FheTypes directly for convenience
-export { FheTypes } from 'cofhejs/web'; 
+export { FheTypes } from "cofhejs/web";

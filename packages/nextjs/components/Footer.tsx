@@ -22,18 +22,17 @@ export const Footer = () => {
 
   return (
     <footer className="p-4 flex items-center justify-end space-x-4 text-xs text-blue-900">
-    <div className="w-px h-4 bg-blue-900"></div> {/* Vertical divider */}
-    <span className="ml-2">Powered by Fhenix</span>
-
-    <div
-      className={`
+      <div className="w-px h-4 bg-blue-900"></div> {/* Vertical divider */}
+      <span className="ml-2">Powered by Fhenix</span>
+      <div
+        className={`
 absolute inset-0 z-10 bg-white/0
-${isDrawerOpen ? 'pointer-events-auto backdrop-blur-xs' : 'pointer-events-none backdrop-blur-none'}
+${isDrawerOpen ? "pointer-events-auto backdrop-blur-xs" : "pointer-events-none backdrop-blur-none"}
 transition-[backdrop-filter] duration-500
 `}
-      // Optionally click the overlay to close the drawer:
-      onClick={toggleDrawer}
-    />
-
-  </footer>  );
+        // Optionally click the overlay to close the drawer:
+        onClick={toggleDrawer}
+      />
+    </footer>
+  );
 };

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { wagmiConnectors } from "./wagmiConnectors";
 import { Chain, createClient, fallback, http } from "viem";

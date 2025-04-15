@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { cn } from "~~/lib/utils";
 
 interface FnxInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -21,7 +21,21 @@ const sizeVariants = {
 };
 
 export const FnxInput = React.forwardRef<HTMLInputElement, FnxInputProps>(
-  ({ className, error, noSpinner, noBorder, noOutline = true, height, rightElement, variant = "md", fadeEnd, ...props }, ref) => {
+  (
+    {
+      className,
+      error,
+      noSpinner,
+      noBorder,
+      noOutline = true,
+      height,
+      rightElement,
+      variant = "md",
+      fadeEnd,
+      ...props
+    },
+    ref,
+  ) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const [showLeftFade, setShowLeftFade] = useState(false);
     const [showRightFade, setShowRightFade] = useState(false);
@@ -32,15 +46,14 @@ export const FnxInput = React.forwardRef<HTMLInputElement, FnxInputProps>(
         if (input) {
           setShowLeftFade(input.scrollLeft > 0);
           setShowRightFade(
-            input.scrollWidth > input.clientWidth &&
-            input.scrollLeft < input.scrollWidth - input.clientWidth
+            input.scrollWidth > input.clientWidth && input.scrollLeft < input.scrollWidth - input.clientWidth,
           );
         }
       };
 
       const input = inputRef.current;
       if (input) {
-        input.addEventListener('scroll', checkScroll);
+        input.addEventListener("scroll", checkScroll);
         // Also check on content changes
         const observer = new ResizeObserver(checkScroll);
         observer.observe(input);
@@ -49,22 +62,24 @@ export const FnxInput = React.forwardRef<HTMLInputElement, FnxInputProps>(
 
       return () => {
         if (input) {
-          input.removeEventListener('scroll', checkScroll);
+          input.removeEventListener("scroll", checkScroll);
         }
       };
     }, []);
 
     return (
       <div className="relative w-full overflow-hidden drop-shadow-sm">
-        <div className={cn(
-          "flex justify-between rounded-full border-1 border-primary-accent p-0 m-0 bg-theme-white relative",
-          error && "border-red-500"
-        )}>
+        <div
+          className={cn(
+            "flex justify-between rounded-full border-1 border-primary-accent p-0 m-0 bg-theme-white relative",
+            error && "border-red-500",
+          )}
+        >
           <input
-            ref={(node) => {
+            ref={node => {
               // Handle both refs
               inputRef.current = node;
-              if (typeof ref === 'function') {
+              if (typeof ref === "function") {
                 ref(node);
               } else if (ref) {
                 ref.current = node;
@@ -78,7 +93,7 @@ export const FnxInput = React.forwardRef<HTMLInputElement, FnxInputProps>(
               noOutline && "no-outline",
               noSpinner && "no-spinner",
               height,
-              className
+              className,
             )}
             {...props}
           />
@@ -90,14 +105,10 @@ export const FnxInput = React.forwardRef<HTMLInputElement, FnxInputProps>(
           )}
           {rightElement}
         </div>
-        {error && (
-          <span className="absolute -bottom-5 left-4 text-xs text-red-500">
-            {error}
-          </span>
-        )}
+        {error && <span className="absolute -bottom-5 left-4 text-xs text-red-500">{error}</span>}
       </div>
     );
-  }
+  },
 );
 
-FnxInput.displayName = "FnxInput"; 
+FnxInput.displayName = "FnxInput";

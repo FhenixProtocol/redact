@@ -1,11 +1,7 @@
 "use client";
+
+import React, { CSSProperties, ComponentPropsWithoutRef, useEffect, useRef } from "react";
 import { cn } from "~~/lib/utils";
-import React, {
-  ComponentPropsWithoutRef,
-  CSSProperties,
-  useEffect,
-  useRef,
-} from "react";
 
 interface GlowAreaProps extends ComponentPropsWithoutRef<"div"> {
   size?: number;
@@ -19,14 +15,8 @@ export const GlowArea = (props: GlowAreaProps) => {
 
   const updateGlow = () => {
     if (latestCoords.current && element.current) {
-      element.current.style.setProperty(
-        "--glow-x",
-        `${latestCoords.current.x}px`,
-      );
-      element.current.style.setProperty(
-        "--glow-y",
-        `${latestCoords.current.y}px`,
-      );
+      element.current.style.setProperty("--glow-x", `${latestCoords.current.x}px`);
+      element.current.style.setProperty("--glow-y", `${latestCoords.current.y}px`);
       frameId.current = null;
     }
   };
@@ -76,14 +66,8 @@ export const Glow = (props: GlowProps) => {
   const element = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    element.current?.style.setProperty(
-      "--glow-top",
-      `${element.current?.offsetTop}px`,
-    );
-    element.current?.style.setProperty(
-      "--glow-left",
-      `${element.current?.offsetLeft}px`,
-    );
+    element.current?.style.setProperty("--glow-top", `${element.current?.offsetTop}px`);
+    element.current?.style.setProperty("--glow-left", `${element.current?.offsetLeft}px`);
   }, []);
 
   return (

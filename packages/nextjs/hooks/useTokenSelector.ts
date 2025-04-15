@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useAccount } from 'wagmi';
-import { Address } from 'viem';
-import { TokenListItem, useTokenStore } from '~~/services/store/tokenStore';
-import { useTokenBalance } from '~~/hooks/useTokenBalance';
-import { getTokenLogo } from '~~/lib/tokenUtils';
+import { useEffect, useMemo, useState } from "react";
+import { Address } from "viem";
+import { useAccount } from "wagmi";
 import { useCofhe } from "~~/hooks/useCofhe";
+import { useTokenBalance } from "~~/hooks/useTokenBalance";
+import { getTokenLogo } from "~~/lib/tokenUtils";
+import { TokenListItem, useTokenStore } from "~~/services/store/tokenStore";
 
 export interface UseTokenSelectorReturn {
   token: string;
@@ -34,41 +34,40 @@ export function useTokenSelector(): UseTokenSelectorReturn {
   const { tokens } = useTokenStore();
   const { isInitialized } = useCofhe();
   const [sliderValue, setSliderValue] = useState([50]);
-  const [token, setToken] = useState<string>(tokens[0]?.symbol || '');
+  const [token, setToken] = useState<string>(tokens[0]?.symbol || "");
 
   const selectedTokenInfo = tokens.find((t: TokenListItem) => t.symbol === token);
-  
+
   // Public balance
   const { balance: selectedTokenBalance } = useTokenBalance({
     tokenAddress: selectedTokenInfo?.address as Address,
     userAddress: address,
     decimals: selectedTokenInfo?.decimals || 18,
-    isPrivate: false
+    isPrivate: false,
   });
-  
+
   // Private balance - only fetch when cofhejs is initialized
   const { balance: selectedPrivateTokenBalance, isLoading: isLoadingPrivateBalance } = useTokenBalance({
     tokenAddress: selectedTokenInfo?.address as Address,
     userAddress: address,
     decimals: selectedTokenInfo?.decimals || 18,
-    isPrivate: true
+    isPrivate: true,
   });
-  
 
   const [depositValue, setDepositValue] = useState(() => {
     const initialBalance = Number(selectedTokenBalance);
     return (initialBalance * 50) / 100;
   });
-  
+
   const [withdrawValue, setWithdrawValue] = useState(() => {
     const initialPrivateBalance = Number(selectedPrivateTokenBalance);
     return (initialPrivateBalance * 50) / 100;
   });
-  
+
   // Add flags to track manual input
   const [isManualDepositInput, setIsManualDepositInput] = useState(false);
   const [isManualWithdrawInput, setIsManualWithdrawInput] = useState(false);
-  
+
   // Modified to handle both deposit and withdraw cases
   const handleSliderChange = (value: number, isWithdraw = false) => {
     // When slider is moved directly, exit manual input mode
@@ -77,9 +76,9 @@ export function useTokenSelector(): UseTokenSelectorReturn {
     } else {
       setIsManualDepositInput(false);
     }
-    
+
     setSliderValue([value]);
-    
+
     if (isWithdraw) {
       const newWithdrawValue = (Number(selectedPrivateTokenBalance) * value) / 100;
       setWithdrawValue(newWithdrawValue);
@@ -92,13 +91,13 @@ export function useTokenSelector(): UseTokenSelectorReturn {
   const handleDepositChange = (value: string) => {
     // Enter manual input mode
     setIsManualDepositInput(true);
-    
+
     let newDeposit = parseFloat(value);
     if (isNaN(newDeposit)) newDeposit = 0;
-    
+
     // Don't cap the value, allow any input
     setDepositValue(newDeposit);
-    
+
     // Update slider to approximate position
     const currentBalance = Number(selectedTokenBalance);
     if (currentBalance > 0) {
@@ -110,13 +109,13 @@ export function useTokenSelector(): UseTokenSelectorReturn {
   const handleWithdrawChange = (value: string) => {
     // Enter manual input mode
     setIsManualWithdrawInput(true);
-    
+
     let newWithdraw = parseFloat(value);
     if (isNaN(newWithdraw)) newWithdraw = 0;
-    
+
     // Don't cap the value, allow any input
     setWithdrawValue(newWithdraw);
-    
+
     // Update slider to approximate position
     const currentPrivateBalance = Number(selectedPrivateTokenBalance);
     if (currentPrivateBalance > 0) {
@@ -133,7 +132,7 @@ export function useTokenSelector(): UseTokenSelectorReturn {
       setDepositValue((newBalance * percentage) / 100);
     }
   }, [selectedTokenBalance, sliderValue, isManualDepositInput]);
-  
+
   // Update withdraw value when private token balance changes, but only if not in manual input mode
   useEffect(() => {
     if (!isManualWithdrawInput) {
@@ -147,7 +146,7 @@ export function useTokenSelector(): UseTokenSelectorReturn {
     return tokens.map((token: TokenListItem) => ({
       value: token.symbol,
       name: token.symbol,
-      logo: getTokenLogo(token.symbol, token.image)
+      logo: getTokenLogo(token.symbol, token.image),
     }));
   }, [tokens]);
 
@@ -167,6 +166,6 @@ export function useTokenSelector(): UseTokenSelectorReturn {
     processedTokens,
     handleSliderChange,
     handleDepositChange,
-    handleWithdrawChange
+    handleWithdrawChange,
   };
-} 
+}

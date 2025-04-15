@@ -1,10 +1,10 @@
-import type React from "react"
-import type { LucideIcon } from "lucide-react"
-import { cn } from "~~/lib/utils"
+import type React from "react";
+import type { LucideIcon } from "lucide-react";
+import { cn } from "~~/lib/utils";
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  icon: LucideIcon
-  size?: "sm" | "md" | "lg"
+  icon: LucideIcon;
+  size?: "sm" | "md" | "lg";
 }
 
 export function IconButton({ icon: Icon, size = "md", className, ...props }: IconButtonProps) {
@@ -12,7 +12,7 @@ export function IconButton({ icon: Icon, size = "md", className, ...props }: Ico
     sm: "w-6 h-6",
     md: "w-8 h-8",
     lg: "w-10 h-10",
-  }
+  };
 
   return (
     <button
@@ -25,6 +25,5 @@ export function IconButton({ icon: Icon, size = "md", className, ...props }: Ico
     >
       <Icon className={cn("h-4 w-4", { "h-5 w-5": size === "lg" })} />
     </button>
-  )
+  );
 }
-

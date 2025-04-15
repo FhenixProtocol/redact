@@ -1,42 +1,35 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
+import * as LabelPrimitive from "@radix-ui/react-label";
+import { type VariantProps, cva } from "class-variance-authority";
 import { LucideIcon } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "~~/components/ui/RadioGroup";
 import { cn } from "~~/lib/utils";
-import { RadioGroup, RadioGroupItem } from "~~/components/ui/RadioGroup"
-import * as LabelPrimitive from "@radix-ui/react-label"
-import { cva, type VariantProps } from "class-variance-authority"
 
 interface RadioButtonGroupProps {
-  labels: string[]
-  values?: string[]
-  Icons?: LucideIcon[]
-  value: string
-  onChange: (value: string) => void,
-  className?: string
+  labels: string[];
+  values?: string[];
+  Icons?: LucideIcon[];
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
 }
 
-const labelVariants = cva(
-  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-)
+const labelVariants = cva("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70");
 
 const Label = React.forwardRef<
   React.ComponentRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
-    VariantProps<typeof labelVariants>
+  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & VariantProps<typeof labelVariants>
 >(({ className, ...props }, ref) => (
-  <LabelPrimitive.Root
-    ref={ref}
-    className={cn(labelVariants(), className)}
-    {...props}
-  />
-))
-Label.displayName = LabelPrimitive.Root.displayName
+  <LabelPrimitive.Root ref={ref} className={cn(labelVariants(), className)} {...props} />
+));
+Label.displayName = LabelPrimitive.Root.displayName;
 
 const RadioButtonGroup = ({ labels, Icons, values, value, onChange, className }: RadioButtonGroupProps) => {
   if (!values) {
     values = labels;
-  };
+  }
 
   return (
     <div className="w-full p-2">
@@ -57,8 +50,8 @@ const RadioButtonGroup = ({ labels, Icons, values, value, onChange, className }:
                 transition-all
                 hover:bg-blue-500/20
                 `,
-                            value === val
-                              ? `
+                value === val
+                  ? `
                   text-theme-black
                   bg-info-300
                   before:content-['']
@@ -70,7 +63,7 @@ const RadioButtonGroup = ({ labels, Icons, values, value, onChange, className }:
                   before:pointer-events-none
                   `
                   : `bg-gray-200 text-blue-400`,
-                className // Ensure `className` is passed correctly as a separate argument
+                className, // Ensure `className` is passed correctly as a separate argument
               )}
             >
               <RadioGroupItem id={val} value={val} className="sr-only" />
@@ -82,12 +75,11 @@ const RadioButtonGroup = ({ labels, Icons, values, value, onChange, className }:
             </Label>
           );
         })}
-
       </RadioGroup>
     </div>
-  )
-}
+  );
+};
 
-RadioButtonGroup.displayName = "RadioButtonGroup"
+RadioButtonGroup.displayName = "RadioButtonGroup";
 
-export { RadioButtonGroup }
+export { RadioButtonGroup };

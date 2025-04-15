@@ -1,17 +1,12 @@
 // components/FnxSelect.tsx
-
 "use client";
 
 import * as React from "react";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "~~/components/ui/Select";
-import Image from 'next/image';
 import { useState } from "react";
+import Image from "next/image";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~~/components/ui/Select";
+
+// components/FnxSelect.tsx
 
 interface FnxSelectItem {
   logo?: string;
@@ -37,14 +32,7 @@ interface FnxSelectProps {
 /**
  * A reusable Select component wrapping Radix and shadcn/ui's Select primitives.
  */
-export function FnxSelect({
-  value,
-  onChange,
-  items,
-  placeholder = "Select",
-  className,
-  fixedFooter,
-}: FnxSelectProps) {
+export function FnxSelect({ value, onChange, items, placeholder = "Select", className, fixedFooter }: FnxSelectProps) {
   const [open, setOpen] = useState(false);
 
   const handleClose = () => {
@@ -61,28 +49,24 @@ export function FnxSelect({
       >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent 
-        className="rounded-[20px] border-none p-0 bg-surface"
-        position="popper"
-        sideOffset={-48}
-      >
+      <SelectContent className="rounded-[20px] border-none p-0 bg-surface" position="popper" sideOffset={-48}>
         {items.map((item: FnxSelectItem) => (
-          <SelectItem 
-            key={item.value} 
-            value={item.value} 
+          <SelectItem
+            key={item.value}
+            value={item.value}
             className="my-1 hover:bg-white/50 data-[state=checked]:bg-white"
           >
             <div className="flex items-center gap-2 font-medium text-md">
               {item.logo ? (
-                <Image 
-                  src={item.logo} 
-                  alt={item.name} 
-                  width={24} 
-                  height={24} 
+                <Image
+                  src={item.logo}
+                  alt={item.name}
+                  width={24}
+                  height={24}
                   className="w-6 h-6"
                   style={{
-                    maxWidth: '100%',
-                    height: 'auto'
+                    maxWidth: "100%",
+                    height: "auto",
                   }}
                 />
               ) : (

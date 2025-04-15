@@ -1,28 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Switcher } from "~~/components/ui/Switcher";
+import { Eye, EyeOff, MoveUpRight } from "lucide-react";
+import { Button } from "~~/components/ui/Button";
+import { FnxInput } from "~~/components/ui/FnxInput";
 import { FnxSelect } from "~~/components/ui/FnxSelect";
 import { Slider } from "~~/components/ui/FnxSlider";
-import { Button } from "~~/components/ui/Button";
-import { Eye, EyeOff, MoveUpRight } from "lucide-react";
-import { getGasPrice, customFormatEther } from "~~/lib/common";
+import { Switcher } from "~~/components/ui/Switcher";
 import { useTokenSelector } from "~~/hooks/useTokenSelector";
-import { FnxInput } from "~~/components/ui/FnxInput";
+import { customFormatEther, getGasPrice } from "~~/lib/common";
 
 export function SendPage() {
   const [switcherValue, setSwitcherValue] = useState(0);
   const [toAddress, setToAddress] = useState<string>("");
   const [gasPrice, setGasPrice] = useState<string>("0 ETH");
 
-  const {
-    token,
-    setToken,
-    sliderValue,
-    depositValue,
-    processedTokens,
-    handleSliderChange,
-    handleDepositChange
-  } = useTokenSelector();
-
+  const { token, setToken, sliderValue, depositValue, processedTokens, handleSliderChange, handleDepositChange } =
+    useTokenSelector();
 
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
@@ -42,9 +34,12 @@ export function SendPage() {
     <div className="p-4 flex flex-col gap-4">
       <Switcher
         label="Mode"
-        options={[{ description: "Public", icon: Eye}, { description: "Confidential", icon: EyeOff}]}
+        options={[
+          { description: "Public", icon: Eye },
+          { description: "Confidential", icon: EyeOff },
+        ]}
         value={switcherValue}
-        onValueChange={(val) => setSwitcherValue(val)}
+        onValueChange={val => setSwitcherValue(val)}
         className=""
       />
 
@@ -52,7 +47,7 @@ export function SendPage() {
         <FnxInput
           type="number"
           value={depositValue}
-          onChange={(e) => handleDepositChange(e.target.value)}
+          onChange={e => handleDepositChange(e.target.value)}
           placeholder="Amount"
           noSpinner={true}
           rightElement={
@@ -66,11 +61,11 @@ export function SendPage() {
           }
         />
       </div>
-      
+
       <Slider
         className="w-[95%] self-center"
         value={sliderValue}
-        onValueChange={(val) => {
+        onValueChange={val => {
           if (val[0] !== undefined) {
             handleSliderChange(val[0]);
           }
@@ -82,19 +77,13 @@ export function SendPage() {
       />
 
       <div>
-        <FnxInput
-          type="text"
-          value={toAddress}
-          onChange={(e) => setToAddress(e.target.value)}
-          placeholder="To:"
-          
-        />
+        <FnxInput type="text" value={toAddress} onChange={e => setToAddress(e.target.value)} placeholder="To:" />
       </div>
-      
+
       <div className="font-reddit-sans text-xs">
         Gas Price: <span className="font-reddit-mono font-bold">{gasPrice}</span>
-      </div>     
-      
+      </div>
+
       <Button className="bg-primary-accent text-white font-bold text-sm" icon={MoveUpRight}>
         Send
       </Button>

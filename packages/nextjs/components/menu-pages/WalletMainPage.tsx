@@ -1,23 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-
-import { Button } from "~~/components/ui/Button";
-import { customFormatEther, truncateAddress } from "~~/lib/common";
-import { MoveUpRight, MoveDownLeft, PlusIcon, MinusIcon } from "lucide-react"; // Example icons
-
-import { useAccount, useBalance } from "wagmi";
-import { SendPage } from "./SendPage";
+import { AddToken } from "../AddToken";
 import { ReceivePage } from "./ReceivePage";
-
+import { SendPage } from "./SendPage";
+import { AnimatePresence, motion } from "framer-motion";
+import { MinusIcon, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
+// Example icons
+import { useAccount, useBalance } from "wagmi";
+import { DrawerChildProps } from "~~/components/Drawer";
+import { Button } from "~~/components/ui/Button";
 import { TokenAccordion, TokenData } from "~~/components/ui/FnxAccordion";
 import { TokenBalanceInfo, useAllTokenBalances } from "~~/hooks/useTokenBalance";
-import { AddToken } from "../AddToken";
-import { useTokenStore } from '~~/services/store/tokenStore';
-import { DrawerChildProps } from "~~/components/Drawer";
-
-
+import { customFormatEther, truncateAddress } from "~~/lib/common";
+import { useTokenStore } from "~~/services/store/tokenStore";
 
 /**
  * Main panel that shows the user's balance and has buttons for "Send" or "Receive."
@@ -25,8 +21,12 @@ import { DrawerChildProps } from "~~/components/Drawer";
  */
 export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   const { address } = useAccount();
-  const { tokenBalances,  } = useAllTokenBalances(address)
-  const { data: balanceData, isError, isLoading: balanceLoading } = useBalance({
+  const { tokenBalances } = useAllTokenBalances(address);
+  const {
+    data: balanceData,
+    isError,
+    isLoading: balanceLoading,
+  } = useBalance({
     address,
   });
   const [isManageTokensOpen, setIsManageTokensOpen] = useState(false);
@@ -39,7 +39,6 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   // const handleDecrypt = (token: TokenData) => {
   //   console.log("Decrypt", token);
   // };
-
 
   // Handler for "Send" -> push a new page
   const handleSend = () => {
@@ -64,7 +63,7 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
     }
   };
 
-   // Balance display
+  // Balance display
   let balanceText = "Loading...";
   if (!balanceLoading) {
     if (isError || !balanceData) {
@@ -75,9 +74,7 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   }
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-xxl font-bold text-primary self-center">
-        {balanceText}
-      </div>
+      <div className="text-xxl font-bold text-primary self-center">{balanceText}</div>
 
       <div className="flex gap-2 justify-center">
         <Button
@@ -108,7 +105,7 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
             privateBalance: token.privateBalance,
             icon: token.logo,
             isCustom: token.isCustom,
-            address: token.address
+            address: token.address,
           }))}
           editMode={isManageTokensOpen}
           onRemove={(token: string) => {
@@ -119,17 +116,17 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
             console.log("Encrypt", token);
             // Handle encryption
           }}
-          onDecrypt={(token: TokenData) => {  
+          onDecrypt={(token: TokenData) => {
             console.log("Decrypt", token);
             // Handle decryption
           }}
         >
           <div className="flex flex-col gap-2 justify-center w-full">
-            <Button 
-              variant="ghost2" 
-              noOutline={true} 
-              icon={isManageTokensOpen ? MinusIcon : PlusIcon}  
-              className="w-full" 
+            <Button
+              variant="ghost2"
+              noOutline={true}
+              icon={isManageTokensOpen ? MinusIcon : PlusIcon}
+              className="w-full"
               onClick={() => setIsManageTokensOpen(!isManageTokensOpen)}
             >
               Manage Tokens
@@ -137,21 +134,18 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
 
             <AnimatePresence>
               {isManageTokensOpen && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <AddToken
-                    onClose={() => setIsManageTokensOpen(false)}
-                  />
+                  <AddToken onClose={() => setIsManageTokensOpen(false)} />
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </TokenAccordion>
-
       </div>
     </div>
   );

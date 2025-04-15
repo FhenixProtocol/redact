@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { LucideIcon } from "lucide-react";
 import { cn } from "~~/lib/utils";
-import { LucideIcon } from "lucide-react"; // Import icon type
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+// Import icon type
+
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "default" | "surface" | "destructive" | "ghost" | "ghost2";
   size?: "md" | "xs" | "sm" | "lg";
   icon?: LucideIcon | React.ComponentType | null;
@@ -33,14 +34,25 @@ const sizeVariants = {
 const iconSizeVariants = {
   xs: "10px",
   sm: "12px",
-  md: "16px",    
+  md: "16px",
   lg: "24px",
 };
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant = "default", size = "md", iconSize = "md", icon: Icon, children, noOutline = false, uppercase = false, textCenter = false, ...props },
-    ref
+    {
+      className,
+      variant = "default",
+      size = "md",
+      iconSize = "md",
+      icon: Icon,
+      children,
+      noOutline = false,
+      uppercase = false,
+      textCenter = false,
+      ...props
+    },
+    ref,
   ) => {
     return (
       <button
@@ -59,15 +71,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           sizeVariants[size],
           "disabled:opacity-50 disabled:cursor-not-allowed hover:disabled:bg-inherit",
           uppercase && "uppercase",
-          className
+          className,
         )}
         {...props}
       >
-        {Icon && <Icon style={{ width: iconSizeVariants[iconSize], height: iconSizeVariants[iconSize]  }} />}
+        {Icon && <Icon style={{ width: iconSizeVariants[iconSize], height: iconSizeVariants[iconSize] }} />}
         {children}
       </button>
     );
-  }
+  },
 );
 
 Button.displayName = "Button";
