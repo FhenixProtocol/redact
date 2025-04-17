@@ -1589,4 +1589,4 @@ export const RedactCoreAbi = [
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;
