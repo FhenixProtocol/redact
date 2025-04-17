@@ -6,8 +6,452 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
   31337: {
+    Multicall3: {
+      address: "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
+      abi: [
+        {
+          inputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "target",
+                  type: "address",
+                },
+                {
+                  internalType: "bytes",
+                  name: "callData",
+                  type: "bytes",
+                },
+              ],
+              internalType: "struct Multicall3.Call[]",
+              name: "calls",
+              type: "tuple[]",
+            },
+          ],
+          name: "aggregate",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "blockNumber",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes[]",
+              name: "returnData",
+              type: "bytes[]",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "target",
+                  type: "address",
+                },
+                {
+                  internalType: "bool",
+                  name: "allowFailure",
+                  type: "bool",
+                },
+                {
+                  internalType: "bytes",
+                  name: "callData",
+                  type: "bytes",
+                },
+              ],
+              internalType: "struct Multicall3.Call3[]",
+              name: "calls",
+              type: "tuple[]",
+            },
+          ],
+          name: "aggregate3",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "bool",
+                  name: "success",
+                  type: "bool",
+                },
+                {
+                  internalType: "bytes",
+                  name: "returnData",
+                  type: "bytes",
+                },
+              ],
+              internalType: "struct Multicall3.Result[]",
+              name: "returnData",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "target",
+                  type: "address",
+                },
+                {
+                  internalType: "bool",
+                  name: "allowFailure",
+                  type: "bool",
+                },
+                {
+                  internalType: "uint256",
+                  name: "value",
+                  type: "uint256",
+                },
+                {
+                  internalType: "bytes",
+                  name: "callData",
+                  type: "bytes",
+                },
+              ],
+              internalType: "struct Multicall3.Call3Value[]",
+              name: "calls",
+              type: "tuple[]",
+            },
+          ],
+          name: "aggregate3Value",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "bool",
+                  name: "success",
+                  type: "bool",
+                },
+                {
+                  internalType: "bytes",
+                  name: "returnData",
+                  type: "bytes",
+                },
+              ],
+              internalType: "struct Multicall3.Result[]",
+              name: "returnData",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "target",
+                  type: "address",
+                },
+                {
+                  internalType: "bytes",
+                  name: "callData",
+                  type: "bytes",
+                },
+              ],
+              internalType: "struct Multicall3.Call[]",
+              name: "calls",
+              type: "tuple[]",
+            },
+          ],
+          name: "blockAndAggregate",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "blockNumber",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes32",
+              name: "blockHash",
+              type: "bytes32",
+            },
+            {
+              components: [
+                {
+                  internalType: "bool",
+                  name: "success",
+                  type: "bool",
+                },
+                {
+                  internalType: "bytes",
+                  name: "returnData",
+                  type: "bytes",
+                },
+              ],
+              internalType: "struct Multicall3.Result[]",
+              name: "returnData",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getBasefee",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "basefee",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "blockNumber",
+              type: "uint256",
+            },
+          ],
+          name: "getBlockHash",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "blockHash",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getBlockNumber",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "blockNumber",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getChainId",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "chainid",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getCurrentBlockCoinbase",
+          outputs: [
+            {
+              internalType: "address",
+              name: "coinbase",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getCurrentBlockDifficulty",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "difficulty",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getCurrentBlockGasLimit",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "gaslimit",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getCurrentBlockTimestamp",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "addr",
+              type: "address",
+            },
+          ],
+          name: "getEthBalance",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "balance",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getLastBlockHash",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "blockHash",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bool",
+              name: "requireSuccess",
+              type: "bool",
+            },
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "target",
+                  type: "address",
+                },
+                {
+                  internalType: "bytes",
+                  name: "callData",
+                  type: "bytes",
+                },
+              ],
+              internalType: "struct Multicall3.Call[]",
+              name: "calls",
+              type: "tuple[]",
+            },
+          ],
+          name: "tryAggregate",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "bool",
+                  name: "success",
+                  type: "bool",
+                },
+                {
+                  internalType: "bytes",
+                  name: "returnData",
+                  type: "bytes",
+                },
+              ],
+              internalType: "struct Multicall3.Result[]",
+              name: "returnData",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bool",
+              name: "requireSuccess",
+              type: "bool",
+            },
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "target",
+                  type: "address",
+                },
+                {
+                  internalType: "bytes",
+                  name: "callData",
+                  type: "bytes",
+                },
+              ],
+              internalType: "struct Multicall3.Call[]",
+              name: "calls",
+              type: "tuple[]",
+            },
+          ],
+          name: "tryBlockAndAggregate",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "blockNumber",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes32",
+              name: "blockHash",
+              type: "bytes32",
+            },
+            {
+              components: [
+                {
+                  internalType: "bool",
+                  name: "success",
+                  type: "bool",
+                },
+                {
+                  internalType: "bytes",
+                  name: "returnData",
+                  type: "bytes",
+                },
+              ],
+              internalType: "struct Multicall3.Result[]",
+              name: "returnData",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+      ],
+      inheritedFunctions: {},
+    },
     RedactCore: {
-      address: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+      address: "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1",
       abi: [
         {
           inputs: [
@@ -401,7 +845,7 @@ const deployedContracts = {
       },
     },
     USDC: {
-      address: "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+      address: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
       abi: [
         {
           inputs: [
@@ -772,7 +1216,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     eETH: {
-      address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+      address: "0x59b670e9fA9D0A427751Af201D676719a970857b",
       abi: [
         {
           inputs: [
@@ -1992,7 +2436,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     wETH: {
-      address: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+      address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
       abi: [
         {
           inputs: [],
