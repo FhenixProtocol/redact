@@ -31,15 +31,6 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
     address,
   });
   const [isManageTokensOpen, setIsManageTokensOpen] = useState(false);
-  const { removeToken } = useTokenStore();
-
-  // const handleEncrypt = (token: TokenData) => {
-  //   console.log("Encrypt", token);
-  // };
-
-  // const handleDecrypt = (token: TokenData) => {
-  //   console.log("Decrypt", token);
-  // };
 
   // Handler for "Send" -> push a new page
   const handleSend = () => {
@@ -126,54 +117,6 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
             </AnimatePresence>
           </div>
         </TokenAccordion2>
-        {/* <TokenAccordion
-          tokens={tokenBalances.map((token: TokenBalanceInfo) => ({
-            symbol: token.symbol,
-            publicBalance: token.publicBalance,
-            privateBalance: token.privateBalance,
-            icon: token.logo,
-            isCustom: token.isCustom,
-            address: token.address,
-          }))}
-          editMode={isManageTokensOpen}
-          onRemove={(token: string) => {
-            removeToken(token);
-            console.log("Remove", token);
-          }}
-          onEncrypt={(token: TokenData) => {
-            console.log("Encrypt", token);
-            // Handle encryption
-          }}
-          onDecrypt={(token: TokenData) => {
-            console.log("Decrypt", token);
-            // Handle decryption
-          }}
-        >
-          <div className="flex flex-col gap-2 justify-center w-full">
-            <Button
-              variant="ghost2"
-              noOutline={true}
-              icon={isManageTokensOpen ? MinusIcon : PlusIcon}
-              className="w-full"
-              onClick={() => setIsManageTokensOpen(!isManageTokensOpen)}
-            >
-              Manage Tokens
-            </Button>
-
-            <AnimatePresence>
-              {isManageTokensOpen && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <AddToken onClose={() => setIsManageTokensOpen(false)} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </TokenAccordion> */}
       </div>
     </div>
   );

@@ -96,7 +96,6 @@ const _addPairToStore = (
   pair: ConfidentialTokenPair,
   balances?: ConfidentialTokenPairBalances,
 ) => {
-  console.log("adding pair to store", pair);
   state.pairs[chain] = {
     ...state.pairs[chain],
     [pair.publicToken.address]: pair,
@@ -118,7 +117,6 @@ const _addPairToStore = (
 // OTHER
 
 const _addArbitraryToken = async (chain: number, { pair, balances }: ConfidentialTokenPairWithBalances) => {
-  console.log("Add arbitrary token", pair, balances);
   useTokenStore.setState(state => {
     _addPairToStore(state, chain, pair, balances);
     state.arbitraryTokens[chain] = {
