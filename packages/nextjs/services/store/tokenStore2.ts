@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { useCallback, useRef } from "react";
 import { wagmiConfig } from "../web3/wagmiConfig";
 import { WritableDraft } from "immer";
 import { Address, erc20Abi, zeroAddress } from "viem";
+import { deepEqual, useChainId } from "wagmi";
 import { getAccount, getPublicClient } from "wagmi/actions";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -46,13 +48,13 @@ export interface ConfidentialTokenPairWithBalances {
 
 interface TokenStore {
   loadingTokens: boolean;
-  publicTokens: ChainRecord<AddressRecord<TokenItemData>>;
-  confidentialTokens: ChainRecord<AddressRecord<TokenItemData>>;
-  arbitraryTokens: ChainRecord<AddressRecord<string>>;
-  publicToConfidentialMap: ChainRecord<AddressRecord<Address>>;
+
+  pairs: ChainRecord<AddressRecord<ConfidentialTokenPair>>;
   confidentialToPublicMap: ChainRecord<AddressRecord<Address>>;
-  publicIsStablecoinMap: ChainRecord<AddressRecord<boolean>>;
-  publicIsWETHMap: ChainRecord<AddressRecord<boolean>>;
+
+  balances: ChainRecord<AddressRecord<ConfidentialTokenPairBalances>>;
+
+  arbitraryTokens: ChainRecord<AddressRecord<string>>;
 }
 
 export const useTokenStore = create<TokenStore>()(
@@ -60,13 +62,13 @@ export const useTokenStore = create<TokenStore>()(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     immer(set => ({
       loadingTokens: false,
-      publicTokens: {},
-      confidentialTokens: {},
-      arbitraryTokens: {},
-      publicToConfidentialMap: {},
+
+      pairs: {},
       confidentialToPublicMap: {},
-      publicIsStablecoinMap: {},
-      publicIsWETHMap: {},
+
+      balances: {},
+
+      arbitraryTokens: {},
     })),
     {
       name: "token-store",
@@ -76,80 +78,52 @@ export const useTokenStore = create<TokenStore>()(
 
 // Setters and getters
 
-const _addPairToStore = (state: WritableDraft<TokenStore>, chain: number, pair: ConfidentialTokenPair) => {
-  state.publicTokens[chain] = {
-    ...state.publicTokens[chain],
-    [pair.publicToken.address]: pair.publicToken,
+const _addPairToStore = (
+  state: WritableDraft<TokenStore>,
+  chain: number,
+  pair: ConfidentialTokenPair,
+  balances?: ConfidentialTokenPairBalances,
+) => {
+  state.pairs[chain] = {
+    ...state.pairs[chain],
+    [pair.publicToken.address]: pair,
   };
-  state.publicToConfidentialMap[chain] = {
-    ...state.publicToConfidentialMap[chain],
-    [pair.publicToken.address]: pair.confidentialToken?.address ?? zeroAddress,
-  };
-  state.publicIsStablecoinMap[chain] = {
-    ...state.publicIsStablecoinMap[chain],
-    [pair.publicToken.address]: pair.isStablecoin,
-  };
-  state.publicIsWETHMap[chain] = {
-    ...state.publicIsWETHMap[chain],
-    [pair.publicToken.address]: pair.isWETH,
-  };
-  if (pair.confidentialToken) {
-    state.confidentialTokens[chain] = {
-      ...state.confidentialTokens[chain],
-      [pair.confidentialToken.address]: pair.confidentialToken,
-    };
+  if (pair.confidentialToken != null) {
     state.confidentialToPublicMap[chain] = {
       ...state.confidentialToPublicMap[chain],
       [pair.confidentialToken.address]: pair.publicToken.address,
     };
   }
-};
-
-const _getPairFromStoreWithPublicTokenAddress = (
-  state: TokenStore,
-  chain: number,
-  address: Address,
-): ConfidentialTokenPair | undefined => {
-  const publicTokenAddress = state.publicToConfidentialMap[chain][address];
-  if (!publicTokenAddress) return undefined;
-
-  const publicToken = state.publicTokens[chain][publicTokenAddress];
-  const confidentialToken = state.confidentialTokens[chain][publicTokenAddress];
-  return {
-    publicToken,
-    confidentialToken,
-    confidentialTokenDeployed: !!confidentialToken,
-    isStablecoin: state.publicIsStablecoinMap[chain][publicTokenAddress],
-    isWETH: state.publicIsWETHMap[chain][publicTokenAddress],
-  };
-};
-
-const _getPairFromStoreWithConfidentialTokenAddress = (
-  state: TokenStore,
-  chain: number,
-  address: Address,
-): ConfidentialTokenPair | undefined => {
-  const confidentialTokenAddress = state.confidentialToPublicMap[chain][address];
-  if (!confidentialTokenAddress) return undefined;
-
-  const publicToken = state.publicTokens[chain][confidentialTokenAddress];
-  const confidentialToken = state.confidentialTokens[chain][confidentialTokenAddress];
-  return {
-    publicToken,
-    confidentialToken,
-    confidentialTokenDeployed: !!confidentialToken,
-    isStablecoin: state.publicIsStablecoinMap[chain][confidentialTokenAddress],
-    isWETH: state.publicIsWETHMap[chain][confidentialTokenAddress],
-  };
+  if (balances != null) {
+    state.balances[chain] = {
+      ...state.balances[chain],
+      [pair.publicToken.address]: balances,
+    };
+  }
 };
 
 // OTHER
 
-const _addArbitraryToken = async (chain: number, pair: ConfidentialTokenPair) => {
+const _addArbitraryToken = async (chain: number, { pair, balances }: ConfidentialTokenPairWithBalances) => {
   useTokenStore.setState(state => {
-    _addPairToStore(state, chain, pair);
+    _addPairToStore(state, chain, pair, balances);
+    state.arbitraryTokens[chain] = {
+      ...state.arbitraryTokens[chain],
+      [pair.publicToken.address]: pair.publicToken.address,
+    };
   });
   await _fetchToken(chain, pair.publicToken.address);
+};
+
+const _removeArbitraryToken = async (chain: number, address: string) => {
+  useTokenStore.setState(state => {
+    const publicTokenAddress = state.confidentialToPublicMap[chain]?.[address] ?? address;
+
+    delete state.arbitraryTokens[chain][publicTokenAddress];
+    delete state.pairs[chain][publicTokenAddress];
+    delete state.confidentialToPublicMap[chain][publicTokenAddress];
+    delete state.balances[chain][publicTokenAddress];
+  });
 };
 
 const _fetchInitialTokens = async (chain: number) => {
@@ -218,21 +192,18 @@ export async function _fetchTokenData(chain: number, addresses: Address[]) {
 
   // Mark as loading
   useTokenStore.setState(state => {
-    const publicTokenAddresses = addresses.filter(address => state.publicTokens[chain][address] != null);
-    const confidentialTokenAddresses = addresses.filter(address => state.confidentialTokens[chain][address] != null);
-
-    for (let i = 0; i < allAddresses.length; i++) {
-      publicTokenAddresses.forEach(address => {
-        const token = state.publicTokens[chain][address];
-        token.loading = true;
-        token.error = null;
-      });
-
-      confidentialTokenAddresses.forEach(address => {
-        const token = state.confidentialTokens[chain][address];
-        token.loading = true;
-        token.error = null;
-      });
+    if (state.pairs[chain] == null) {
+      state.pairs[chain] = {};
+    }
+    for (const address of addresses) {
+      if (state.pairs[chain][address] == null) continue;
+      const pair = state.pairs[chain][address];
+      pair.publicToken.loading = true;
+      pair.publicToken.error = null;
+      if (pair.confidentialToken) {
+        pair.confidentialToken.loading = true;
+        pair.confidentialToken.error = null;
+      }
     }
   });
 
@@ -319,9 +290,9 @@ const _getChainId = async () => {
   return await publicClient.getChainId();
 };
 
-export const addArbitraryToken = async (pair: ConfidentialTokenPair) => {
+export const addArbitraryToken = async (pairWithBalances: ConfidentialTokenPairWithBalances) => {
   const chain = await _getChainId();
-  await _addArbitraryToken(chain, pair);
+  await _addArbitraryToken(chain, pairWithBalances);
 };
 
 export const fetchInitialTokens = async () => {
@@ -565,4 +536,51 @@ const _searchArbitraryToken = async (chain: number, address: string): Promise<Co
 export const searchArbitraryToken = async (address: string) => {
   const chain = await _getChainId();
   return _searchArbitraryToken(chain, address);
+};
+
+// HOOKS
+
+export function useDeepEqual<S, U>(selector: (state: S) => U): (state: S) => U {
+  // https://github.com/pmndrs/zustand/blob/main/src/react/shallow.ts
+  const prev = useRef<U>(undefined);
+  return state => {
+    const next = selector(state);
+    return deepEqual(prev.current, next) ? (prev.current as U) : (prev.current = next);
+  };
+}
+
+export const useConfidentialTokenPairAddresses = () => {
+  const chain = 31337;
+  return useTokenStore(
+    useDeepEqual(state => {
+      const pairs = state.pairs[chain] ?? {};
+      console.log("pairs", pairs);
+      return Object.keys(pairs);
+    }),
+  );
+};
+
+export const useConfidentialTokenPair = (address: string) => {
+  const chain = useChainId();
+  return useTokenStore(state => state.pairs[chain]?.[address]);
+};
+export const useConfidentialTokenPairBalances = (address: string) => {
+  const chain = useChainId();
+  const balances = useTokenStore(state => state.balances[chain]?.[address]);
+  return {
+    publicBalance: balances?.publicBalance,
+    confidentialBalance: balances?.confidentialBalance,
+  };
+};
+
+export const useIsArbitraryToken = (address: string) => {
+  const chain = useChainId();
+  return useTokenStore(state => state.arbitraryTokens[chain]?.[address]);
+};
+
+export const useRemoveArbitraryToken = (address: string) => {
+  const chain = useChainId();
+  return useCallback(() => {
+    _removeArbitraryToken(chain, address);
+  }, [address, chain]);
 };

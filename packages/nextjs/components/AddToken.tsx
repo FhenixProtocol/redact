@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import Image from "next/image";
+import { TokenIcon } from "./ui/TokenIcon";
 import { ClearOutlined } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlusIcon } from "lucide-react";
@@ -244,13 +244,7 @@ export const PublicTokenDetails = ({ tokenDetails }: { tokenDetails: TokenItemDa
           <div className="mt-2 mb-2 border-1 border-primary-accent rounded-lg p-2">
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 flex items-center justify-center overflow-hidden">
-                <Image
-                  src={icon}
-                  alt={symbol ?? "Token Icon"}
-                  width={24}
-                  height={24}
-                  className="w-full h-full object-cover"
-                />
+                <TokenIcon token={tokenDetails} />
               </div>
               <div className="flex flex-col">
                 <span className="text-primary font-semibold">{name}</span>
@@ -270,11 +264,9 @@ export const PublicTokenDetails = ({ tokenDetails }: { tokenDetails: TokenItemDa
 export const ConfidentialTokenDetails = ({
   publicTokenDetails,
   confidentialTokenDetails,
-  requiresDeployment,
 }: {
   publicTokenDetails: TokenItemData | undefined;
   confidentialTokenDetails: TokenItemData | undefined;
-  requiresDeployment: boolean;
 }) => {
   const { symbol: publicSymbol } = publicTokenDetails || {};
   const { name, symbol, decimals } = confidentialTokenDetails || {};
@@ -295,7 +287,7 @@ export const ConfidentialTokenDetails = ({
         >
           <div className="text-primary font-semibold">FHERC20 Token:</div>
           <div className="mt-2 mb-2 border-1 border-primary-accent rounded-lg p-2">
-            {requiresDeployment && (
+            {confidentialTokenDetails == null && (
               <div className="text-xs text-primary">
                 <b>e{publicSymbol} does not exist.</b>
                 <br />
@@ -303,16 +295,10 @@ export const ConfidentialTokenDetails = ({
                 You will need to deploy <b>e{publicSymbol}</b> before encrypting your <b>{publicSymbol}</b> balance.
               </div>
             )}
-            {!requiresDeployment && (
+            {confidentialTokenDetails != null && (
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 flex items-center justify-center overflow-hidden">
-                  <Image
-                    src={icon}
-                    alt={symbol ?? "Token Icon"}
-                    width={24}
-                    height={24}
-                    className="w-full h-full object-cover"
-                  />
+                  <TokenIcon token={confidentialTokenDetails} />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-primary font-semibold">{name}</span>

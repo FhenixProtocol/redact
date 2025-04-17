@@ -162,7 +162,7 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
               )}
             </AnimatePresence>
           </div>
-        </TokenAccordion>
+        </TokenAccordion> */}
       </div>
 
       {/* You might want to add a refresh button somewhere */}
@@ -176,3 +176,10 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
     </div>
   );
 }
+
+const TokenAccordionTokens = () => {
+  const addresses = useConfidentialTokenPairAddresses();
+  return addresses.map(address => {
+    return <TokenAccordionItem key={address} pairAddress={address} />;
+  });
+};
