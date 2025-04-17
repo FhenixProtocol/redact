@@ -33,6 +33,16 @@ interface ConfidentialTokenPair {
   isWETH: boolean;
 }
 
+interface ConfidentialTokenPairBalances {
+  publicBalance: bigint | undefined;
+  confidentialBalance: bigint | undefined;
+}
+
+interface ConfidentialTokenPairWithBalances {
+  pair: ConfidentialTokenPair;
+  balances: ConfidentialTokenPairBalances;
+}
+
 interface TokenStore {
   loadingTokens: boolean;
   tokens: ChainRecord<ConfidentialTokenPair[]>;
@@ -393,12 +403,16 @@ const _getConfidentialPairPublicData = async (erc20Address: string, fherc20Addre
   };
 };
 
-const _getConfidentialPairBalances = async (chain: number, erc20Address: string, fherc20Address: string) => {
+const _getConfidentialPairBalances = async (
+  chain: number,
+  erc20Address: string,
+  fherc20Address: string,
+): Promise<ConfidentialTokenPairBalances> => {
   const { address } = getAccount(wagmiConfig);
   if (!address) {
     return {
-      erc20Balance: { result: 0n, error: "Address not found", status: "failure" },
-      fherc20Balance: { result: 0n, error: "Address not found", status: "failure" },
+      publicBalance: undefined,
+      confidentialBalance: undefined,
     };
   }
 
@@ -426,40 +440,40 @@ const _getConfidentialPairBalances = async (chain: number, erc20Address: string,
   });
 
   return {
-    erc20Balance: balances[0],
-    fherc20Balance: fherc20Exists ? balances[1] : undefined,
+    publicBalance: balances[0].result,
+    confidentialBalance: fherc20Exists ? balances[1].result : undefined,
   };
 };
 
-const _searchArbitraryToken = async (chain: number, address: string): Promise<ConfidentialTokenPair> => {
+const _searchArbitraryToken = async (chain: number, address: string): Promise<ConfidentialTokenPairWithBalances> => {
   const isFherc20 = await _checkIsFherc20(chain, address);
   const erc20Address = isFherc20 ? await _getUnderlyingERC20(chain, address) : address;
   const { isStablecoin, isWETH } = await _getRedactCoreFlags(chain, address);
   const fherc20Address = isFherc20 ? address : await _getFherc20IfExists(chain, erc20Address);
-  const fherc20Exists = fherc20Address !== zeroAddress;
-
-  console.log({ isFherc20, erc20Address, fherc20Address, isStablecoin, isWETH });
   const confidentialPairPublicData = await _getConfidentialPairPublicData(erc20Address, fherc20Address);
   const confidentialPairBalances = await _getConfidentialPairBalances(chain, erc20Address, fherc20Address);
 
-  console.log({ confidentialPairPublicData, confidentialPairBalances });
+  const fherc20Exists = fherc20Address !== zeroAddress;
 
   return {
-    publicToken: {
-      ...confidentialPairPublicData.publicTokenData,
-      address: erc20Address,
-      loading: false,
+    pair: {
+      publicToken: {
+        ...confidentialPairPublicData.publicTokenData,
+        address: erc20Address,
+        loading: false,
+      },
+      confidentialToken: fherc20Exists
+        ? {
+            ...confidentialPairPublicData.confidentialTokenData!,
+            address: fherc20Address,
+            loading: false,
+          }
+        : undefined,
+      confidentialTokenDeployed: fherc20Exists,
+      isStablecoin,
+      isWETH,
     },
-    confidentialToken: fherc20Exists
-      ? {
-          ...confidentialPairPublicData.confidentialTokenData!,
-          address: fherc20Address,
-          loading: false,
-        }
-      : undefined,
-    confidentialTokenDeployed: fherc20Exists,
-    isStablecoin,
-    isWETH,
+    balances: confidentialPairBalances,
   };
 };
 
