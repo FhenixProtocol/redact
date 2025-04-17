@@ -1,7 +1,7 @@
 import { useEffect } from "react";
+import { superjsonStorage } from "./superjsonStorage";
 import { FheTypes, UnsealedItem } from "cofhejs/web";
 import { cofhejs } from "cofhejs/web";
-import superjson from "superjson";
 import { zeroAddress } from "viem";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -33,17 +33,7 @@ export const useDecryptedStore = create<DecryptedStore>()(
     })),
     {
       name: "decrypted-store",
-      storage: {
-        getItem: name => {
-          const str = localStorage.getItem(name);
-          if (!str) return null;
-          return superjson.parse(str) as unknown as ReturnType<typeof JSON.parse>;
-        },
-        setItem: (name, value) => {
-          localStorage.setItem(name, superjson.stringify(value));
-        },
-        removeItem: name => localStorage.removeItem(name),
-      },
+      storage: superjsonStorage,
     },
   ),
 );
@@ -89,18 +79,29 @@ export const decryptValue = async <T extends FheTypes>(fheType: T, value: bigint
   return result;
 };
 
-export const useDecryptedValue = <T extends FheTypes>(fheType: T, value: bigint): DecryptionResult<T> => {
-  const result = useDecryptedStore(state => state.decryptions[value.toString()]);
+export const useDecryptValue = <T extends FheTypes>(
+  fheType: T,
+  value: bigint | null | undefined,
+): DecryptionResult<T> => {
+  const result = useDecryptedStore(state => state.decryptions[value?.toString() ?? ""]);
 
   useEffect(() => {
-    if (!result) {
-      decryptValue(fheType, value).then(result => {
-        useDecryptedStore.setState(state => {
-          state.decryptions[value.toString()] = result;
-        });
+    if (result != null || value == null) return;
+    decryptValue(fheType, value).then(result => {
+      useDecryptedStore.setState(state => {
+        state.decryptions[value.toString()] = result;
       });
-    }
+    });
   }, [fheType, result, value]);
 
-  return result as DecryptionResult<T>;
+  return (
+    result != null
+      ? result
+      : {
+          fheType,
+          ctHash: value,
+          value: null,
+          error: "Missing value",
+        }
+  ) as DecryptionResult<T>;
 };
