@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { wagmiConfig } from "../web3/wagmiConfig";
-import { Address, MulticallReturnType, erc20Abi, zeroAddress } from "viem";
+import { WritableDraft } from "immer";
+import { Address, erc20Abi, zeroAddress } from "viem";
 import { getAccount, getPublicClient } from "wagmi/actions";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -13,7 +14,7 @@ import { Contract, ContractName } from "~~/utils/scaffold-eth/contract";
 type ChainRecord<T> = Record<number, T>;
 type AddressRecord<T> = Record<Address, T>;
 
-interface TokenItemData {
+export interface TokenItemData {
   address: Address;
   name: string;
   symbol: string;
@@ -25,7 +26,7 @@ interface TokenItemData {
   error: string | null;
 }
 
-interface ConfidentialTokenPair {
+export interface ConfidentialTokenPair {
   publicToken: TokenItemData;
   confidentialToken?: TokenItemData;
   confidentialTokenDeployed: boolean;
@@ -33,20 +34,25 @@ interface ConfidentialTokenPair {
   isWETH: boolean;
 }
 
-interface ConfidentialTokenPairBalances {
+export interface ConfidentialTokenPairBalances {
   publicBalance: bigint | undefined;
   confidentialBalance: bigint | undefined;
 }
 
-interface ConfidentialTokenPairWithBalances {
+export interface ConfidentialTokenPairWithBalances {
   pair: ConfidentialTokenPair;
   balances: ConfidentialTokenPairBalances;
 }
 
 interface TokenStore {
   loadingTokens: boolean;
-  tokens: ChainRecord<ConfidentialTokenPair[]>;
-  arbitraryTokens: ChainRecord<string[]>;
+  publicTokens: ChainRecord<AddressRecord<TokenItemData>>;
+  confidentialTokens: ChainRecord<AddressRecord<TokenItemData>>;
+  arbitraryTokens: ChainRecord<AddressRecord<string>>;
+  publicToConfidentialMap: ChainRecord<AddressRecord<Address>>;
+  confidentialToPublicMap: ChainRecord<AddressRecord<Address>>;
+  publicIsStablecoinMap: ChainRecord<AddressRecord<boolean>>;
+  publicIsWETHMap: ChainRecord<AddressRecord<boolean>>;
 }
 
 export const useTokenStore = create<TokenStore>()(
@@ -54,8 +60,13 @@ export const useTokenStore = create<TokenStore>()(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     immer(set => ({
       loadingTokens: false,
-      tokens: {},
+      publicTokens: {},
+      confidentialTokens: {},
       arbitraryTokens: {},
+      publicToConfidentialMap: {},
+      confidentialToPublicMap: {},
+      publicIsStablecoinMap: {},
+      publicIsWETHMap: {},
     })),
     {
       name: "token-store",
@@ -63,17 +74,87 @@ export const useTokenStore = create<TokenStore>()(
   ),
 );
 
-const _addArbitraryToken = async (chain: number, address: string) => {
-  useTokenStore.setState(state => {
-    state.arbitraryTokens[chain] = [...(state.arbitraryTokens[chain] ?? []), address];
-  });
+// Setters and getters
 
-  await _fetchToken(chain, address);
+const _addPairToStore = (state: WritableDraft<TokenStore>, chain: number, pair: ConfidentialTokenPair) => {
+  state.publicTokens[chain] = {
+    ...state.publicTokens[chain],
+    [pair.publicToken.address]: pair.publicToken,
+  };
+  state.publicToConfidentialMap[chain] = {
+    ...state.publicToConfidentialMap[chain],
+    [pair.publicToken.address]: pair.confidentialToken?.address ?? zeroAddress,
+  };
+  state.publicIsStablecoinMap[chain] = {
+    ...state.publicIsStablecoinMap[chain],
+    [pair.publicToken.address]: pair.isStablecoin,
+  };
+  state.publicIsWETHMap[chain] = {
+    ...state.publicIsWETHMap[chain],
+    [pair.publicToken.address]: pair.isWETH,
+  };
+  if (pair.confidentialToken) {
+    state.confidentialTokens[chain] = {
+      ...state.confidentialTokens[chain],
+      [pair.confidentialToken.address]: pair.confidentialToken,
+    };
+    state.confidentialToPublicMap[chain] = {
+      ...state.confidentialToPublicMap[chain],
+      [pair.confidentialToken.address]: pair.publicToken.address,
+    };
+  }
+};
+
+const _getPairFromStoreWithPublicTokenAddress = (
+  state: TokenStore,
+  chain: number,
+  address: Address,
+): ConfidentialTokenPair | undefined => {
+  const publicTokenAddress = state.publicToConfidentialMap[chain][address];
+  if (!publicTokenAddress) return undefined;
+
+  const publicToken = state.publicTokens[chain][publicTokenAddress];
+  const confidentialToken = state.confidentialTokens[chain][publicTokenAddress];
+  return {
+    publicToken,
+    confidentialToken,
+    confidentialTokenDeployed: !!confidentialToken,
+    isStablecoin: state.publicIsStablecoinMap[chain][publicTokenAddress],
+    isWETH: state.publicIsWETHMap[chain][publicTokenAddress],
+  };
+};
+
+const _getPairFromStoreWithConfidentialTokenAddress = (
+  state: TokenStore,
+  chain: number,
+  address: Address,
+): ConfidentialTokenPair | undefined => {
+  const confidentialTokenAddress = state.confidentialToPublicMap[chain][address];
+  if (!confidentialTokenAddress) return undefined;
+
+  const publicToken = state.publicTokens[chain][confidentialTokenAddress];
+  const confidentialToken = state.confidentialTokens[chain][confidentialTokenAddress];
+  return {
+    publicToken,
+    confidentialToken,
+    confidentialTokenDeployed: !!confidentialToken,
+    isStablecoin: state.publicIsStablecoinMap[chain][confidentialTokenAddress],
+    isWETH: state.publicIsWETHMap[chain][confidentialTokenAddress],
+  };
+};
+
+// OTHER
+
+const _addArbitraryToken = async (chain: number, pair: ConfidentialTokenPair) => {
+  useTokenStore.setState(state => {
+    _addPairToStore(state, chain, pair);
+  });
+  await _fetchToken(chain, pair.publicToken.address);
 };
 
 const _fetchInitialTokens = async (chain: number) => {
   const tokenListAddresses: string[] = [];
-  const arbitraryTokenAddresses = useTokenStore.getState().arbitraryTokens[chain] ?? [];
+  const arbitraryTokenAddresses = Object.keys(useTokenStore.getState().arbitraryTokens[chain] ?? {});
 
   const addresses = [...tokenListAddresses, ...arbitraryTokenAddresses];
 
@@ -83,7 +164,9 @@ const _fetchInitialTokens = async (chain: number) => {
   const tokens = Object.values(confidentialPairs);
 
   useTokenStore.setState(state => {
-    state.tokens[chain] = tokens;
+    for (const token of tokens) {
+      _addPairToStore(state, chain, token);
+    }
     state.loadingTokens = false;
   });
 };
@@ -93,7 +176,7 @@ const _fetchToken = async (chain: number, address: string) => {
   const token = Object.values(confidentialPairs)[0];
 
   useTokenStore.setState(state => {
-    state.tokens[chain] = [...(state.tokens[chain] ?? []), token];
+    _addPairToStore(state, chain, token);
   });
 };
 
@@ -135,18 +218,21 @@ export async function _fetchTokenData(chain: number, addresses: Address[]) {
 
   // Mark as loading
   useTokenStore.setState(state => {
-    const tokens = state.tokens[chain] ?? [];
-    for (let i = 0; i < tokens.length; i++) {
-      const token = tokens[i];
+    const publicTokenAddresses = addresses.filter(address => state.publicTokens[chain][address] != null);
+    const confidentialTokenAddresses = addresses.filter(address => state.confidentialTokens[chain][address] != null);
 
-      if (!addressMap[token.publicToken.address]) continue;
+    for (let i = 0; i < allAddresses.length; i++) {
+      publicTokenAddresses.forEach(address => {
+        const token = state.publicTokens[chain][address];
+        token.loading = true;
+        token.error = null;
+      });
 
-      token.publicToken.loading = true;
-      token.publicToken.error = null;
-      if (token.confidentialToken) {
-        token.confidentialToken.loading = true;
-        token.confidentialToken.error = null;
-      }
+      confidentialTokenAddresses.forEach(address => {
+        const token = state.confidentialTokens[chain][address];
+        token.loading = true;
+        token.error = null;
+      });
     }
   });
 
@@ -233,10 +319,9 @@ const _getChainId = async () => {
   return await publicClient.getChainId();
 };
 
-export const addArbitraryToken = async (address: string) => {
+export const addArbitraryToken = async (pair: ConfidentialTokenPair) => {
   const chain = await _getChainId();
-  await _addArbitraryToken(chain, address);
-  await _fetchInitialTokens(chain);
+  await _addArbitraryToken(chain, pair);
 };
 
 export const fetchInitialTokens = async () => {
