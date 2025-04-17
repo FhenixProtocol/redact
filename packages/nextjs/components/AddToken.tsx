@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import Image from "next/image";
-import { ClearOutlined, ReportProblemOutlined } from "@mui/icons-material";
+import { ClearOutlined } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlusIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -318,6 +318,49 @@ export const ConfidentialTokenDetails = ({
                 </div>
               </div>
             )}
+          </div>
+        </motion.div>
+      )}
+    </>
+  );
+};
+
+const ArbitraryTokenWarning = ({
+  show,
+  accepted,
+  onAccept,
+}: {
+  show: boolean;
+  accepted: boolean;
+  onAccept: (accepted: boolean) => void;
+}) => {
+  return (
+    <>
+      {show && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="text-sm text-yellow-500 mx-2">
+            <div className="mb-2">⚠️ This token doesn't appear in the active token list(s). Make sure that you</div>
+            <div className="mb-2">
+              Anyone can create a token, including creating fake versions of existing tokens that claim to represent
+              projects. DYOR!
+            </div>
+            <div className="my-4 w-full flex justify-center items-center gap-2">
+              <input
+                type="checkbox"
+                id="token-warning-checkbox"
+                checked={accepted}
+                onChange={() => onAccept(!accepted)}
+                className="w-4 h-4 cursor-pointer"
+              />
+              <label htmlFor="token-warning-checkbox" className="cursor-pointer font-semibold">
+                I understand the risks
+              </label>
+            </div>
           </div>
         </motion.div>
       )}
