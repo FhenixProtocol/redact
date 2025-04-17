@@ -11,6 +11,7 @@ import { Spinner } from "~~/components/ui/Spinner";
 import { type TokenDetails, confidentialTokenExists, useTokenDetails } from "~~/hooks/useTokenBalance";
 import { getTokenLogo } from "~~/lib/tokenUtils";
 import { useTokenStore } from "~~/services/store/tokenStore";
+import { _fetchTokenData, searchArbitraryToken } from "~~/services/store/tokenStore2";
 
 interface AddTokenProps {
   onAddToken?: (token: TokenDetails) => void;
@@ -43,10 +44,17 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
 
     if (value !== "" && isAddress(value)) {
       setIsValidInput(true);
+      arbitraryTokenSearch(value);
       search(value);
     } else {
       resetData();
     }
+  };
+
+  const arbitraryTokenSearch = async (address: string) => {
+    // Check if address is a deployed token
+    const result = await searchArbitraryToken(address);
+    console.log("result", result);
   };
 
   const search = async (address: string) => {

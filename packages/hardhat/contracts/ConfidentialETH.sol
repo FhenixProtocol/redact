@@ -79,4 +79,11 @@ contract ConfidentialETH is FHERC20, Ownable, ConfidentialClaim {
 
         emit ClaimedDecryptedETH(msg.sender, claim.to, claim.decryptedAmount);
     }
+
+    /**
+     * @dev Returns the address of the erc20 ERC-20 token that is being encrypted wrapped.
+     */
+    function erc20() public view returns (IERC20) {
+        return wETH;
+    }
 }
