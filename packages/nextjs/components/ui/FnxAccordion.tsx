@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from "react";
 import Image from "next/image";
+import { EncryptedBalance } from "./EncryptedValue";
 import { TokenIcon } from "./TokenIcon";
 import { Eye, EyeOff, MoveUpRight, X } from "lucide-react";
 import { formatUnits } from "viem";
@@ -235,7 +236,7 @@ export function TokenAccordionItem({ pairAddress }: { pairAddress: string }) {
             <div className="flex-2">
               {pair.confidentialTokenDeployed && (
                 <span className="text-sm text-gray-500">
-                  {balances.confidentialBalance != null ? balances.confidentialBalance : "..."}{" "}
+                  <EncryptedBalance value={balances.confidentialBalance} decimals={pair.confidentialToken?.decimals} />{" "}
                   {pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`}
                 </span>
               )}
