@@ -10,7 +10,12 @@ import { FnxInput } from "~~/components/ui/FnxInput";
 import { Spinner } from "~~/components/ui/Spinner";
 import { type TokenDetails, useTokenDetails } from "~~/hooks/useTokenBalance";
 import { getTokenLogo } from "~~/lib/tokenUtils";
-import { ConfidentialTokenPairWithBalances, TokenItemData, searchArbitraryToken } from "~~/services/store/tokenStore2";
+import {
+  ConfidentialTokenPairWithBalances,
+  TokenItemData,
+  addArbitraryToken,
+  searchArbitraryToken,
+} from "~~/services/store/tokenStore2";
 
 interface AddTokenProps {
   onAddToken?: (token: TokenDetails) => void;
@@ -60,8 +65,14 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
   };
 
   const handleAdd = () => {
-    console.log("tokenDetails", tokenDetails);
-    console.log("Handle Add");
+    if (!tokenDetails) return;
+    if (!warningAccepted) return;
+    addArbitraryToken(tokenDetails.pair);
+    toast.success("Token added successfully");
+    setTokenAddress("");
+    setTokenDetails(null);
+    setIsAddingToken(false);
+    if (onClose) onClose();
     // if (tokenDetails) {
     //   if (isDeployNeeded) {
     //     //TODO: Deploy token here and continue if success
