@@ -10,10 +10,11 @@ import { MinusIcon, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
 import { useAccount, useBalance } from "wagmi";
 import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
-import { TokenAccordion, TokenData } from "~~/components/ui/FnxAccordion";
-import { TokenBalanceInfo, useAllTokenBalances } from "~~/hooks/useTokenBalance";
+import { TokenAccordion, TokenAccordion2, TokenAccordionItem, TokenData } from "~~/components/ui/FnxAccordion";
+// import { TokenBalanceInfo, useAllTokenBalances } from "~~/hooks/useTokenBalance";
 import { customFormatEther, truncateAddress } from "~~/lib/common";
 import { useTokenStore } from "~~/services/store/tokenStore";
+import { useConfidentialTokenPairAddresses } from "~~/services/store/tokenStore2";
 
 /**
  * Main panel that shows the user's balance and has buttons for "Send" or "Receive."
@@ -21,7 +22,7 @@ import { useTokenStore } from "~~/services/store/tokenStore";
  */
 export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   const { address } = useAccount();
-  const { tokenBalances } = useAllTokenBalances(address);
+  // const { tokenBalances } = useAllTokenBalances(address);
   const {
     data: balanceData,
     isError,
@@ -98,7 +99,34 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
         </Button>
       </div>
       <div>
-        <TokenAccordion
+        <TokenAccordion2>
+          <TokenAccordionTokens />
+          <div className="flex flex-col gap-2 justify-center w-full">
+            <Button
+              variant="ghost2"
+              noOutline={true}
+              icon={isManageTokensOpen ? MinusIcon : PlusIcon}
+              className="w-full"
+              onClick={() => setIsManageTokensOpen(!isManageTokensOpen)}
+            >
+              Manage Tokens
+            </Button>
+
+            <AnimatePresence>
+              {isManageTokensOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <AddToken onClose={() => setIsManageTokensOpen(false)} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </TokenAccordion2>
+        {/* <TokenAccordion
           tokens={tokenBalances.map((token: TokenBalanceInfo) => ({
             symbol: token.symbol,
             publicBalance: token.publicBalance,
@@ -145,8 +173,15 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
               )}
             </AnimatePresence>
           </div>
-        </TokenAccordion>
+        </TokenAccordion> */}
       </div>
     </div>
   );
 }
+
+const TokenAccordionTokens = () => {
+  const addresses = useConfidentialTokenPairAddresses();
+  return addresses.map(address => {
+    return <TokenAccordionItem key={address} pairAddress={address} />;
+  });
+};
