@@ -19,7 +19,8 @@
     "lint-staged": "eslint --config ./.eslintrc.json --ignore-path ./.eslintignore",
     "test": "REPORT_GAS=false hardhat test --network hardhat",
     "gas": "REPORT_GAS=true hardhat test --network hardhat",
-    "verify": "hardhat etherscan-verify"
+    "verify": "hardhat etherscan-verify",
+    "hh-prepare-wallet": "hardhat hh-prepare-wallet"
   },
   "dependencies": {
     "@inquirer/password": "^4.0.2",
