@@ -41,15 +41,6 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   }, [address]);
 
   const [isManageTokensOpen, setIsManageTokensOpen] = useState(false);
-  const { removeToken } = useTokenStore();
-
-  // const handleEncrypt = (token: TokenData) => {
-  //   console.log("Encrypt", token);
-  // };
-
-  // const handleDecrypt = (token: TokenData) => {
-  //   console.log("Decrypt", token);
-  // };
 
   // Handler for "Send" -> push a new page
   const handleSend = () => {

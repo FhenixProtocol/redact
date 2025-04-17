@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import Image from "next/image";
 import { TokenIcon } from "./TokenIcon";
-import { Eye, EyeOff, X } from "lucide-react";
+import { Eye, EyeOff, MoveUpRight, X } from "lucide-react";
 import { formatUnits } from "viem";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~~/components/ui/Accordion";
 import { Button } from "~~/components/ui/Button";
@@ -193,7 +193,10 @@ export function TokenAccordionItem({ pairAddress }: { pairAddress: string }) {
             {isArbitrary && <span className="text-xs text-gray-500">(User Added)</span>}
           </div>
           <div className="flex items-center gap-2">
-            <span>{balances.publicBalance != null ? balances.publicBalance : "..."}</span>
+            <span>
+              {balances.publicBalance != null ? formatUnits(balances.publicBalance, pair.publicToken.decimals) : "..."}{" "}
+              {pair.publicToken.symbol}
+            </span>
           </div>
         </div>
       </AccordionTrigger>
@@ -202,13 +205,13 @@ export function TokenAccordionItem({ pairAddress }: { pairAddress: string }) {
           <div className="flex justify-between items-center">
             <div className="flex-2">
               <span className="text-sm text-gray-500">
-                {pair.publicToken.symbol}{" "}
                 {balances.publicBalance != null
                   ? formatUnits(balances.publicBalance, pair.publicToken.decimals)
-                  : "..."}
+                  : "..."}{" "}
+                {pair.publicToken.symbol}
               </span>
             </div>
-            <div className="flex-1 flex justify-end">
+            <div className="flex-1 flex justify-end gap-1">
               <Button
                 size="xs"
                 variant="default"
@@ -218,20 +221,49 @@ export function TokenAccordionItem({ pairAddress }: { pairAddress: string }) {
               >
                 Encrypt
               </Button>
+              <Button
+                variant="default"
+                size="xs"
+                className="px-1 justify-center font-bold"
+                icon={MoveUpRight}
+                onClick={() => console.log("SEND TOKEN")}
+              ></Button>
             </div>
           </div>
 
           <div className="flex justify-between items-center">
             <div className="flex-2">
-              <span className="text-sm text-gray-500">
-                {pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`}{" "}
-                {balances.confidentialBalance != null ? balances.confidentialBalance : "..."}
-              </span>
+              {pair.confidentialTokenDeployed && (
+                <span className="text-sm text-gray-500">
+                  {balances.confidentialBalance != null ? balances.confidentialBalance : "..."}{" "}
+                  {pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`}
+                </span>
+              )}
+              {!pair.confidentialTokenDeployed && (
+                <span className="text-sm text-gray-500">
+                  {pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`} <i>(Not Deployed)</i>
+                </span>
+              )}
             </div>
-            <div className="flex-1 flex justify-end">
-              <Button size="xs" variant="default" icon={Eye} onClick={openForDecryption} className="uppercase flex-1">
+            <div className="flex-1 flex justify-end gap-1">
+              <Button
+                disabled={!pair.confidentialTokenDeployed}
+                size="xs"
+                variant="default"
+                icon={Eye}
+                onClick={openForDecryption}
+                className="uppercase flex-1"
+              >
                 Decrypt
               </Button>
+              <Button
+                disabled={!pair.confidentialTokenDeployed}
+                variant="default"
+                size="xs"
+                className="px-1 justify-center font-bold"
+                icon={MoveUpRight}
+                onClick={() => console.log("SEND TOKEN")}
+              ></Button>
             </div>
           </div>
 
