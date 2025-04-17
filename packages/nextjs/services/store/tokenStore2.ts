@@ -2,6 +2,7 @@
 import { useCallback, useRef } from "react";
 import { wagmiConfig } from "../web3/wagmiConfig";
 import { WritableDraft } from "immer";
+import superjson from "superjson";
 import { Address, erc20Abi, zeroAddress } from "viem";
 import { deepEqual, useChainId } from "wagmi";
 import { getAccount, getPublicClient } from "wagmi/actions";
@@ -72,6 +73,17 @@ export const useTokenStore = create<TokenStore>()(
     })),
     {
       name: "token-store",
+      storage: {
+        getItem: name => {
+          const str = localStorage.getItem(name);
+          if (!str) return null;
+          return superjson.parse(str) as unknown as ReturnType<typeof JSON.parse>;
+        },
+        setItem: (name, value) => {
+          localStorage.setItem(name, superjson.stringify(value));
+        },
+        removeItem: name => localStorage.removeItem(name),
+      },
     },
   ),
 );
@@ -84,6 +96,7 @@ const _addPairToStore = (
   pair: ConfidentialTokenPair,
   balances?: ConfidentialTokenPairBalances,
 ) => {
+  console.log("adding pair to store", pair);
   state.pairs[chain] = {
     ...state.pairs[chain],
     [pair.publicToken.address]: pair,
@@ -105,6 +118,7 @@ const _addPairToStore = (
 // OTHER
 
 const _addArbitraryToken = async (chain: number, { pair, balances }: ConfidentialTokenPairWithBalances) => {
+  console.log("Add arbitrary token", pair, balances);
   useTokenStore.setState(state => {
     _addPairToStore(state, chain, pair, balances);
     state.arbitraryTokens[chain] = {
@@ -112,17 +126,25 @@ const _addArbitraryToken = async (chain: number, { pair, balances }: Confidentia
       [pair.publicToken.address]: pair.publicToken.address,
     };
   });
-  await _fetchToken(chain, pair.publicToken.address);
+  // await _fetchToken(chain, pair.publicToken.address);
 };
 
 const _removeArbitraryToken = async (chain: number, address: string) => {
   useTokenStore.setState(state => {
     const publicTokenAddress = state.confidentialToPublicMap[chain]?.[address] ?? address;
 
-    delete state.arbitraryTokens[chain][publicTokenAddress];
-    delete state.pairs[chain][publicTokenAddress];
-    delete state.confidentialToPublicMap[chain][publicTokenAddress];
-    delete state.balances[chain][publicTokenAddress];
+    if (state.arbitraryTokens[chain]?.[publicTokenAddress] != null) {
+      delete state.arbitraryTokens[chain][publicTokenAddress];
+    }
+    if (state.pairs[chain]?.[publicTokenAddress] != null) {
+      delete state.pairs[chain][publicTokenAddress];
+    }
+    if (state.confidentialToPublicMap[chain]?.[publicTokenAddress] != null) {
+      delete state.confidentialToPublicMap[chain][publicTokenAddress];
+    }
+    if (state.balances[chain]?.[publicTokenAddress] != null) {
+      delete state.balances[chain][publicTokenAddress];
+    }
   });
 };
 

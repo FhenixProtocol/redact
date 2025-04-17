@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { FheTypes, UnsealedItem } from "cofhejs/web";
 import { cofhejs } from "cofhejs/web";
+import superjson from "superjson";
 import { zeroAddress } from "viem";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -32,6 +33,17 @@ export const useDecryptedStore = create<DecryptedStore>()(
     })),
     {
       name: "decrypted-store",
+      storage: {
+        getItem: name => {
+          const str = localStorage.getItem(name);
+          if (!str) return null;
+          return superjson.parse(str) as unknown as ReturnType<typeof JSON.parse>;
+        },
+        setItem: (name, value) => {
+          localStorage.setItem(name, superjson.stringify(value));
+        },
+        removeItem: name => localStorage.removeItem(name),
+      },
     },
   ),
 );
