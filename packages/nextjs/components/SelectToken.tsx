@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
+import { EncryptedBalance } from "./ui/EncryptedValue";
 import { TokenIcon } from "./ui/TokenIcon";
 import { PlusIcon } from "lucide-react";
 import { formatUnits } from "viem";
@@ -121,11 +122,6 @@ function TokenListItem({ tokenPair, onSelect }: { tokenPair: ConfidentialTokenPa
     return formatUnits(balances.publicBalance, publicToken.decimals);
   }, [balances?.publicBalance, publicToken.decimals]);
 
-  const formattedConfidentialBalance = useMemo(() => {
-    if (balances?.confidentialBalance === undefined) return "—";
-    return formatUnits(balances.confidentialBalance, publicToken.decimals);
-  }, [balances?.confidentialBalance, publicToken.decimals]);
-
   return (
     <Button variant="surface" className="p-3 w-full justify-start hover:bg-white/10" onClick={onSelect}>
       <div className="flex items-center justify-between w-full">
@@ -142,7 +138,8 @@ function TokenListItem({ tokenPair, onSelect }: { tokenPair: ConfidentialTokenPa
           <span className="text-primary font-medium">{formattedPublicBalance}</span>
           {confidentialToken && (
             <span className="text-sm text-gray-500">
-              {formattedConfidentialBalance} {confidentialToken.symbol}
+              <EncryptedBalance value={balances?.confidentialBalance} decimals={confidentialToken.decimals} />{" "}
+              {confidentialToken.symbol}
             </span>
           )}
         </div>
