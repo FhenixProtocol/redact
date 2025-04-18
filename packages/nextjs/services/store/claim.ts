@@ -111,21 +111,41 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
   return erc20Claims;
 };
 
-const _refetchPendingClaims = async (account: Address, pendingClaims: ClaimWithAddresses[]) => {
+const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
   const publicClient = getPublicClient(wagmiConfig);
 
   const results = await publicClient?.multicall({
-    contracts: pendingClaims.map(({ erc20Address, ctHash }) => ({
-      address: erc20Address,
+    contracts: pendingClaims.map(({ fherc20Address, ctHash }) => ({
+      address: fherc20Address,
       abi: confidentialErc20Abi,
-      functionName: "getUserClaim",
-      args: [account, ctHash],
+      functionName: "getClaim",
+      args: [ctHash],
     })),
   });
 
   console.log({ results });
 
-  return results;
+  const erc20Claims = {} as Record<Address, ClaimWithAddresses[]>;
+
+  results.forEach(({ status, result }, index) => {
+    console.log("fetchClaims result", { status, result });
+    if (status === "failure") return;
+
+    const { erc20Address, fherc20Address } = pendingClaims[index];
+
+    const claimWithAddresses = {
+      ...(result as unknown as Claim),
+      erc20Address,
+      fherc20Address,
+    } as ClaimWithAddresses;
+
+    if (erc20Claims[erc20Address] == null) erc20Claims[erc20Address] = [];
+    erc20Claims[erc20Address].push(claimWithAddresses);
+  });
+
+  console.log("PENDING", { erc20Claims });
+
+  return erc20Claims;
 };
 
 export const fetchPairClaims = async (addressPair: AddressPair) => {
@@ -197,10 +217,10 @@ export const useRefetchPendingClaims = () => {
     if (account == null) return;
 
     const fetchAndStoreClaims = async () => {
-      const claimsMap = await _refetchPendingClaims(account, pendingClaims);
-      // useClaimStore.setState(state => {
-      //   _addClaimsToStore(state, chain, claimsMap);
-      // });
+      const refetchedClaimsMap = await _refetchPendingClaims(pendingClaims);
+      useClaimStore.setState(state => {
+        _addClaimsToStore(state, chain, refetchedClaimsMap);
+      });
     };
 
     fetchAndStoreClaims();
