@@ -197,7 +197,7 @@ export const addArbitraryToken = async (pairWithBalances: ConfidentialTokenPairW
   await _addArbitraryToken(chain, pairWithBalances);
 };
 
-const _checkIsFherc20 = async (chain: number, address: string) => {
+const _fetchIsFherc20 = async (chain: number, address: string) => {
   // Fetch public token data
   const publicClient = getPublicClient(wagmiConfig);
 
@@ -220,7 +220,7 @@ const _checkIsFherc20 = async (chain: number, address: string) => {
   }
 };
 
-const _getUnderlyingERC20 = async (chain: number, address: string) => {
+const _fetchUnderlyingERC20 = async (chain: number, address: string) => {
   const publicClient = getPublicClient(wagmiConfig);
   const eETHData = getDeployedContract(chain, "eETH");
   const underlyingERC20 = await publicClient.readContract({
@@ -237,7 +237,7 @@ interface RedactCoreFlags {
   isWETH: boolean;
 }
 
-const _getRedactCoreFlags = async (chain: number, addresses: Address[]): Promise<RedactCoreFlags[]> => {
+const _fetchRedactCoreFlags = async (chain: number, addresses: Address[]): Promise<RedactCoreFlags[]> => {
   const publicClient = getPublicClient(wagmiConfig);
   const redactCoreData = getDeployedContract(chain, "RedactCore");
 
@@ -273,7 +273,7 @@ const _getRedactCoreFlags = async (chain: number, addresses: Address[]): Promise
   return flagResults;
 };
 
-const _getFherc20IfExists = async (chain: number, addresses: Address[]) => {
+const _fetchFherc20IfExists = async (chain: number, addresses: Address[]) => {
   const publicClient = getPublicClient(wagmiConfig);
   const redactCoreData = getDeployedContract(chain, "RedactCore");
 
@@ -309,7 +309,7 @@ const _parsePublicDataResults = (results: any[]) => {
   };
 };
 
-const _getConfidentialPairPublicData = async (addresses: { erc20Address: Address; fherc20Address: Address }[]) => {
+const _fetchConfidentialPairPublicData = async (addresses: { erc20Address: Address; fherc20Address: Address }[]) => {
   const publicClient = getPublicClient(wagmiConfig);
 
   const addressesToFetch: Address[] = [];
@@ -385,7 +385,7 @@ const _getConfidentialPairPublicData = async (addresses: { erc20Address: Address
   return results;
 };
 
-const _getConfidentialPairBalances = async (
+const _fetchConfidentialPairBalances = async (
   chain: number,
   account: Address,
   addresses: {
@@ -463,15 +463,15 @@ export const _fetchTokenPairsData = async (
   chain: number,
   erc20Addresses: Address[],
 ): Promise<ConfidentialTokenPair[]> => {
-  const fherc20Addresses = await _getFherc20IfExists(chain, erc20Addresses);
-  const flags = await _getRedactCoreFlags(chain, erc20Addresses);
+  const fherc20Addresses = await _fetchFherc20IfExists(chain, erc20Addresses);
+  const flags = await _fetchRedactCoreFlags(chain, erc20Addresses);
 
   const addressPairs = erc20Addresses.map((erc20Address, index) => ({
     erc20Address,
     fherc20Address: fherc20Addresses[index],
   }));
 
-  const pairsPublicData = await _getConfidentialPairPublicData(addressPairs);
+  const pairsPublicData = await _fetchConfidentialPairPublicData(addressPairs);
 
   const pairs = addressPairs.map(({ erc20Address, fherc20Address }, index) => {
     const fherc20Exists = fherc20Address !== zeroAddress;
@@ -507,6 +507,14 @@ export const fetchTokenPairsData = async () => {
   });
 };
 
+export const refetchSingleTokenPairData = async (address: Address) => {
+  const chain = await getChainId();
+  const pairs = await _fetchTokenPairsData(chain, [address]);
+  useTokenStore.setState(state => {
+    _addPairsToStore(state, chain, pairs);
+  });
+};
+
 export const fetchTokenPairBalances = async () => {
   const chain = await getChainId();
   const { address: account } = getAccount(wagmiConfig);
@@ -519,11 +527,28 @@ export const fetchTokenPairBalances = async () => {
     }),
   );
 
-  const pairBalances = await _getConfidentialPairBalances(chain, account, addressPairs);
+  const pairBalances = await _fetchConfidentialPairBalances(chain, account, addressPairs);
   console.log("fetchTokenPairBalances pairBalances", pairBalances);
 
   useTokenStore.setState(state => {
     const pairPublicAddresses = addressPairs.map(({ erc20Address }) => erc20Address);
+    _addPairBalancesToStore(state, chain, account, pairPublicAddresses, pairBalances);
+  });
+};
+
+export const refetchSingleTokenPairBalances = async (erc20Address: Address) => {
+  const chain = await getChainId();
+  const { address: account } = getAccount(wagmiConfig);
+  if (chain == null || account == null) return;
+
+  const addressPair = {
+    erc20Address,
+    fherc20Address: (await _fetchFherc20IfExists(chain, [erc20Address]))[0],
+  };
+
+  const pairBalances = await _fetchConfidentialPairBalances(chain, account, [addressPair]);
+  useTokenStore.setState(state => {
+    const pairPublicAddresses = [addressPair.erc20Address];
     _addPairBalancesToStore(state, chain, account, pairPublicAddresses, pairBalances);
   });
 };
@@ -533,15 +558,15 @@ const _searchArbitraryToken = async (
   account: Address,
   address: Address,
 ): Promise<ConfidentialTokenPairWithBalances> => {
-  const isFherc20 = await _checkIsFherc20(chain, address);
-  const erc20Address = isFherc20 ? await _getUnderlyingERC20(chain, address) : address;
-  const [fherc20Address] = isFherc20 ? [address] : await _getFherc20IfExists(chain, [erc20Address]);
+  const isFherc20 = await _fetchIsFherc20(chain, address);
+  const erc20Address = isFherc20 ? await _fetchUnderlyingERC20(chain, address) : address;
+  const [fherc20Address] = isFherc20 ? [address] : await _fetchFherc20IfExists(chain, [erc20Address]);
 
-  const [flagResults] = await _getRedactCoreFlags(chain, [erc20Address]);
+  const [flagResults] = await _fetchRedactCoreFlags(chain, [erc20Address]);
   const { isStablecoin, isWETH } = flagResults;
 
-  const [confidentialPairPublicData] = await _getConfidentialPairPublicData([{ erc20Address, fherc20Address }]);
-  const [confidentialPairBalances] = await _getConfidentialPairBalances(chain, account, [
+  const [confidentialPairPublicData] = await _fetchConfidentialPairPublicData([{ erc20Address, fherc20Address }]);
+  const [confidentialPairBalances] = await _fetchConfidentialPairBalances(chain, account, [
     { erc20Address, fherc20Address },
   ]);
 
