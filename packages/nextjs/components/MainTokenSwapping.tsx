@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { EncryptedBalance } from "./ui/EncryptedValue";
+import { Spinner } from "./ui/Spinner";
 import { Check } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
@@ -12,6 +13,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~~/compone
 import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { useCofhe } from "~~/hooks/useCofhe";
+import { useDeployFherc20Action } from "~~/hooks/useEncryptActions";
 import {
   useEncryptDecryptBalances,
   useEncryptDecryptInputValue,
@@ -400,32 +402,7 @@ export function MainTokenSwapping() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4 justify-center items-start">
             <AnimatePresence>
-              {isEncrypt && pair != null && pair.confidentialTokenDeployed === false && (
-                <motion.div
-                  key="deploy"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="w-full flex flex-col gap-2"
-                >
-                  <div className="text-sm text-theme-black italic text-left ml-4">
-                    The confidential token <b>e{pair.publicToken.symbol}</b> has not been deployed yet and requires
-                    deployment before you can encrypt your <b>{pair.publicToken.symbol}</b> balance.
-                  </div>
-                  <div className="flex flex-row gap-2 items-center">
-                    <div className="text-sm text-theme-black">0.</div>
-                    <Button
-                      className="w-full"
-                      icon={Check}
-                      onClick={deployFherc20}
-                      // TODO: Re-enable
-                      // disabled={isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)}
-                    >
-                      Deploy e{pair?.publicToken.symbol}
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
+              <DeployFherc20Button />
               {isEncrypt &&
                 balances != null &&
                 (balances.fherc20Allowance == null || (balances.fherc20Allowance ?? 0n) < rawInputValue) && (
@@ -489,3 +466,44 @@ export function MainTokenSwapping() {
     </div>
   );
 }
+
+const DeployFherc20Button = () => {
+  const isEncrypt = useEncryptDecryptIsEncrypt();
+  const pair = useEncryptDecryptPair();
+  const { onDeployFherc20, isDeploying } = useDeployFherc20Action();
+
+  const handleDeploy = () => {
+    if (pair == null) return;
+    onDeployFherc20({ tokenAddress: pair.publicToken.address, publicTokenSymbol: pair.publicToken.symbol });
+  };
+
+  return (
+    <AnimatePresence>
+      {isEncrypt && pair != null && pair.confidentialTokenDeployed === false && (
+        <motion.div
+          key="deploy"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="w-full flex flex-col gap-2"
+        >
+          <div className="text-sm text-theme-black italic text-left ml-4">
+            The confidential token <b>e{pair.publicToken.symbol}</b> has not been deployed yet and requires deployment
+            before you can encrypt your <b>{pair.publicToken.symbol}</b> balance.
+          </div>
+          <div className="flex flex-row gap-2 items-center">
+            <div className="text-sm text-theme-black">0.</div>
+            <Button
+              className="w-full"
+              icon={isDeploying ? Spinner : Check}
+              onClick={handleDeploy}
+              disabled={isDeploying}
+            >
+              {isDeploying ? "Deploying..." : `Deploy e${pair?.publicToken.symbol}`}
+            </Button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
