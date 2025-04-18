@@ -82,7 +82,7 @@ export const useTokenStore = create<TokenStore>()(
   ),
 );
 
-// Setters and getters
+// Setters
 
 const _addPairToStore = (
   state: WritableDraft<TokenStore>,
@@ -139,8 +139,6 @@ const _addPairBalancesToStore = (
   }
 };
 
-// OTHER
-
 const _addArbitraryToken = async (chain: number, { pair, balances }: ConfidentialTokenPairWithBalances) => {
   useTokenStore.setState(state => {
     _addPairToStore(state, chain, pair, balances);
@@ -171,172 +169,12 @@ const _removeArbitraryToken = async (chain: number, address: string) => {
   });
 };
 
-export const _fetchInitialTokens = async (chain: number) => {
-  const tokenListAddresses: string[] = [];
-  const arbitraryTokenAddresses = Object.keys(useTokenStore.getState().arbitraryTokens[chain] ?? {});
+// Utils
 
-  const addresses = [...tokenListAddresses, ...arbitraryTokenAddresses];
-
-  useTokenStore.setState({ loadingTokens: true });
-
-  const confidentialPairs = await _fetchTokenData(chain, addresses);
-  const tokens = Object.values(confidentialPairs);
-
-  useTokenStore.setState(state => {
-    for (const token of tokens) {
-      _addPairToStore(state, chain, token);
-    }
-    state.loadingTokens = false;
-  });
-};
-
-const _fetchToken = async (chain: number, address: string) => {
-  const confidentialPairs = await _fetchTokenData(chain, [address]);
-  const token = Object.values(confidentialPairs)[0];
-
-  useTokenStore.setState(state => {
-    _addPairToStore(state, chain, token);
-  });
-};
-
-export async function fetchConfidentialTokenPairs(addresses: Address[]) {
-  const chain = await _getChainId();
-  const fherc20Addresses = await _getFherc20IfExists(chain, addresses);
-
-  const confidentialPairs: AddressRecord<string> = {};
-
-  for (let i = 0; i < addresses.length; i++) {
-    const address = addresses[i];
-    const fherc20 = fherc20Addresses[i] as Address;
-
-    confidentialPairs[address] = fherc20;
-  }
-
-  return confidentialPairs;
-}
-
-export async function _fetchTokenData(chain: number, addresses: Address[]) {
-  const addressMap: Record<string, boolean> = {};
-  for (const address of addresses) {
-    addressMap[address] = true;
-  }
-
-  // Mark as loading
-  useTokenStore.setState(state => {
-    if (state.pairs[chain] == null) {
-      state.pairs[chain] = {};
-    }
-    for (const address of addresses) {
-      if (state.pairs[chain][address] == null) continue;
-      const pair = state.pairs[chain][address];
-      pair.publicToken.loading = true;
-      pair.publicToken.error = null;
-      if (pair.confidentialToken) {
-        pair.confidentialToken.loading = true;
-        pair.confidentialToken.error = null;
-      }
-    }
-  });
-
-  // Fetch and list confidential tokens
-  const confidentialAddressPairs = await fetchConfidentialTokenPairs(addresses);
-  const confidentialTokenAddresses = Object.values(confidentialAddressPairs);
-  const allAddresses = [...confidentialTokenAddresses, ...addresses];
-
-  // Fetch public token data
-  const publicClient = getPublicClient(wagmiConfig);
-  const result = await publicClient.multicall({
-    contracts: allAddresses.flatMap(address => [
-      {
-        address,
-        abi: erc20Abi,
-        functionName: "name",
-      },
-      {
-        address,
-        abi: erc20Abi,
-        functionName: "symbol",
-      },
-      {
-        address,
-        abi: erc20Abi,
-        functionName: "decimals",
-      },
-    ]),
-  });
-
-  // Create map of token addresses to token data (includes confidential tokens)
-  const tokenDetails: AddressRecord<TokenItemData> = {};
-
-  const results = chunk(result, 3);
-
-  for (let i = 0; i < results.length; i++) {
-    const result = results[i];
-    const address = addresses[i];
-
-    const [name, symbol, decimals] = result;
-
-    const error =
-      name.status === "failure"
-        ? name.error
-        : symbol.status === "failure"
-          ? symbol.error
-          : decimals.status === "failure"
-            ? decimals.error
-            : null;
-
-    tokenDetails[address] = {
-      name: (name.result ?? "") as string,
-      symbol: (symbol.result ?? "") as string,
-      decimals: (decimals.result ?? 0) as number,
-      address,
-      loading: false,
-      error: error?.message ?? null,
-    };
-  }
-
-  // Create map of confidential pairs
-  const confidentialPairs: AddressRecord<ConfidentialTokenPair> = {};
-
-  for (let i = 0; i < addresses.length; i++) {
-    const address = addresses[i];
-    const confidentialTokenAddress = confidentialAddressPairs[address];
-
-    confidentialPairs[address] = {
-      publicToken: tokenDetails[address],
-      confidentialToken: confidentialTokenAddress ? tokenDetails[confidentialTokenAddress] : undefined,
-      confidentialTokenDeployed: !!confidentialTokenAddress,
-      isStablecoin: false,
-      isWETH: false,
-    };
-  }
-
-  return confidentialPairs;
-}
-
-// With Injected Chain
-
-const _getChainId = async () => {
+const getChainId = async () => {
   const publicClient = getPublicClient(wagmiConfig);
   return await publicClient.getChainId();
 };
-
-export const addArbitraryToken = async (pairWithBalances: ConfidentialTokenPairWithBalances) => {
-  const chain = await _getChainId();
-  await _addArbitraryToken(chain, pairWithBalances);
-};
-
-export const fetchInitialTokens = async () => {
-  const chain = await _getChainId();
-  await _fetchInitialTokens(chain);
-};
-
-export const fetchToken = async (address: string) => {
-  const chain = await _getChainId();
-  await _fetchToken(chain, address);
-};
-
-// ARBITRARY TOKEN SEARCH
 
 const getDeployedContract = <TContractName extends ContractName>(
   chain: number,
@@ -349,6 +187,13 @@ const getDeployedContract = <TContractName extends ContractName>(
   }
 
   return deployedContract;
+};
+
+// ARBITRARY TOKEN
+
+export const addArbitraryToken = async (pairWithBalances: ConfidentialTokenPairWithBalances) => {
+  const chain = await getChainId();
+  await _addArbitraryToken(chain, pairWithBalances);
 };
 
 const _checkIsFherc20 = async (chain: number, address: string) => {
@@ -644,7 +489,7 @@ export const _fetchTokenPairsData = async (
 };
 
 export const fetchTokenPairsData = async () => {
-  const chain = await _getChainId();
+  const chain = await getChainId();
   const erc20Addresses = Object.keys(useTokenStore.getState().arbitraryTokens[chain]);
   const pairs = await _fetchTokenPairsData(chain, erc20Addresses);
   useTokenStore.setState(state => {
@@ -653,7 +498,7 @@ export const fetchTokenPairsData = async () => {
 };
 
 export const fetchTokenPairBalances = async () => {
-  const chain = await _getChainId();
+  const chain = await getChainId();
   const { address: account } = getAccount(wagmiConfig);
   if (chain == null || account == null) return;
 
@@ -715,7 +560,7 @@ const _searchArbitraryToken = async (
 };
 
 export const searchArbitraryToken = async (address: string) => {
-  const chain = await _getChainId();
+  const chain = await getChainId();
   const { address: account } = getAccount(wagmiConfig);
   if (!account) {
     throw new Error("Not connected");
