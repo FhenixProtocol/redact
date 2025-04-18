@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { TokenIcon } from "./ui/TokenIcon";
 import { ClearOutlined } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
@@ -8,8 +8,7 @@ import { isAddress } from "viem";
 import { Button } from "~~/components/ui/Button";
 import { FnxInput } from "~~/components/ui/FnxInput";
 import { Spinner } from "~~/components/ui/Spinner";
-import { type TokenDetails, useTokenDetails } from "~~/hooks/useTokenBalance";
-import { getTokenLogo } from "~~/lib/tokenUtils";
+import { cn } from "~~/lib/utils";
 import {
   ConfidentialTokenPairWithBalances,
   TokenItemData,
@@ -18,33 +17,46 @@ import {
 } from "~~/services/store/tokenStore2";
 
 interface AddTokenProps {
-  onAddToken?: (token: TokenDetails) => void;
   onClose?: () => void;
 }
 
-export function AddToken({ onAddToken, onClose }: AddTokenProps) {
+export function AddToken({ onClose }: AddTokenProps) {
   const [loadingTokenDetails, setLoadingTokenDetails] = useState(false);
   const [warningAccepted, setWarningAccepted] = useState(false);
   const [, setIsAddingToken] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [tokenAddress, setTokenAddress] = useState<string>("");
-  const [isValidInput, setIsValidInput] = useState<boolean>(true);
   const [tokenDetails, setTokenDetails] = useState<ConfidentialTokenPairWithBalances | null>(null);
-  const { isError, isLoading, fetchDetails } = useTokenDetails();
+  const [inputError, setInputError] = useState<string | null>(null);
+
+  const handleInputValidationAndSearch = async (value: string) => {
+    if (value === "" || !isAddress(value)) {
+      setInputError("Invalid address");
+      setTokenDetails(null);
+      setLoadingTokenDetails(false);
+      return;
+    }
+
+    setInputError(null);
+    setTokenDetails(null);
+    setLoadingTokenDetails(true);
+    arbitraryTokenSearch(value);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    setLoadingTokenDetails(true);
-    setTokenDetails(null);
+    handleInputValidationAndSearch(value);
+  };
 
-    if (value !== "" && isAddress(value)) {
-      setIsValidInput(true);
-      arbitraryTokenSearch(value);
-    } else {
-      setIsValidInput(false);
-      setTokenDetails(null);
-    }
+  const handleSearch = async () => {
+    handleInputValidationAndSearch(inputValue);
+  };
+
+  const clearState = () => {
+    setInputValue("");
+    setInputError(null);
+    setTokenDetails(null);
+    setIsAddingToken(false);
   };
 
   const arbitraryTokenSearch = async (address: string) => {
@@ -58,70 +70,15 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
     setLoadingTokenDetails(false);
   };
 
-  const handleSearch = async () => {
-    setTokenDetails(null);
-    setLoadingTokenDetails(true);
-    arbitraryTokenSearch(tokenAddress);
-  };
-
   const handleAdd = () => {
     if (!tokenDetails) return;
     if (!warningAccepted) return;
     addArbitraryToken(tokenDetails);
     toast.success("Token added successfully");
-    setTokenAddress("");
-    setTokenDetails(null);
-    setIsAddingToken(false);
+    clearState();
     if (onClose) onClose();
-    // if (tokenDetails) {
-    //   if (isDeployNeeded) {
-    //     //TODO: Deploy token here and continue if success
-    //   }
-
-    //   const existingTokens: TokenListItem[] = JSON.parse(localStorage.getItem("tokenList") || "[]");
-
-    //   const tokenExists = existingTokens.some(
-    //     token => token.address.toLowerCase() === tokenDetails.address.toLowerCase(),
-    //   );
-
-    //   if (!tokenExists) {
-    //     const newToken: TokenListItem = {
-    //       name: tokenDetails.name,
-    //       symbol: tokenDetails.symbol,
-    //       decimals: tokenDetails.decimals,
-    //       address: tokenDetails.address,
-    //       image: "",
-    //       confidentialAddress: "0x0000000000000000000000000000000000000000",
-    //     };
-    //     addToken(newToken);
-
-    //     // const updatedTokens = [...existingTokens, newToken];
-    //     // localStorage.setItem('tokenList', JSON.stringify(updatedTokens));
-
-    //     // // Update the global token list
-    //     // updateTokens();
-
-    //     // Make sure we pass the token details to the parent
-    //     if (onAddToken) {
-    //       onAddToken(tokenDetails);
-    //     }
-
-    //     setTokenAddress("");
-    //     setIsAddingToken(false);
-    //     setTokenDetails(null);
-    //     setInputValue("");
-    //   } else {
-    //     toast.error("Token already exists in the list");
-    //     console.log("Token already exists in the list");
-    //   }
-    // }
   };
   const SpinnerIcon = () => <Spinner size={16} />;
-
-  const isDeployNeeded = useMemo(() => {
-    if (tokenDetails?.pair.confidentialTokenDeployed) return false;
-    return true;
-  }, [tokenDetails?.pair.confidentialTokenDeployed]);
 
   return (
     <div className="w-full flex flex-col gap-2">
@@ -132,11 +89,21 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
         placeholder="0x..."
         value={inputValue}
         onChange={handleInputChange}
-        className={`w-full  ${!isValidInput ? "border-red-500" : ""}`}
-        error={!isValidInput ? "Invalid address format" : undefined}
+        className={cn("w-full", inputError != null && "border-red-500")}
+        error={inputError ?? undefined}
         fadeEnd={true}
       />
       <AnimatePresence>
+        {inputError != null && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="text-red-500 italic ml-4">{inputError}</div>
+          </motion.div>
+        )}
         <PublicTokenDetails tokenDetails={tokenDetails?.pair.publicToken} />
         <ConfidentialTokenDetails
           publicTokenDetails={tokenDetails?.pair.publicToken}
@@ -155,7 +122,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
           className="flex-1 text-white"
           uppercase={true}
           onClick={!tokenDetails ? handleSearch : handleAdd}
-          disabled={!warningAccepted || isLoading || isError || !tokenDetails || loadingTokenDetails}
+          disabled={!warningAccepted || inputError != null || !tokenDetails || loadingTokenDetails}
           icon={loadingTokenDetails ? SpinnerIcon : PlusIcon}
         >
           {loadingTokenDetails ? "Loading..." : "Add Token"}
@@ -166,9 +133,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
           icon={ClearOutlined}
           uppercase={true}
           onClick={() => {
-            setTokenAddress("");
-            setTokenDetails(null);
-            setIsAddingToken(false);
+            clearState();
             if (onClose) onClose();
           }}
         >
@@ -181,11 +146,6 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
 
 export const PublicTokenDetails = ({ tokenDetails }: { tokenDetails: TokenItemData | undefined }) => {
   const { name, symbol, decimals } = tokenDetails || {};
-
-  const icon = useMemo(() => {
-    if (symbol) return getTokenLogo(symbol);
-    return "/token-icons/default-token.webp";
-  }, [symbol]);
 
   return (
     <>
@@ -226,11 +186,6 @@ export const ConfidentialTokenDetails = ({
 }) => {
   const { symbol: publicSymbol } = publicTokenDetails || {};
   const { name, symbol, decimals } = confidentialTokenDetails || {};
-
-  const icon = useMemo(() => {
-    if (symbol) return getTokenLogo(symbol);
-    return "/token-icons/default-token.webp";
-  }, [symbol]);
 
   return (
     <>
@@ -291,7 +246,10 @@ const ArbitraryTokenWarning = ({
           transition={{ duration: 0.2 }}
         >
           <div className="text-sm text-yellow-500 mx-2">
-            <div className="mb-2">⚠️ This token doesn't appear in the active token list(s). Make sure that you</div>
+            <div className="mb-2">
+              ⚠️ This token doesn't appear in the active token list(s). Make sure that you trust the token you are
+              adding.
+            </div>
             <div className="mb-2">
               Anyone can create a token, including creating fake versions of existing tokens that claim to represent
               projects. DYOR!

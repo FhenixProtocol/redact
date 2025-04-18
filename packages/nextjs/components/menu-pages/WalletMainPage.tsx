@@ -1,16 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { AddToken } from "../AddToken";
 import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
-import { AnimatePresence, motion } from "framer-motion";
-import { MinusIcon, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
+import { MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
 import { useAccount, useBalance } from "wagmi";
 import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
 import { TokenAccordion2, TokenAccordionItem } from "~~/components/ui/FnxAccordion";
 import { customFormatEther, truncateAddress } from "~~/lib/common";
+import { useGlobalState } from "~~/services/store/store";
 import { useConfidentialTokenPairAddresses } from "~~/services/store/tokenStore2";
 
 /**
@@ -19,6 +18,8 @@ import { useConfidentialTokenPairAddresses } from "~~/services/store/tokenStore2
  */
 export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   const { address } = useAccount();
+  const { setAddTokenModalOpen, toggleDrawer } = useGlobalState();
+
   // const { tokenBalances } = useAllTokenBalances(address);
   const {
     data: balanceData,
@@ -31,11 +32,11 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
 
   // Handler for "Send" -> push a new page
   const handleSend = () => {
-    console.log(pushPage);
+    if (address == null) return;
     if (pushPage) {
       pushPage({
         id: "send-page",
-        title: truncateAddress(address!) + " Send",
+        title: truncateAddress(address) + " Send",
         component: <SendPage />,
       });
     }
@@ -93,14 +94,17 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
             <Button
               variant="ghost2"
               noOutline={true}
-              icon={isManageTokensOpen ? MinusIcon : PlusIcon}
+              icon={PlusIcon}
               className="w-full"
-              onClick={() => setIsManageTokensOpen(!isManageTokensOpen)}
+              onClick={() => {
+                setAddTokenModalOpen(true);
+                toggleDrawer();
+              }}
             >
-              Manage Tokens
+              Add Token
             </Button>
 
-            <AnimatePresence>
+            {/* <AnimatePresence>
               {isManageTokensOpen && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
@@ -111,7 +115,7 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
                   <AddToken onClose={() => setIsManageTokensOpen(false)} />
                 </motion.div>
               )}
-            </AnimatePresence>
+            </AnimatePresence> */}
           </div>
         </TokenAccordion2>
       </div>

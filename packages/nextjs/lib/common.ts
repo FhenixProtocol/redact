@@ -79,3 +79,14 @@ export function transformTokensToItems(tokens: Token[]) {
 }
 
 export const tokenList: Token[] = tokenListData;
+
+export function chunk<T>(array: T[], size: number): T[][] {
+  if (!array.length) return [];
+
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+
+  return chunks;
+}

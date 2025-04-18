@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Eye, EyeOff, MoveUpRight } from "lucide-react";
+import { useChainId, useWalletClient } from "wagmi";
 import { Button } from "~~/components/ui/Button";
 import { FnxInput } from "~~/components/ui/FnxInput";
 import { FnxSelect } from "~~/components/ui/FnxSelect";
@@ -13,8 +14,21 @@ export function SendPage() {
   const [toAddress, setToAddress] = useState<string>("");
   const [gasPrice, setGasPrice] = useState<string>("0 ETH");
 
-  const { token, setToken, sliderValue, depositValue, processedTokens, handleSliderChange, handleDepositChange } =
-    useTokenSelector();
+  const chainId = useChainId();
+  console.log(chainId);
+
+  const {
+    token,
+    setToken,
+    sliderValue,
+    depositValue,
+    selectedTokenInfo,
+    processedTokens,
+    handleSliderChange,
+    handleDepositChange,
+    selectedTokenBalance,
+    selectedPrivateTokenBalance,
+  } = useTokenSelector();
 
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
@@ -60,6 +74,17 @@ export function SendPage() {
             />
           }
         />
+      </div>
+
+      <div className="flex flex-row justify-start -mt-2 px-2">
+        <div className="font-reddit-sans text-xs">
+          Encrypted Balance: {selectedTokenInfo == null && <span className="font-reddit-mono font-bold">...</span>}
+          {selectedTokenInfo != null && (
+            <span className="font-reddit-mono font-bold">
+              {selectedPrivateTokenBalance} {selectedTokenInfo?.symbol}
+            </span>
+          )}
+        </div>
       </div>
 
       <Slider

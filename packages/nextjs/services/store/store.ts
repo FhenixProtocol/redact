@@ -13,6 +13,10 @@ type GlobalState = {
   setTargetNetwork: (newTargetNetwork: ChainWithAttributes) => void;
   isDrawerOpen: boolean;
   toggleDrawer: () => void;
+
+  // Add Token Modal
+  isAddTokenModalOpen: boolean;
+  setAddTokenModalOpen: (isOpen: boolean) => void;
 };
 
 export const useGlobalState = create<GlobalState>(set => ({
@@ -28,4 +32,8 @@ export const useGlobalState = create<GlobalState>(set => ({
   setTargetNetwork: (newTargetNetwork: ChainWithAttributes) => set(() => ({ targetNetwork: newTargetNetwork })),
   isDrawerOpen: false,
   toggleDrawer: () => set(state => ({ isDrawerOpen: !state.isDrawerOpen })),
+
+  // Add Token Modal
+  isAddTokenModalOpen: false,
+  setAddTokenModalOpen: (isOpen: boolean) => set(() => ({ isAddTokenModalOpen: isOpen })),
 }));

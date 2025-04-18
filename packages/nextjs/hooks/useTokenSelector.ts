@@ -32,7 +32,6 @@ export interface UseTokenSelectorReturn {
 export function useTokenSelector(): UseTokenSelectorReturn {
   const { address } = useAccount();
   const { tokens } = useTokenStore();
-  const { isInitialized } = useCofhe();
   const [sliderValue, setSliderValue] = useState([50]);
   const [token, setToken] = useState<string>(tokens[0]?.symbol || "");
 
