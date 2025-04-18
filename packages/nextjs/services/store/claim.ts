@@ -50,27 +50,27 @@ export const useClaimStore = create<ClaimStore>()(
 const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
   const publicClient = getPublicClient(wagmiConfig);
 
-  // const result = await publicClient?.readContract({
-  //   address: erc20Addresses[0],
-  //   abi: confidentialErc20Abi,
-  //   functionName: "getUserClaims",
-  //   args: [account],
-  // });
-
-  // console.log({ result });
+  const pairsWithFherc20 = addressPairs.filter(({ fherc20Address }) => fherc20Address != null);
 
   const results = await publicClient?.multicall({
-    contracts: addressPairs
-      .filter(({ fherc20Address }) => fherc20Address != null)
-      .map(({ fherc20Address }) => ({
-        address: fherc20Address!,
-        abi: confidentialErc20Abi,
-        functionName: "getUserClaims",
-        args: [account],
-      })),
+    contracts: pairsWithFherc20.map(({ fherc20Address }) => ({
+      address: fherc20Address!,
+      abi: confidentialErc20Abi,
+      functionName: "getUserClaims",
+      args: [account],
+    })),
   });
 
-  console.log({ results });
+  const erc20Claims = {} as Record<Address, Claim[]>;
+
+  results.forEach(({ status, result }, index) => {
+    if (status === "failure") return;
+    erc20Claims[pairsWithFherc20[index].erc20Address] = result as unknown as Claim[];
+  });
+
+  console.log({ erc20Claims });
+
+  return erc20Claims;
 };
 
 export const useClaimFetcher = () => {
