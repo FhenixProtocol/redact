@@ -1,11 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { getDecryptedValue } from "./decrypted";
-import {
-  ConfidentialTokenPair,
-  ConfidentialTokenPairBalances,
-  useConfidentialTokenPairBalances,
-  useTokenStore,
-} from "./tokenStore2";
+import { useConfidentialTokenPair, useConfidentialTokenPairBalances, useTokenStore } from "./tokenStore2";
 import { FheTypes } from "cofhejs/web";
 import { Address, formatUnits, parseUnits } from "viem";
 import { useAccount, useChainId } from "wagmi";
@@ -13,7 +8,7 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 type EncryptDecryptStore = {
-  pair: ConfidentialTokenPair | null;
+  pairPublicToken: Address | null;
   encryptValue: bigint | null;
   decryptValue: bigint | null;
   isEncrypt: boolean;
@@ -22,7 +17,7 @@ type EncryptDecryptStore = {
 export const useEncryptDecryptStore = create<EncryptDecryptStore>()(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   immer(set => ({
-    pair: null,
+    pairPublicToken: null,
     encryptValue: null,
     decryptValue: null,
     isEncrypt: true,
@@ -33,19 +28,31 @@ export const useEncryptDecryptStore = create<EncryptDecryptStore>()(
 
 const selectToken = (chain: number, account: Address, pairPublicToken: Address | null) => {
   if (pairPublicToken === null) {
-    useEncryptDecryptStore.setState({ pair: null, encryptValue: null, decryptValue: null });
+    useEncryptDecryptStore.setState({ pairPublicToken: null, encryptValue: null, decryptValue: null });
     return;
   }
 
-  const pair = useTokenStore.getState().pairs[chain]?.[pairPublicToken];
+  // const pair = useTokenStore.getState().pairs[chain]?.[pairPublicToken];
 
-  useEncryptDecryptStore.setState({ pair, encryptValue: 0n, decryptValue: 0n });
+  useEncryptDecryptStore.setState({ pairPublicToken, encryptValue: 0n, decryptValue: 0n });
+};
+
+// Utils
+
+const _getTokenStorePair = (chain: number, pairPublicToken: Address | null) => {
+  if (pairPublicToken === null) return null;
+  return useTokenStore.getState().pairs[chain]?.[pairPublicToken];
 };
 
 // Hooks
 
+export const useEncryptDecryptPairPublicToken = () => {
+  return useEncryptDecryptStore(state => state.pairPublicToken);
+};
+
 export const useEncryptDecryptPair = () => {
-  return useEncryptDecryptStore(state => state.pair);
+  const pairPublicToken = useEncryptDecryptPairPublicToken();
+  return useConfidentialTokenPair(pairPublicToken ?? undefined);
 };
 
 export const useEncryptDecryptBalances = () => {
@@ -70,42 +77,56 @@ export const useSelectEncryptDecryptToken = () => {
 };
 
 export const useUpdateEncryptDecryptValue = () => {
-  return useCallback((value: string) => {
-    useEncryptDecryptStore.setState(state => {
-      if (state.pair == null) return;
-      const amount = value ? parseUnits(value, state.pair.publicToken.decimals) : 0n;
-      if (state.isEncrypt) {
-        state.encryptValue = amount;
-      } else {
-        state.decryptValue = amount;
-      }
-    });
-  }, []);
+  const pair = useEncryptDecryptPair();
+
+  return useCallback(
+    (value: string) => {
+      useEncryptDecryptStore.setState(state => {
+        if (pair == null) return;
+        const amount = value ? parseUnits(value, pair.publicToken.decimals) : 0n;
+        if (state.isEncrypt) {
+          state.encryptValue = amount;
+        } else {
+          state.decryptValue = amount;
+        }
+      });
+    },
+    [pair],
+  );
 };
 
 export const useEncryptDecryptInputValue = () => {
-  return useEncryptDecryptStore(state => {
-    if (state.pair == null) return "";
-    const value = state.isEncrypt ? state.encryptValue : state.decryptValue;
-    return formatUnits(value ?? 0n, state.pair.publicToken.decimals);
-  });
+  const pair = useEncryptDecryptPair();
+  const isEncrypt = useEncryptDecryptIsEncrypt();
+  const { encryptValue, decryptValue } = useEncryptDecryptStore();
+
+  return useMemo(() => {
+    if (pair == null) return "";
+    const value = isEncrypt ? encryptValue : decryptValue;
+    return formatUnits(value ?? 0n, pair.publicToken.decimals);
+  }, [pair, isEncrypt, encryptValue, decryptValue]);
 };
 
 export const useEncryptDecryptRawInputValue = () => {
-  return useEncryptDecryptStore(state => {
-    if (state.pair == null) return 0n;
-    const value = state.isEncrypt ? state.encryptValue : state.decryptValue;
+  const pair = useEncryptDecryptPair();
+  const isEncrypt = useEncryptDecryptIsEncrypt();
+  const { encryptValue, decryptValue } = useEncryptDecryptStore();
+
+  return useMemo(() => {
+    if (pair == null) return 0n;
+    const value = isEncrypt ? encryptValue : decryptValue;
     return value ?? 0n;
-  });
+  }, [pair, isEncrypt, encryptValue, decryptValue]);
 };
 
 export const useUpdateEncryptDecryptValueByPercent = () => {
   const pair = useEncryptDecryptPair();
   const balances = useEncryptDecryptBalances();
+
   return useCallback(
     (percent: number) => {
       useEncryptDecryptStore.setState(state => {
-        if (state.pair == null) return;
+        if (pair == null) return;
 
         const balance = state.isEncrypt ? balances?.publicBalance : balances?.confidentialBalance;
         if (balance == null) return;
