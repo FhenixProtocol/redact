@@ -1,30 +1,23 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { EncryptedBalance } from "./ui/EncryptedValue";
-import { Spinner } from "./ui/Spinner";
-import { getPublicClient, getWalletClient } from "@wagmi/core";
-import { Eye, EyeOff, PlusIcon } from "lucide-react";
-import { toast } from "react-hot-toast";
-import { erc20Abi, formatUnits, parseUnits } from "viem";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
-// Adjust this import path as needed
-import { useReadContract } from "wagmi";
 import { TokenSelector } from "~~/components/TokenSelector";
 import { Button } from "~~/components/ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~~/components/ui/FnxCard";
-// import { Glow, GlowArea } from "~~/components/glow";
 import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { useCofhe } from "~~/hooks/useCofhe";
-import { useTokenBalance } from "~~/hooks/useTokenBalance";
-import { useTokenSelector } from "~~/hooks/useTokenSelector";
-import { ConfidentialERC20Abi } from "~~/lib/abis";
 import {
   useEncryptDecryptBalances,
   useEncryptDecryptInputValue,
   useEncryptDecryptIsEncrypt,
   useEncryptDecryptPair,
   useEncryptDecryptPercentValue,
+  useEncryptDecryptValueError,
   useSelectEncryptDecryptToken,
   useUpdateEncryptDecryptValue,
   useUpdateEncryptDecryptValueByPercent,
@@ -50,34 +43,7 @@ export function MainTokenSwapping() {
   const inputValue = useEncryptDecryptInputValue();
   const setInputValue = useUpdateEncryptDecryptValue();
 
-  // use;
-
-  // // Create a reusable variable for the loading state
-  // const isProcessing = isEncrypting || isDecrypting;
-
-  // const {
-  //   token,
-  //   setToken,
-  //   sliderValue,
-  //   depositValue,
-  //   withdrawValue,
-  //   selectedTokenBalance,
-  //   selectedPrivateTokenBalance,
-  //   isLoadingPrivateBalance,
-  //   selectedTokenInfo,
-  //   processedTokens,
-  //   handleSliderChange,
-  //   handleDepositChange,
-  //   handleWithdrawChange,
-  // } = useTokenSelector();
-
-  // Get the token balance and refresh function at the component level
-  // const { balance: tokenBalance, refreshBalance } = useTokenBalance({
-  //   tokenAddress: selectedTokenInfo?.address || "",
-  //   userAddress: address,
-  //   decimals: selectedTokenInfo?.decimals || 18,
-  //   isPrivate: selectedAction === "Decrypt",
-  // });
+  const valueError = useEncryptDecryptValueError();
 
   const ActionIcon = isEncrypt ? EyeOff : Eye;
 
@@ -301,8 +267,6 @@ export function MainTokenSwapping() {
 
   return (
     <div className="text-center inline-block">
-      {/* <GlowArea className="flex gap-8 items-center justify-center p-20">
-        <Glow color="teal" className="rounded-3xl drop-shadow-xl"> */}
       <div className=" flex gap-8 items-center justify-center w-[450px] rounded-3xl drop-shadow-xl">
         <Card className="rounded-[inherit] w-[450px] bg-background/60 border-component-stroke backdrop-blur-xs">
           {!isConnected ? (
@@ -409,15 +373,16 @@ export function MainTokenSwapping() {
               />
             </div>
           </CardContent>
-          <CardFooter className="flex justify-center">
+          <CardFooter className="flex flex-col gap-2 justify-center items-start">
             <Button
               className="w-full"
-              icon={ActionIcon}
+              icon={valueError != null ? AlertCircle : ActionIcon}
               onClick={handleAction}
+              disabled={valueError != null}
               // TODO: Re-enable
               // disabled={isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)}
             >
-              {isEncrypt ? "Encrypt" : "Decrypt"}
+              {valueError != null ? valueError : isEncrypt ? "Encrypt" : "Decrypt"}
               {/* {isProcessing
                 ? "Please wait..."
                 : selectedAction === "Decrypt" && isLoadingPrivateBalance
@@ -425,6 +390,7 @@ export function MainTokenSwapping() {
                   : selectedAction}
               {(isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)) && <Spinner />} */}
             </Button>
+            <AnimatePresence></AnimatePresence>
           </CardFooter>
         </Card>
       </div>
