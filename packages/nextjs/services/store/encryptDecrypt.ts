@@ -175,3 +175,29 @@ export const useEncryptDecryptValueError = () => {
     return null;
   }, [rawInputValue, balances, isEncrypt]);
 };
+
+export const useEncryptDecryptFormattedAllowance = () => {
+  const pair = useEncryptDecryptPair();
+  const balances = useEncryptDecryptBalances();
+  return useMemo(
+    () =>
+      balances?.fherc20Allowance != null
+        ? formatUnits(balances.fherc20Allowance, pair?.publicToken.decimals ?? 18)
+        : "0",
+    [balances, pair],
+  );
+};
+
+export const useEncryptDecryptRequiresApproval = () => {
+  const isEncrypt = useEncryptDecryptIsEncrypt();
+  const balances = useEncryptDecryptBalances();
+  const rawInputValue = useEncryptDecryptRawInputValue();
+
+  return useMemo(() => {
+    if (!isEncrypt) return false;
+    if (balances == null) return false;
+    if (balances.fherc20Allowance == null) return true;
+    if (balances.fherc20Allowance < rawInputValue) return true;
+    return false;
+  }, [isEncrypt, balances, rawInputValue]);
+};
