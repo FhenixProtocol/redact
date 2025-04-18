@@ -103,9 +103,7 @@ export const useEncryptDecryptRawInputValue = () => {
   const { encryptValue, decryptValue } = useEncryptDecryptStore();
 
   return useMemo(() => {
-    console.log("Raw input value", { isEncrypt, encryptValue, decryptValue });
     const value = isEncrypt ? encryptValue : decryptValue;
-    console.log("Raw input value", { value });
     return value ?? 0n;
   }, [isEncrypt, encryptValue, decryptValue]);
 };
@@ -113,8 +111,6 @@ export const useEncryptDecryptRawInputValue = () => {
 export const useEncryptDecryptInputValue = () => {
   const rawInputValue = useEncryptDecryptRawInputValue();
   const pair = useEncryptDecryptPair();
-
-  console.log("Input value", { rawInputValue });
 
   return useMemo(() => {
     if (pair == null) return "";
@@ -132,7 +128,6 @@ export const useUpdateEncryptDecryptValueByPercent = () => {
         if (pair == null) return;
 
         const balance = state.isEncrypt ? balances?.publicBalance : balances?.confidentialBalance;
-        console.log("Update by percent", { balance, percent, isEncrypt: state.isEncrypt });
         if (balance == null) return;
 
         const amount = (balance * BigInt(percent)) / 100n;
@@ -141,8 +136,6 @@ export const useUpdateEncryptDecryptValueByPercent = () => {
         } else {
           state.decryptValue = amount;
         }
-
-        console.log("Updated", { stateDecryptedValue: state.decryptValue, isEncrypt: state.isEncrypt });
       });
     },
     [pair, balances],
@@ -224,7 +217,7 @@ export const useEncryptDecryptRequiresApproval = () => {
     if (!isEncrypt) return false;
     if (balances == null) return false;
     if (balances.fherc20Allowance == null) return true;
-    if (balances.fherc20Allowance < rawInputValue) return true;
+    if (rawInputValue > 0n && balances.fherc20Allowance < rawInputValue) return true;
     return false;
   }, [isEncrypt, balances, rawInputValue]);
 };
