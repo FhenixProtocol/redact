@@ -44,6 +44,7 @@ export interface ConfidentialTokenPair {
 export interface ConfidentialTokenPairBalances {
   publicBalance: bigint | undefined;
   confidentialBalance: bigint | undefined;
+  fherc20Allowance: bigint | undefined;
 }
 
 export interface ConfidentialTokenPairWithBalances {
@@ -396,6 +397,7 @@ const _getConfidentialPairBalances = async (
     return addresses.map(() => ({
       publicBalance: undefined,
       confidentialBalance: undefined,
+      fherc20Allowance: undefined,
     }));
   }
 
@@ -422,6 +424,12 @@ const _getConfidentialPairBalances = async (
         functionName: "encBalanceOf",
         args: [account],
       });
+      contracts.push({
+        address: fherc20Address,
+        abi: erc20Abi,
+        functionName: "allowance",
+        args: [account, erc20Address],
+      });
     }
   }
 
@@ -438,11 +446,13 @@ const _getConfidentialPairBalances = async (
 
     const publicBalanceResult = results[resultIndex++];
     const confidentialBalanceResult = fherc20Exists ? results[resultIndex++] : null;
-
+    const fherc20AllowanceResult = fherc20Exists ? results[resultIndex++] : null;
     balances.push({
       publicBalance: publicBalanceResult.status === "success" ? (publicBalanceResult.result as bigint) : undefined,
       confidentialBalance:
         confidentialBalanceResult?.status === "success" ? (confidentialBalanceResult.result as bigint) : undefined,
+      fherc20Allowance:
+        fherc20AllowanceResult?.status === "success" ? (fherc20AllowanceResult.result as bigint) : undefined,
     });
   }
 

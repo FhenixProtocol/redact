@@ -88,6 +88,14 @@ export const useEncryptDecryptInputValue = () => {
   });
 };
 
+export const useEncryptDecryptRawInputValue = () => {
+  return useEncryptDecryptStore(state => {
+    if (state.pair == null) return 0n;
+    const value = state.isEncrypt ? state.encryptValue : state.decryptValue;
+    return value ?? 0n;
+  });
+};
+
 export const useUpdateEncryptDecryptValueByPercent = () => {
   return useCallback((percent: number) => {
     useEncryptDecryptStore.setState(state => {

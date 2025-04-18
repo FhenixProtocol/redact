@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { EncryptedBalance } from "./ui/EncryptedValue";
+import { Check } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { formatUnits } from "viem";
@@ -17,6 +18,7 @@ import {
   useEncryptDecryptIsEncrypt,
   useEncryptDecryptPair,
   useEncryptDecryptPercentValue,
+  useEncryptDecryptRawInputValue,
   useEncryptDecryptValueError,
   useSelectEncryptDecryptToken,
   useUpdateEncryptDecryptValue,
@@ -40,6 +42,7 @@ export function MainTokenSwapping() {
   const sliderValue = useEncryptDecryptPercentValue();
   const setSliderValue = useUpdateEncryptDecryptValueByPercent();
 
+  const rawInputValue = useEncryptDecryptRawInputValue();
   const inputValue = useEncryptDecryptInputValue();
   const setInputValue = useUpdateEncryptDecryptValue();
 
@@ -146,6 +149,14 @@ export function MainTokenSwapping() {
 
   const handleDecrypt = () => {
     console.log("Decrypt");
+  };
+
+  const deployFherc20 = () => {
+    console.log("Deploy");
+  };
+
+  const handleApprove = () => {
+    console.log("Approve");
   };
 
   // const handleEncrypt = async () => {
@@ -371,25 +382,104 @@ export function MainTokenSwapping() {
                 // TODO: Re-enable
                 // disabled={isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)}
               />
+
+              <AnimatePresence>
+                {valueError != null && (
+                  <motion.div
+                    key="error"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="w-full flex flex-row gap-2 items-center justify-end mt-6"
+                  >
+                    <div className="text-sm text-destructive italic ml-4">{valueError}</div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-2 justify-center items-start">
-            <Button
-              className="w-full"
-              icon={valueError != null ? AlertCircle : ActionIcon}
-              onClick={handleAction}
-              disabled={valueError != null}
-              // TODO: Re-enable
-              // disabled={isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)}
-            >
-              {valueError != null ? valueError : isEncrypt ? "Encrypt" : "Decrypt"}
-              {/* {isProcessing
+          <CardFooter className="flex flex-col gap-4 justify-center items-start">
+            <AnimatePresence>
+              {isEncrypt && pair != null && pair.confidentialTokenDeployed === false && (
+                <motion.div
+                  key="deploy"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="w-full flex flex-col gap-2"
+                >
+                  <div className="text-sm text-theme-black italic text-left ml-4">
+                    The confidential token <b>e{pair.publicToken.symbol}</b> has not been deployed yet and requires
+                    deployment before you can encrypt your <b>{pair.publicToken.symbol}</b> balance.
+                  </div>
+                  <div className="flex flex-row gap-2 items-center">
+                    <div className="text-sm text-theme-black">0.</div>
+                    <Button
+                      className="w-full"
+                      icon={Check}
+                      onClick={deployFherc20}
+                      // TODO: Re-enable
+                      // disabled={isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)}
+                    >
+                      Deploy e{pair?.publicToken.symbol}
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+              {isEncrypt &&
+                balances != null &&
+                (balances.fherc20Allowance == null || (balances.fherc20Allowance ?? 0n) < rawInputValue) && (
+                  <motion.div
+                    key="approve"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="w-full flex flex-col gap-2 justify-center"
+                  >
+                    <div className="flex flex-row gap-2 justify-between items-center ml-4">
+                      <div className="text-sm text-theme-black">Allowance:</div>
+                      <div className="text-sm text-theme-black">
+                        {balances?.fherc20Allowance != null
+                          ? formatUnits(balances.fherc20Allowance, pair?.publicToken.decimals ?? 18)
+                          : "0"}
+                      </div>
+                    </div>
+                    <div className="flex flex-row gap-2">
+                      <div className="text-sm text-theme-black">1.</div>
+                      <Button
+                        className="w-full"
+                        icon={Check}
+                        onClick={handleApprove}
+                        disabled={valueError != null}
+                        // TODO: Re-enable
+                        // disabled={isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)}
+                      >
+                        Approve {pair?.publicToken.symbol}
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+            </AnimatePresence>
+            <div className="w-full flex flex-row gap-2 items-center">
+              {isEncrypt && <div className="text-sm text-theme-black">2.</div>}
+              <Button
+                className="w-full"
+                icon={ActionIcon}
+                onClick={handleAction}
+                disabled={valueError != null}
+                // TODO: Re-enable
+                // disabled={isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)}
+              >
+                {isEncrypt ? "Encrypt" : "Decrypt"}
+                {/* {isProcessing
                 ? "Please wait..."
                 : selectedAction === "Decrypt" && isLoadingPrivateBalance
                   ? "Loading balance..."
                   : selectedAction}
               {(isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)) && <Spinner />} */}
-            </Button>
+              </Button>
+            </div>
+
             <AnimatePresence></AnimatePresence>
           </CardFooter>
         </Card>
