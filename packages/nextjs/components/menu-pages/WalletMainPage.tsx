@@ -6,14 +6,11 @@ import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
 import { AnimatePresence, motion } from "framer-motion";
 import { MinusIcon, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
-// Example icons
 import { useAccount, useBalance } from "wagmi";
 import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
-import { TokenAccordion, TokenAccordion2, TokenAccordionItem, TokenData } from "~~/components/ui/FnxAccordion";
-// import { TokenBalanceInfo, useAllTokenBalances } from "~~/hooks/useTokenBalance";
+import { TokenAccordion2, TokenAccordionItem } from "~~/components/ui/FnxAccordion";
 import { customFormatEther, truncateAddress } from "~~/lib/common";
-import { useTokenStore } from "~~/services/store/tokenStore";
 import { useConfidentialTokenPairAddresses } from "~~/services/store/tokenStore2";
 
 /**
