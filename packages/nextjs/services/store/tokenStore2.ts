@@ -9,8 +9,9 @@ import { getAccount, getPublicClient } from "wagmi/actions";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import deployedContracts from "~~/contracts/deployedContracts";
-import { chunk } from "~~/lib/common";
+import { chunk, getChainId, getDeployedContract } from "~~/lib/common";
 import { Contract, ContractName } from "~~/utils/scaffold-eth/contract";
 
 type ChainRecord<T> = Record<number, T>;
@@ -172,24 +173,6 @@ const _removeArbitraryToken = async (chain: number, address: string) => {
 
 // Utils
 
-const getChainId = async () => {
-  const publicClient = getPublicClient(wagmiConfig);
-  return await publicClient.getChainId();
-};
-
-const getDeployedContract = <TContractName extends ContractName>(
-  chain: number,
-  contractName: TContractName,
-): Contract<TContractName> => {
-  const deployedContract = deployedContracts[chain as keyof typeof deployedContracts][contractName];
-
-  if (!deployedContract) {
-    throw new Error(`Contract ${contractName} not found on chain ${chain}`);
-  }
-
-  return deployedContract;
-};
-
 // ARBITRARY TOKEN
 
 export const addArbitraryToken = async (pairWithBalances: ConfidentialTokenPairWithBalances) => {
@@ -201,17 +184,10 @@ const _fetchIsFherc20 = async (chain: number, address: string) => {
   // Fetch public token data
   const publicClient = getPublicClient(wagmiConfig);
 
-  const eETHData = getDeployedContract(chain, "eETH");
-  console.log("eETHData", eETHData);
-
-  if (!eETHData) {
-    throw new Error(`Contract eETH not found on chain ${chain}`);
-  }
-
   try {
     const isFherc20 = await publicClient.readContract({
       address: address,
-      abi: eETHData.abi,
+      abi: confidentialErc20Abi,
       functionName: "isFherc20",
     });
     return isFherc20;
@@ -222,10 +198,9 @@ const _fetchIsFherc20 = async (chain: number, address: string) => {
 
 const _fetchUnderlyingERC20 = async (chain: number, address: string) => {
   const publicClient = getPublicClient(wagmiConfig);
-  const eETHData = getDeployedContract(chain, "eETH");
   const underlyingERC20 = await publicClient.readContract({
     address: address,
-    abi: eETHData.abi,
+    abi: confidentialErc20Abi,
     functionName: "erc20",
   });
   console.log("underlyingERC20", underlyingERC20);
@@ -401,7 +376,6 @@ const _fetchConfidentialPairBalances = async (
     }));
   }
 
-  const eETHData = getDeployedContract(chain, "eETH");
   const publicClient = getPublicClient(wagmiConfig);
 
   const contracts = [];
@@ -420,7 +394,7 @@ const _fetchConfidentialPairBalances = async (
     if (fherc20Exists) {
       contracts.push({
         address: fherc20Address,
-        abi: eETHData.abi,
+        abi: confidentialErc20Abi,
         functionName: "encBalanceOf",
         args: [account],
       });
