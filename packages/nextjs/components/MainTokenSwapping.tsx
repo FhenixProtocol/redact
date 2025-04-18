@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { EncryptedBalance } from "./ui/EncryptedValue";
 import { Spinner } from "./ui/Spinner";
 import { Check } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import { TokenSelector } from "~~/components/TokenSelector";
@@ -13,7 +14,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~~/compone
 import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { useCofhe } from "~~/hooks/useCofhe";
-import { useDeployFherc20Action } from "~~/hooks/useEncryptActions";
+import { useApproveFherc20Action, useDeployFherc20Action } from "~~/hooks/useEncryptActions";
 import {
   useEncryptDecryptBalances,
   useEncryptDecryptInputValue,
@@ -155,10 +156,6 @@ export function MainTokenSwapping() {
 
   const deployFherc20 = () => {
     console.log("Deploy");
-  };
-
-  const handleApprove = () => {
-    console.log("Approve");
   };
 
   // const handleEncrypt = async () => {
@@ -401,42 +398,8 @@ export function MainTokenSwapping() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 justify-center items-start">
-            <AnimatePresence>
-              <DeployFherc20Button />
-              {isEncrypt &&
-                balances != null &&
-                (balances.fherc20Allowance == null || (balances.fherc20Allowance ?? 0n) < rawInputValue) && (
-                  <motion.div
-                    key="approve"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="w-full flex flex-col gap-2 justify-center"
-                  >
-                    <div className="flex flex-row gap-2 justify-between items-center ml-4">
-                      <div className="text-sm text-theme-black">Allowance:</div>
-                      <div className="text-sm text-theme-black">
-                        {balances?.fherc20Allowance != null
-                          ? formatUnits(balances.fherc20Allowance, pair?.publicToken.decimals ?? 18)
-                          : "0"}
-                      </div>
-                    </div>
-                    <div className="flex flex-row gap-2">
-                      <div className="text-sm text-theme-black">1.</div>
-                      <Button
-                        className="w-full"
-                        icon={Check}
-                        onClick={handleApprove}
-                        disabled={valueError != null}
-                        // TODO: Re-enable
-                        // disabled={isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)}
-                      >
-                        Approve {pair?.publicToken.symbol}
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-            </AnimatePresence>
+            <DeployFherc20Button />
+            <ApproveButton />
             <div className="w-full flex flex-row gap-2 items-center">
               {isEncrypt && <div className="text-sm text-theme-black">2.</div>}
               <Button
@@ -461,8 +424,6 @@ export function MainTokenSwapping() {
           </CardFooter>
         </Card>
       </div>
-      {/* </Glow>
-      </GlowArea> */}
     </div>
   );
 }
@@ -500,6 +461,85 @@ const DeployFherc20Button = () => {
               disabled={isDeploying}
             >
               {isDeploying ? "Deploying..." : `Deploy e${pair?.publicToken.symbol}`}
+            </Button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+const ApproveButton = () => {
+  const isEncrypt = useEncryptDecryptIsEncrypt();
+  const pair = useEncryptDecryptPair();
+  const balances = useEncryptDecryptBalances();
+  const rawInputValue = useEncryptDecryptRawInputValue();
+  const valueError = useEncryptDecryptValueError();
+  const { onApproveFherc20, isApproving } = useApproveFherc20Action();
+
+  const requiresApproval = useMemo(() => {
+    if (!isEncrypt) return false;
+    if (balances == null) return false;
+    if (balances.fherc20Allowance == null) return true;
+    if (balances.fherc20Allowance < rawInputValue) return true;
+    return false;
+  }, [isEncrypt, balances, rawInputValue]);
+
+  const handleApprove = () => {
+    if (pair == null) {
+      toast.error("No token selected");
+      return;
+    }
+    if (pair.confidentialToken == null) {
+      toast.error("No confidential token deployed");
+      return;
+    }
+    onApproveFherc20({
+      publicTokenSymbol: pair.publicToken.symbol,
+      publicTokenAddress: pair.publicToken.address,
+      confidentialTokenAddress: pair.confidentialToken.address,
+      amount: rawInputValue,
+    });
+  };
+
+  return (
+    <AnimatePresence>
+      {isEncrypt && (
+        <motion.div
+          key="allowance"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="w-full flex flex-col gap-2 justify-center"
+        >
+          <div className="flex flex-row gap-2 justify-between items-center ml-4">
+            <div className="text-sm text-theme-black">Allowance:</div>
+            <div className="text-sm text-theme-black">
+              {balances?.fherc20Allowance != null
+                ? formatUnits(balances.fherc20Allowance, pair?.publicToken.decimals ?? 18)
+                : "0"}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {requiresApproval && (
+        <motion.div
+          key="approve-button"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="w-full flex flex-col gap-2 justify-center"
+        >
+          <div className="flex flex-row gap-2">
+            <div className="text-sm text-theme-black">1.</div>
+            <Button
+              className="w-full"
+              icon={Check}
+              onClick={handleApprove}
+              disabled={valueError != null || isApproving}
+            >
+              {isApproving ? "Approving..." : `Approve ${pair?.publicToken.symbol}`}
             </Button>
           </div>
         </motion.div>

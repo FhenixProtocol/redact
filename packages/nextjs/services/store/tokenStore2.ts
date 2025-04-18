@@ -425,10 +425,10 @@ const _fetchConfidentialPairBalances = async (
         args: [account],
       });
       contracts.push({
-        address: fherc20Address,
+        address: erc20Address,
         abi: erc20Abi,
         functionName: "allowance",
-        args: [account, erc20Address],
+        args: [account, fherc20Address],
       });
     }
   }
@@ -436,6 +436,8 @@ const _fetchConfidentialPairBalances = async (
   const results = await publicClient.multicall({
     contracts,
   });
+
+  console.log("fetchConfidentialPairBalances results", results);
 
   const balances: ConfidentialTokenPairBalances[] = [];
   let resultIndex = 0;
@@ -510,6 +512,7 @@ export const fetchTokenPairsData = async () => {
 export const refetchSingleTokenPairData = async (address: Address) => {
   const chain = await getChainId();
   const pairs = await _fetchTokenPairsData(chain, [address]);
+  console.log("refetchSingleTokenPairData pairs", pairs);
   useTokenStore.setState(state => {
     _addPairsToStore(state, chain, pairs);
   });
@@ -633,12 +636,13 @@ export const useDefaultConfidentialTokenPair = (): ConfidentialTokenPair | undef
   const chain = useChainId();
   return useTokenStore(state => Object.values(state.pairs[chain])[0]);
 };
-export const useConfidentialTokenPairBalances = (address: string) => {
+export const useConfidentialTokenPairBalances = (address: string | undefined) => {
   const chain = useChainId();
-  const balances = useTokenStore(state => state.balances[chain]?.[address]);
+  const balances = useTokenStore(state => (address ? state.balances[chain]?.[address] : undefined));
   return {
     publicBalance: balances?.publicBalance,
     confidentialBalance: balances?.confidentialBalance,
+    fherc20Allowance: balances?.fherc20Allowance,
   };
 };
 
