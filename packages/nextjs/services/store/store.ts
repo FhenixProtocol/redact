@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import scaffoldConfig from "~~/scaffold.config";
+import { ConfidentialTokenPair } from "~~/services/store/tokenStore2";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth";
 
 type GlobalState = {
@@ -17,6 +18,14 @@ type GlobalState = {
   // Add Token Modal
   isAddTokenModalOpen: boolean;
   setAddTokenModalOpen: (isOpen: boolean) => void;
+
+  // Select Token Modal
+  isSelectTokenModalOpen: boolean;
+  onSelectTokenCallback: ((tokenPair: ConfidentialTokenPair) => void) | null;
+  setSelectTokenModalOpen: (
+    isOpen: boolean,
+    onSelectToken?: ((tokenPair: ConfidentialTokenPair) => void) | null,
+  ) => void;
 };
 
 export const useGlobalState = create<GlobalState>(set => ({
@@ -36,4 +45,13 @@ export const useGlobalState = create<GlobalState>(set => ({
   // Add Token Modal
   isAddTokenModalOpen: false,
   setAddTokenModalOpen: (isOpen: boolean) => set(() => ({ isAddTokenModalOpen: isOpen })),
+
+  // Select Token Modal
+  isSelectTokenModalOpen: false,
+  onSelectTokenCallback: null,
+  setSelectTokenModalOpen: (isOpen: boolean, onSelectToken = null) =>
+    set(() => ({
+      isSelectTokenModalOpen: isOpen,
+      onSelectTokenCallback: onSelectToken,
+    })),
 }));

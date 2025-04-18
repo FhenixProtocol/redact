@@ -41,22 +41,6 @@ const Home: NextPage = () => {
           <MainTokenSwapping setIsModalOpen={setIsModalOpen} />
         </div>
       </div>
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Add Token"
-        duration="slow" // or "normal" or "slow"
-      >
-        <div className="flex flex-col gap-4">
-          <AddToken
-            onClose={() => setIsModalOpen(false)}
-            onAddToken={() => {
-              setIsModalOpen(false);
-            }}
-          />
-        </div>
-      </Modal>
     </>
   );
 };
