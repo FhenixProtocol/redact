@@ -10,8 +10,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import deployedContracts from "~~/contracts/deployedContracts";
-import { RedactCoreAbi } from "~~/lib/abis";
-import { REDACT_CORE_ADDRESS, chunk } from "~~/lib/common";
+import { chunk } from "~~/lib/common";
 import { Contract, ContractName } from "~~/utils/scaffold-eth/contract";
 
 type ChainRecord<T> = Record<number, T>;
@@ -136,7 +135,7 @@ const _removeArbitraryToken = async (chain: number, address: string) => {
   });
 };
 
-const _fetchInitialTokens = async (chain: number) => {
+export const _fetchInitialTokens = async (chain: number) => {
   const tokenListAddresses: string[] = [];
   const arbitraryTokenAddresses = Object.keys(useTokenStore.getState().arbitraryTokens[chain] ?? {});
 
@@ -165,28 +164,14 @@ const _fetchToken = async (chain: number, address: string) => {
 };
 
 export async function fetchConfidentialTokenPairs(addresses: Address[]) {
-  const publicClient = getPublicClient(wagmiConfig);
-
-  const results = await publicClient.multicall({
-    contracts: addresses.flatMap(address => [
-      {
-        address: REDACT_CORE_ADDRESS,
-        abi: RedactCoreAbi,
-        functionName: "getFherc20",
-        args: [address],
-      },
-    ]),
-  });
+  const chain = await _getChainId();
+  const fherc20Addresses = await _getFherc20IfExists(chain, addresses);
 
   const confidentialPairs: AddressRecord<string> = {};
 
-  for (let i = 0; i < results.length; i++) {
-    const result = results[i];
-
-    if (result.status === "failure") continue;
-
+  for (let i = 0; i < addresses.length; i++) {
     const address = addresses[i];
-    const fherc20 = result.result as Address;
+    const fherc20 = fherc20Addresses[i] as Address;
 
     confidentialPairs[address] = fherc20;
   }
@@ -365,11 +350,17 @@ const _getUnderlyingERC20 = async (chain: number, address: string) => {
   return underlyingERC20;
 };
 
-const _getRedactCoreFlags = async (chain: number, address: string) => {
+interface RedactCoreFlags {
+  isStablecoin: boolean;
+  isWETH: boolean;
+}
+
+const _getRedactCoreFlags = async (chain: number, addresses: Address[]): Promise<RedactCoreFlags[]> => {
   const publicClient = getPublicClient(wagmiConfig);
   const redactCoreData = getDeployedContract(chain, "RedactCore");
-  const flags = await publicClient.multicall({
-    contracts: [
+
+  const results = await publicClient.multicall({
+    contracts: addresses.flatMap(address => [
       {
         address: redactCoreData.address,
         abi: redactCoreData.abi,
@@ -382,30 +373,38 @@ const _getRedactCoreFlags = async (chain: number, address: string) => {
         functionName: "getIsWETH",
         args: [address],
       },
-    ],
+    ]),
   });
 
-  const [isStablecoinResult, isWETHResult] = flags;
+  const flagResults: RedactCoreFlags[] = [];
+  for (let i = 0; i < addresses.length; i++) {
+    const offset = i * 2;
+    const isStablecoinResult = results[offset];
+    const isWETHResult = results[offset + 1];
 
-  const isStablecoin = isStablecoinResult.result ?? false;
-  const isWETH = isWETHResult.result ?? false;
+    flagResults.push({
+      isStablecoin: Boolean(isStablecoinResult.result),
+      isWETH: Boolean(isWETHResult.result),
+    });
+  }
 
-  return {
-    isStablecoin,
-    isWETH,
-  };
+  return flagResults;
 };
 
-const _getFherc20IfExists = async (chain: number, address: string) => {
+const _getFherc20IfExists = async (chain: number, addresses: Address[]) => {
   const publicClient = getPublicClient(wagmiConfig);
   const redactCoreData = getDeployedContract(chain, "RedactCore");
-  const fherc20Address = await publicClient.readContract({
-    address: redactCoreData.address,
-    abi: redactCoreData.abi,
-    functionName: "getFherc20",
-    args: [address],
+
+  const results = await publicClient.multicall({
+    contracts: addresses.map(address => ({
+      address: redactCoreData.address,
+      abi: redactCoreData.abi,
+      functionName: "getFherc20",
+      args: [address],
+    })),
   });
-  return fherc20Address;
+
+  return results.map(result => result.result as Address);
 };
 
 const _parsePublicDataResults = (results: any[]) => {
@@ -428,18 +427,31 @@ const _parsePublicDataResults = (results: any[]) => {
   };
 };
 
-const _getConfidentialPairPublicData = async (erc20Address: string, fherc20Address: string) => {
+const _getConfidentialPairPublicData = async (addresses: { erc20Address: Address; fherc20Address: Address }[]) => {
   const publicClient = getPublicClient(wagmiConfig);
 
-  const fherc20Exists = fherc20Address !== zeroAddress;
+  const addressesToFetch: Address[] = [];
+  const addressMap: Record<number, { erc20Index: number; fherc20Index: number | null }> = {};
 
-  const addresses = [erc20Address];
-  if (fherc20Exists) {
-    addresses.push(fherc20Address);
+  let currentIndex = 0;
+
+  for (let i = 0; i < addresses.length; i++) {
+    const { erc20Address, fherc20Address } = addresses[i];
+    const fherc20Exists = fherc20Address !== zeroAddress;
+
+    addressesToFetch.push(erc20Address);
+    addressMap[currentIndex] = { erc20Index: i, fherc20Index: null };
+    currentIndex++;
+
+    if (fherc20Exists) {
+      addressesToFetch.push(fherc20Address);
+      addressMap[currentIndex] = { erc20Index: i, fherc20Index: i };
+      currentIndex++;
+    }
   }
 
   const result = await publicClient.multicall({
-    contracts: addresses.flatMap(address => [
+    contracts: addressesToFetch.flatMap(address => [
       {
         address,
         abi: erc20Abi,
@@ -459,65 +471,114 @@ const _getConfidentialPairPublicData = async (erc20Address: string, fherc20Addre
   });
 
   const chunks = chunk(result, 3);
+  const results: Array<{
+    publicTokenData: ReturnType<typeof _parsePublicDataResults>;
+    confidentialTokenData?: ReturnType<typeof _parsePublicDataResults>;
+  }> = [];
 
-  const publicTokenData = _parsePublicDataResults(chunks[0]);
-  const confidentialTokenData = fherc20Exists ? _parsePublicDataResults(chunks[1]) : undefined;
+  // Initialize results array
+  for (let i = 0; i < addresses.length; i++) {
+    results.push({
+      publicTokenData: {} as any,
+      confidentialTokenData: undefined,
+    });
+  }
 
-  return {
-    publicTokenData,
-    confidentialTokenData,
-  };
+  // Process chunks
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    const { erc20Index, fherc20Index } = addressMap[i];
+
+    const parsedData = _parsePublicDataResults(chunk);
+
+    if (fherc20Index === null) {
+      // This is an ERC20 token
+      results[erc20Index].publicTokenData = parsedData;
+    } else {
+      // This is an FHERC20 token
+      results[erc20Index].confidentialTokenData = parsedData;
+    }
+  }
+
+  return results;
 };
 
 const _getConfidentialPairBalances = async (
   chain: number,
-  erc20Address: string,
-  fherc20Address: string,
-): Promise<ConfidentialTokenPairBalances> => {
+  addresses: {
+    erc20Address: Address;
+    fherc20Address: Address;
+  }[],
+): Promise<ConfidentialTokenPairBalances[]> => {
   const { address } = getAccount(wagmiConfig);
+
   if (!address) {
-    return {
+    return addresses.map(() => ({
       publicBalance: undefined,
       confidentialBalance: undefined,
-    };
+    }));
   }
 
-  const fherc20Exists = fherc20Address !== zeroAddress;
   const eETHData = getDeployedContract(chain, "eETH");
-
-  const erc20Call = {
-    address: erc20Address,
-    abi: erc20Abi,
-    functionName: "balanceOf",
-    args: [address],
-  } as const;
-  const fherc20Call = {
-    address: fherc20Address,
-    abi: eETHData.abi,
-    functionName: "encBalanceOf",
-    args: [address],
-  } as const;
-
-  const calls = fherc20Exists ? [erc20Call, fherc20Call] : [erc20Call];
-
   const publicClient = getPublicClient(wagmiConfig);
-  const balances = await publicClient.multicall({
-    contracts: calls,
+
+  const contracts = [];
+
+  for (let i = 0; i < addresses.length; i++) {
+    const { erc20Address, fherc20Address } = addresses[i];
+    const fherc20Exists = fherc20Address !== zeroAddress;
+
+    contracts.push({
+      address: erc20Address,
+      abi: erc20Abi,
+      functionName: "balanceOf",
+      args: [address],
+    });
+
+    if (fherc20Exists) {
+      contracts.push({
+        address: fherc20Address,
+        abi: eETHData.abi,
+        functionName: "encBalanceOf",
+        args: [address],
+      });
+    }
+  }
+
+  const results = await publicClient.multicall({
+    contracts,
   });
 
-  return {
-    publicBalance: balances[0].result,
-    confidentialBalance: fherc20Exists ? balances[1].result : undefined,
-  };
+  const balances: ConfidentialTokenPairBalances[] = [];
+  let resultIndex = 0;
+
+  for (let i = 0; i < addresses.length; i++) {
+    const { fherc20Address } = addresses[i];
+    const fherc20Exists = fherc20Address !== zeroAddress;
+
+    const publicBalanceResult = results[resultIndex++];
+    const confidentialBalanceResult = fherc20Exists ? results[resultIndex++] : null;
+
+    balances.push({
+      publicBalance: publicBalanceResult.status === "success" ? (publicBalanceResult.result as bigint) : undefined,
+      confidentialBalance:
+        confidentialBalanceResult?.status === "success" ? (confidentialBalanceResult.result as bigint) : undefined,
+    });
+  }
+
+  return balances;
 };
 
 const _searchArbitraryToken = async (chain: number, address: string): Promise<ConfidentialTokenPairWithBalances> => {
   const isFherc20 = await _checkIsFherc20(chain, address);
   const erc20Address = isFherc20 ? await _getUnderlyingERC20(chain, address) : address;
-  const { isStablecoin, isWETH } = await _getRedactCoreFlags(chain, address);
-  const fherc20Address = isFherc20 ? address : await _getFherc20IfExists(chain, erc20Address);
-  const confidentialPairPublicData = await _getConfidentialPairPublicData(erc20Address, fherc20Address);
-  const confidentialPairBalances = await _getConfidentialPairBalances(chain, erc20Address, fherc20Address);
+  const [fherc20Address] = isFherc20 ? [address] : await _getFherc20IfExists(chain, [erc20Address]);
+
+  const [flagResults] = await _getRedactCoreFlags(chain, [erc20Address]);
+  const { isStablecoin, isWETH } = flagResults;
+
+  const [confidentialPairPublicData] = await _getConfidentialPairPublicData([{ erc20Address, fherc20Address }]);
+  const [confidentialPairBalances] = await _getConfidentialPairBalances(chain, [{ erc20Address, fherc20Address }]);
 
   const fherc20Exists = fherc20Address !== zeroAddress;
 
