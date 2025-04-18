@@ -37,13 +37,6 @@ const selectToken = (chain: number, account: Address, pairPublicToken: Address |
   useEncryptDecryptStore.setState({ pairPublicToken, encryptValue: 0n, decryptValue: 0n });
 };
 
-// Utils
-
-const _getTokenStorePair = (chain: number, pairPublicToken: Address | null) => {
-  if (pairPublicToken === null) return null;
-  return useTokenStore.getState().pairs[chain]?.[pairPublicToken];
-};
-
 // Hooks
 
 export const useEncryptDecryptPairPublicToken = () => {
@@ -57,7 +50,17 @@ export const useEncryptDecryptPair = () => {
 
 export const useEncryptDecryptBalances = () => {
   const pair = useEncryptDecryptPair();
-  return useConfidentialTokenPairBalances(pair?.publicToken.address);
+  const balances = useConfidentialTokenPairBalances(pair?.publicToken.address);
+  const decryptedConfidentialBalance = getDecryptedValue(FheTypes.Uint128, balances?.confidentialBalance);
+
+  return useMemo(
+    () => ({
+      publicBalance: balances?.publicBalance,
+      confidentialBalance: decryptedConfidentialBalance?.value,
+      fherc20Allowance: balances?.fherc20Allowance,
+    }),
+    [balances, decryptedConfidentialBalance],
+  );
 };
 
 export const useSelectEncryptDecryptToken = () => {
@@ -95,28 +98,28 @@ export const useUpdateEncryptDecryptValue = () => {
   );
 };
 
-export const useEncryptDecryptInputValue = () => {
-  const pair = useEncryptDecryptPair();
+export const useEncryptDecryptRawInputValue = () => {
   const isEncrypt = useEncryptDecryptIsEncrypt();
   const { encryptValue, decryptValue } = useEncryptDecryptStore();
+
+  return useMemo(() => {
+    console.log("Raw input value", { isEncrypt, encryptValue, decryptValue });
+    const value = isEncrypt ? encryptValue : decryptValue;
+    console.log("Raw input value", { value });
+    return value ?? 0n;
+  }, [isEncrypt, encryptValue, decryptValue]);
+};
+
+export const useEncryptDecryptInputValue = () => {
+  const rawInputValue = useEncryptDecryptRawInputValue();
+  const pair = useEncryptDecryptPair();
+
+  console.log("Input value", { rawInputValue });
 
   return useMemo(() => {
     if (pair == null) return "";
-    const value = isEncrypt ? encryptValue : decryptValue;
-    return formatUnits(value ?? 0n, pair.publicToken.decimals);
-  }, [pair, isEncrypt, encryptValue, decryptValue]);
-};
-
-export const useEncryptDecryptRawInputValue = () => {
-  const pair = useEncryptDecryptPair();
-  const isEncrypt = useEncryptDecryptIsEncrypt();
-  const { encryptValue, decryptValue } = useEncryptDecryptStore();
-
-  return useMemo(() => {
-    if (pair == null) return 0n;
-    const value = isEncrypt ? encryptValue : decryptValue;
-    return value ?? 0n;
-  }, [pair, isEncrypt, encryptValue, decryptValue]);
+    return formatUnits(rawInputValue, pair.publicToken.decimals);
+  }, [pair, rawInputValue]);
 };
 
 export const useUpdateEncryptDecryptValueByPercent = () => {
@@ -129,6 +132,7 @@ export const useUpdateEncryptDecryptValueByPercent = () => {
         if (pair == null) return;
 
         const balance = state.isEncrypt ? balances?.publicBalance : balances?.confidentialBalance;
+        console.log("Update by percent", { balance, percent, isEncrypt: state.isEncrypt });
         if (balance == null) return;
 
         const amount = (balance * BigInt(percent)) / 100n;
@@ -137,20 +141,24 @@ export const useUpdateEncryptDecryptValueByPercent = () => {
         } else {
           state.decryptValue = amount;
         }
+
+        console.log("Updated", { stateDecryptedValue: state.decryptValue, isEncrypt: state.isEncrypt });
       });
     },
     [pair, balances],
   );
 };
 
-export const useEncryptDecryptIsEncrypt = () => {
-  const setIsEncrypt = useCallback((isEncrypt: boolean) => {
+export const useEncryptDecryptSetIsEncrypt = () => {
+  return useCallback((isEncrypt: boolean) => {
     useEncryptDecryptStore.setState(state => {
       state.isEncrypt = isEncrypt;
     });
   }, []);
-  const isEncrypt = useEncryptDecryptStore(state => state.isEncrypt);
-  return { setIsEncrypt, isEncrypt };
+};
+
+export const useEncryptDecryptIsEncrypt = () => {
+  return useEncryptDecryptStore(state => state.isEncrypt);
 };
 
 export const useEncryptDecryptPercentValue = () => {
@@ -160,15 +168,9 @@ export const useEncryptDecryptPercentValue = () => {
 
   return useMemo(() => {
     if (balances == null) return 0;
-    if (isEncrypt) {
-      const balance = balances?.publicBalance;
-      if (balance == null || balance === 0n) return 0;
-      return Number(((rawInputValue ?? 0n) * 100n) / balance);
-    } else {
-      const balance = getDecryptedValue(FheTypes.Uint128, balances?.confidentialBalance)?.value ?? undefined;
-      if (balance == null || balance === 0n) return 0;
-      return Number(((rawInputValue ?? 0n) * 100n) / balance);
-    }
+    const balance = isEncrypt ? balances.publicBalance : balances.confidentialBalance;
+    if (balance == null || balance === 0n) return 0;
+    return Number(((rawInputValue ?? 0n) * 100n) / balance);
   }, [balances, isEncrypt, rawInputValue]);
 };
 
@@ -180,19 +182,18 @@ export const useEncryptDecryptValueError = () => {
   return useMemo(() => {
     if (rawInputValue == null) return "No token selected";
     if (balances == null) return "Token balance not found";
+    if (rawInputValue == null) return "Amount empty";
+    if (rawInputValue === 0n) return "Amount cannot be 0";
+    if (rawInputValue < 0n) return "Amount cannot be negative";
+
     if (isEncrypt) {
-      if (rawInputValue == null) return "Amount empty";
-      if (rawInputValue === 0n) return "Amount cannot be 0";
-      if (rawInputValue < 0n) return "Amount cannot be negative";
       if (balances.publicBalance == null) return "Public token balance not found";
       if (rawInputValue > balances.publicBalance) return "Insufficient balance";
     } else {
-      if (rawInputValue == null) return "Amount empty";
-      if (rawInputValue === 0n) return "Amount cannot be 0";
-      if (rawInputValue < 0n) return "Amount cannot be negative";
       if (balances.confidentialBalance == null) return "Private token balance not found";
       if (rawInputValue > balances.confidentialBalance) return "Insufficient balance";
     }
+
     return null;
   }, [rawInputValue, balances, isEncrypt]);
 };
@@ -207,6 +208,11 @@ export const useEncryptDecryptFormattedAllowance = () => {
         : "0",
     [balances, pair],
   );
+};
+
+export const useEncryptDecryptRequiresDeployment = () => {
+  const pair = useEncryptDecryptPair();
+  return pair != null && !pair.confidentialTokenDeployed;
 };
 
 export const useEncryptDecryptRequiresApproval = () => {
