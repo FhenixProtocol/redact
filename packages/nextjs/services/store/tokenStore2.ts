@@ -605,7 +605,7 @@ export const useConfidentialAddressPairs = () => {
   const chain = useChainId();
   return useTokenStore(
     useDeepEqual(state =>
-      Object.values(state.pairs[chain]).map(({ publicToken, confidentialToken }) => ({
+      Object.values(state.pairs[chain] ?? {}).map(({ publicToken, confidentialToken }) => ({
         erc20Address: publicToken.address,
         fherc20Address: confidentialToken?.address,
       })),
