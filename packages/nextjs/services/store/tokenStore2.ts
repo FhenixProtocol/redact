@@ -590,9 +590,13 @@ export const useConfidentialTokenPairAddresses = () => {
   );
 };
 
-export const useConfidentialTokenPair = (address: string) => {
+export const useConfidentialTokenPair = (address: string | undefined) => {
   const chain = useChainId();
-  return useTokenStore(state => state.pairs[chain]?.[address]);
+  return useTokenStore(state => (address ? state.pairs[chain]?.[address] : undefined));
+};
+export const useDefaultConfidentialTokenPair = (): ConfidentialTokenPair | undefined => {
+  const chain = useChainId();
+  return useTokenStore(state => Object.values(state.pairs[chain])[0]);
 };
 export const useConfidentialTokenPairBalances = (address: string) => {
   const chain = useChainId();

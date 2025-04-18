@@ -363,6 +363,7 @@ export function MainTokenSwapping() {
                 <div className="flex flex-col items-end flex-none justify-between">
                   <TokenSelector
                     value={pair?.publicToken.address}
+                    isEncrypt={isEncrypt}
                     onChange={(val: string) => setToken(val)}
                     className="z-100 text-sm w-[130px]"
                   />

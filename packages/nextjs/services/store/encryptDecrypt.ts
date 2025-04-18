@@ -123,11 +123,11 @@ export const useEncryptDecryptPercentValue = () => {
     if (state.pair == null) return 0;
     if (state.isEncrypt) {
       const balance = state.balances?.publicBalance;
-      if (balance == null) return 0;
+      if (balance == null || balance === 0n) return 0;
       return Number(((state.encryptValue ?? 0n) * 100n) / balance);
     } else {
       const balance = getDecryptedValue(FheTypes.Uint128, state.balances?.confidentialBalance)?.value ?? undefined;
-      if (balance == null) return 0;
+      if (balance == null || balance === 0n) return 0;
       return Number(((state.decryptValue ?? 0n) * 100n) / balance);
     }
   });
