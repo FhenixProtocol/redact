@@ -24,9 +24,9 @@ interface TokenSelectorProps {
 export function TokenSelector({ value, isEncrypt, onChange, className }: TokenSelectorProps) {
   const { setSelectTokenModalOpen, setAddTokenModalOpen } = useGlobalState();
   const valuePair = useConfidentialTokenPair(value);
-  const firstPair = useDefaultConfidentialTokenPair();
+  // const firstPair = useDefaultConfidentialTokenPair();
 
-  const displayPair = valuePair || firstPair;
+  const displayPair = valuePair;
 
   const handleOpenModal = () => {
     setSelectTokenModalOpen(true, (tokenPair: ConfidentialTokenPair) => {

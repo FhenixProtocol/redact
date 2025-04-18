@@ -132,3 +132,24 @@ export const useEncryptDecryptPercentValue = () => {
     }
   });
 };
+
+export const useEncryptDecryptValueError = () => {
+  return useEncryptDecryptStore(state => {
+    if (state.pair == null) return "No token selected";
+    if (state.balances == null) return "Token balance not found";
+    if (state.isEncrypt) {
+      if (state.encryptValue == null) return "Amount empty";
+      if (state.encryptValue === 0n) return "Amount cannot be 0";
+      if (state.encryptValue < 0n) return "Amount cannot be negative";
+      if (state.balances.publicBalance == null) return "Public token balance not found";
+      if (state.encryptValue > state.balances.publicBalance) return "Insufficient balance";
+    } else {
+      if (state.decryptValue == null) return "Amount empty";
+      if (state.decryptValue === 0n) return "Amount cannot be 0";
+      if (state.decryptValue < 0n) return "Amount cannot be negative";
+      if (state.balances.confidentialBalance == null) return "Private token balance not found";
+      if (state.decryptValue > state.balances.confidentialBalance) return "Insufficient balance";
+    }
+    return null;
+  });
+};
