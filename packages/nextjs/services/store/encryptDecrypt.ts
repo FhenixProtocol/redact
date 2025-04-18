@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { getDecryptedValue } from "./decrypted";
+import { getDecryptedValue, useDecryptValue } from "./decrypted";
 import { useConfidentialTokenPair, useConfidentialTokenPairBalances, useTokenStore } from "./tokenStore2";
 import { FheTypes } from "cofhejs/web";
 import { Address, formatUnits, parseUnits } from "viem";
@@ -51,7 +51,7 @@ export const useEncryptDecryptPair = () => {
 export const useEncryptDecryptBalances = () => {
   const pair = useEncryptDecryptPair();
   const balances = useConfidentialTokenPairBalances(pair?.publicToken.address);
-  const decryptedConfidentialBalance = getDecryptedValue(FheTypes.Uint128, balances?.confidentialBalance);
+  const decryptedConfidentialBalance = useDecryptValue(FheTypes.Uint128, balances?.confidentialBalance);
 
   return useMemo(
     () => ({

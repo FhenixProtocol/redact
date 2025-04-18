@@ -13,6 +13,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~~/compone
 import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { useCofhe } from "~~/hooks/useCofhe";
+import { useDecryptFherc20Action } from "~~/hooks/useDecryptActions";
 import { useApproveFherc20Action, useDeployFherc20Action, useEncryptErc20Action } from "~~/hooks/useEncryptActions";
 import {
   useEncryptDecryptBalances,
@@ -612,13 +613,26 @@ const EncryptButton = () => {
 
 const DecryptButton = () => {
   const isEncrypt = useEncryptDecryptIsEncrypt();
-  // const pair = useEncryptDecryptPair();
-  // const rawInputValue = useEncryptDecryptRawInputValue();
-  // const valueError = useEncryptDecryptValueError();
-  // const { onDecryptErc20, isDecrypting } = useDecryptErc20Action();
+  const { onDecryptFherc20, isDecrypting } = useDecryptFherc20Action();
+  const pair = useEncryptDecryptPair();
+  const rawInputValue = useEncryptDecryptRawInputValue();
+  const valueError = useEncryptDecryptValueError();
 
   const handleDecrypt = () => {
-    console.log("Decrypt");
+    if (pair == null) {
+      toast.error("No token selected");
+      return;
+    }
+    if (pair.confidentialToken == null) {
+      toast.error("No confidential token deployed");
+      return;
+    }
+    onDecryptFherc20({
+      publicTokenSymbol: pair.publicToken.symbol,
+      publicTokenAddress: pair.publicToken.address,
+      confidentialTokenAddress: pair.confidentialToken.address,
+      amount: rawInputValue,
+    });
   };
 
   return (
@@ -631,8 +645,8 @@ const DecryptButton = () => {
           exit={{ opacity: 0 }}
           className="w-full flex flex-row gap-2 items-center"
         >
-          <Button className="w-full" icon={Eye} onClick={handleDecrypt}>
-            Decrypt
+          <Button className="w-full" icon={Eye} onClick={handleDecrypt} disabled={valueError != null || isDecrypting}>
+            {isDecrypting ? "Decrypting..." : "Decrypt"}
           </Button>
         </motion.div>
       )}
