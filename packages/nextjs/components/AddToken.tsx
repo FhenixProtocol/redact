@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { TokenIcon } from "./ui/TokenIcon";
 import { ClearOutlined } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
@@ -8,8 +8,7 @@ import { isAddress } from "viem";
 import { Button } from "~~/components/ui/Button";
 import { FnxInput } from "~~/components/ui/FnxInput";
 import { Spinner } from "~~/components/ui/Spinner";
-import { type TokenDetails, useTokenDetails } from "~~/hooks/useTokenBalance";
-import { getTokenLogo } from "~~/lib/tokenUtils";
+import { cn } from "~~/lib/utils";
 import {
   ConfidentialTokenPairWithBalances,
   TokenItemData,
@@ -18,15 +17,12 @@ import {
 } from "~~/services/store/tokenStore2";
 
 interface AddTokenProps {
-  onAddToken?: (token: TokenDetails) => void;
   onClose?: () => void;
 }
 
 export function AddToken({ onAddToken, onClose }: AddTokenProps) {
   const [isAddingToken, setIsAddingToken] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [tokenAddress, setTokenAddress] = useState<string>("");
-  const [isValidInput, setIsValidInput] = useState<boolean>(true);
   const [tokenDetails, setTokenDetails] = useState<ConfidentialTokenPairWithBalances | null>(null);
   const { isError, isLoading, fetchDetails } = useTokenDetails();
   const [isDeployNeeded, setIsDeployNeeded] = useState<boolean>(false);
@@ -36,8 +32,8 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    setLoadingTokenDetails(true);
-    setTokenDetails(null);
+    handleInputValidationAndSearch(value);
+  };
 
     if (value !== "" && isAddress(value)) {
       setIsValidInput(true);
@@ -125,11 +121,6 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
   };
   const SpinnerIcon = () => <Spinner size={16} />;
 
-  const isDeployNeeded = useMemo(() => {
-    if (tokenDetails?.pair.confidentialTokenDeployed) return false;
-    return true;
-  }, [tokenDetails?.pair.confidentialTokenDeployed]);
-
   return (
     <div className="w-full flex flex-col gap-2">
       <div className="text-[18px] text-primary font-semibold">Token contract address:</div>
@@ -139,8 +130,8 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
         placeholder="0x..."
         value={inputValue}
         onChange={handleInputChange}
-        className={`w-full  ${!isValidInput ? "border-red-500" : ""}`}
-        error={!isValidInput ? "Invalid address format" : undefined}
+        className={cn("w-full", inputError != null && "border-red-500")}
+        error={inputError ?? undefined}
         fadeEnd={true}
       />
       <AnimatePresence>
@@ -226,11 +217,6 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
 export const PublicTokenDetails = ({ tokenDetails }: { tokenDetails: TokenItemData | undefined }) => {
   const { name, symbol, decimals } = tokenDetails || {};
 
-  const icon = useMemo(() => {
-    if (symbol) return getTokenLogo(symbol);
-    return "/token-icons/default-token.webp";
-  }, [symbol]);
-
   return (
     <>
       {tokenDetails && (
@@ -270,11 +256,6 @@ export const ConfidentialTokenDetails = ({
 }) => {
   const { symbol: publicSymbol } = publicTokenDetails || {};
   const { name, symbol, decimals } = confidentialTokenDetails || {};
-
-  const icon = useMemo(() => {
-    if (symbol) return getTokenLogo(symbol);
-    return "/token-icons/default-token.webp";
-  }, [symbol]);
 
   return (
     <>
@@ -335,7 +316,10 @@ const ArbitraryTokenWarning = ({
           transition={{ duration: 0.2 }}
         >
           <div className="text-sm text-yellow-500 mx-2">
-            <div className="mb-2">⚠️ This token doesn't appear in the active token list(s). Make sure that you</div>
+            <div className="mb-2">
+              ⚠️ This token doesn't appear in the active token list(s). Make sure that you trust the token you are
+              adding.
+            </div>
             <div className="mb-2">
               Anyone can create a token, including creating fake versions of existing tokens that claim to represent
               projects. DYOR!
