@@ -6,7 +6,6 @@ import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
 import { AnimatePresence, motion } from "framer-motion";
 import { MinusIcon, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
-// Example icons
 import { useAccount, useBalance } from "wagmi";
 import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
