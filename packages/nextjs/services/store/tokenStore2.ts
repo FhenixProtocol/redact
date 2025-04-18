@@ -592,13 +592,24 @@ export function useDeepEqual<S, U>(selector: (state: S) => U): (state: S) => U {
 }
 
 export const useConfidentialTokenPairAddresses = () => {
-  const chain = 31337;
+  const chain = useChainId();
   return useTokenStore(
     useDeepEqual(state => {
       const pairs = state.pairs[chain] ?? {};
-      console.log("pairs", pairs);
       return Object.keys(pairs);
     }),
+  );
+};
+
+export const useConfidentialAddressPairs = () => {
+  const chain = useChainId();
+  return useTokenStore(
+    useDeepEqual(state =>
+      Object.values(state.pairs[chain]).map(({ publicToken, confidentialToken }) => ({
+        erc20Address: publicToken.address,
+        fherc20Address: confidentialToken?.address,
+      })),
+    ),
   );
 };
 
