@@ -186,7 +186,7 @@ export function AddToken({ onAddToken, onClose }: AddTokenProps) {
         )}
       </AnimatePresence>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 mt-4">
         <Button
           variant="default"
           className="flex-1 text-white"

@@ -1,6 +1,6 @@
 import { TokenStoreFetcher } from "./TokenStoreFetcher";
 import "@rainbow-me/rainbowkit/styles.css";
-import { AddTokenModal } from "~~/components/AddTokenModal";
+import { GlobalModals } from "~~/components/GlobalModals";
 import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
 import { ThemeProvider } from "~~/components/ThemeProvider";
 import "~~/styles/globals.css";
@@ -16,7 +16,7 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
           <ScaffoldEthAppWithProviders>
             {children}
             <TokenStoreFetcher />
-            <AddTokenModal />
+            <GlobalModals />
           </ScaffoldEthAppWithProviders>
         </ThemeProvider>
       </body>

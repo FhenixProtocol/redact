@@ -8,11 +8,11 @@ import { erc20Abi, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 // Adjust this import path as needed
 import { useReadContract } from "wagmi";
+import { TokenSelector } from "~~/components/TokenSelector";
 import { Button } from "~~/components/ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~~/components/ui/FnxCard";
 // import { Glow, GlowArea } from "~~/components/glow";
 import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
-import { FnxSelect } from "~~/components/ui/FnxSelect";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { useCofhe } from "~~/hooks/useCofhe";
 import { useTokenBalance } from "~~/hooks/useTokenBalance";
@@ -23,11 +23,7 @@ import { useTokenStore } from "~~/services/store/tokenStore";
 
 type ActionType = "Encrypt" | "Decrypt";
 
-interface MainTokenSwappingProps {
-  setIsModalOpen: (isOpen: boolean) => void;
-}
-
-export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
+export function MainTokenSwapping() {
   const [selectedAction, setSelectedAction] = useState<ActionType | string>("Encrypt");
   const { isConnected, address } = useAccount();
   const { isInitialized, isInitializing } = useCofhe();
@@ -273,28 +269,10 @@ export function MainTokenSwapping({ setIsModalOpen }: MainTokenSwappingProps) {
                   <div className="text-xs text-[#336699]">$ Fiat amount</div>
                 </div>
                 <div className="flex flex-col items-end flex-none justify-between">
-                  <FnxSelect
+                  <TokenSelector
                     value={token}
                     onChange={(val: string) => setToken(val)}
-                    items={processedTokens}
-                    placeholder="Select Token"
                     className="z-100 text-sm w-[130px]"
-                    fixedFooter={close => (
-                      <div className="px-0 py-0 bg-transparent hover:bg-white/50">
-                        <Button
-                          variant="ghost2"
-                          icon={PlusIcon}
-                          noOutline={true}
-                          onClick={() => {
-                            setIsModalOpen(true);
-                            close();
-                          }}
-                          className="w-full text-left font-semibold text-md text-primary-accent"
-                        >
-                          Add Token
-                        </Button>
-                      </div>
-                    )}
                   />
                   <div className="flex justify-between items-center w-full">
                     <div className="text-xs text-[#336699]">
