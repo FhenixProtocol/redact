@@ -3,14 +3,17 @@
 import React, { useState } from "react";
 import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
-import { MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
+import { Luggage, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
+import { formatUnits } from "viem";
 import { useAccount, useBalance } from "wagmi";
 import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
 import { TokenAccordion2, TokenAccordionItem } from "~~/components/ui/FnxAccordion";
+import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
 import { customFormatEther, truncateAddress } from "~~/lib/common";
+import { ClaimWithAddresses, useAllClaims } from "~~/services/store/claim";
 import { useGlobalState } from "~~/services/store/store";
-import { useConfidentialTokenPairAddresses } from "~~/services/store/tokenStore2";
+import { useConfidentialTokenPair, useConfidentialTokenPairAddresses } from "~~/services/store/tokenStore2";
 
 /**
  * Main panel that shows the user's balance and has buttons for "Send" or "Receive."
@@ -119,6 +122,8 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
           </div>
         </TokenAccordion2>
       </div>
+
+      <ClaimsList />
     </div>
   );
 }
@@ -128,4 +133,57 @@ const TokenAccordionTokens = () => {
   return addresses.map(address => {
     return <TokenAccordionItem key={address} pairAddress={address} />;
   });
+};
+
+const ClaimsList = () => {
+  const claims = useAllClaims();
+  return (
+    <>
+      <div className="flex flex-row justify-between">
+        <div className="flex flex-row gap-2 font-semibold">Amount</div>
+        <div className="flex flex-row gap-2 font-semibold">Action</div>
+      </div>
+      <div className="flex flex-col gap-4 w-full">
+        {claims.map(claim => {
+          return <ClaimItem key={claim.ctHash.toString()} claim={claim} />;
+        })}
+      </div>
+    </>
+  );
+};
+
+const ClaimItem = ({ claim }: { claim: ClaimWithAddresses }) => {
+  const pair = useConfidentialTokenPair(claim.erc20Address);
+  const { onClaimFherc20, isClaiming } = useClaimFherc20Action();
+
+  if (pair == null) return null;
+  if (pair.confidentialToken == null) return null;
+
+  // TODO: Remove it from the store, not filter it out here
+  if (claim.claimed) return null;
+
+  const handleClaim = () => {
+    onClaimFherc20({
+      publicTokenSymbol: pair.publicToken.symbol,
+      claim,
+    });
+  };
+
+  return (
+    <div className="flex flex-row w-full items-center justify-between">
+      <div className="flex flex-row gap-2 items-center">
+        <b>{formatUnits(claim.requestedAmount, pair.publicToken.decimals)}</b>
+        <span className="text-sm">{pair.publicToken.symbol}</span>
+      </div>
+      <Button
+        variant="default"
+        size="xs"
+        onClick={handleClaim}
+        icon={claim.decrypted ? Luggage : undefined}
+        disabled={isClaiming || !claim.decrypted}
+      >
+        {claim.decrypted ? "CLAIM" : "PENDING"}
+      </Button>
+    </div>
+  );
 };

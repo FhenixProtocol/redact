@@ -1,10 +1,11 @@
 "use client";
 
 import { useTokenStoreFetcher } from "~~/hooks/useTokenStoreHooks";
-import { useClaimFetcher } from "~~/services/store/claim";
+import { useClaimFetcher, useRefetchPendingClaims } from "~~/services/store/claim";
 
 export const TokenStoreFetcher = () => {
   useTokenStoreFetcher();
   useClaimFetcher();
+  useRefetchPendingClaims();
   return null;
 };
