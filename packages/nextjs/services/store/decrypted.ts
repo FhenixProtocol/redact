@@ -79,6 +79,18 @@ export const decryptValue = async <T extends FheTypes>(fheType: T, value: bigint
   return result;
 };
 
+export const getDecryptedValue = <T extends FheTypes>(
+  fheType: T,
+  value: bigint | null | undefined,
+): DecryptionResult<T> | undefined => {
+  if (value == null) return undefined;
+
+  const existing = useDecryptedStore.getState().decryptions[value.toString()];
+  if (existing != null) return existing as DecryptionResult<T>;
+
+  return undefined;
+};
+
 export const useDecryptValue = <T extends FheTypes>(
   fheType: T,
   value: bigint | null | undefined,
