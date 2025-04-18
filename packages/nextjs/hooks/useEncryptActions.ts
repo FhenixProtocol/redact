@@ -1,8 +1,10 @@
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 import { Address, erc20Abi } from "viem";
-import { useChainId, useConfig, useWriteContract } from "wagmi";
+import { useAccount, useChainId, useConfig, useWriteContract } from "wagmi";
+import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import deployedContracts from "~~/contracts/deployedContracts";
+import { getDeployedContract } from "~~/lib/common";
 import { refetchSingleTokenPairBalances, refetchSingleTokenPairData } from "~~/services/store/tokenStore2";
 
 export const useDeployFherc20Action = () => {
@@ -96,4 +98,56 @@ export const useApproveFherc20Action = () => {
   );
 
   return { onApproveFherc20, isApproving: isPending };
+};
+
+export const useEncryptErc20Action = () => {
+  const { writeContractAsync, isPending } = useWriteContract();
+  const chainId = useChainId();
+  const { address: account } = useAccount();
+
+  const onEncryptErc20 = useCallback(
+    async ({
+      publicTokenSymbol,
+      publicTokenAddress,
+      confidentialTokenAddress,
+      amount,
+    }: {
+      publicTokenSymbol: string;
+      publicTokenAddress: Address;
+      confidentialTokenAddress: Address;
+      amount: bigint;
+    }) => {
+      if (!account) {
+        toast.error("No account found");
+        return;
+      }
+
+      if (!writeContractAsync) {
+        toast.error("Could not initialize contract write");
+        return;
+      }
+
+      try {
+        const tx = await writeContractAsync({
+          address: confidentialTokenAddress,
+          abi: confidentialErc20Abi,
+          functionName: "encrypt",
+          args: [account, amount],
+        });
+
+        toast.success(`Encrypted ${publicTokenSymbol}`);
+
+        refetchSingleTokenPairBalances(publicTokenAddress);
+
+        return tx;
+      } catch (error) {
+        console.error("Failed to encrypt token:", error);
+        toast.error("Failed to encrypt token");
+        throw error;
+      }
+    },
+    [writeContractAsync, chainId, account],
+  );
+
+  return { onEncryptErc20, isEncrypting: isPending };
 };

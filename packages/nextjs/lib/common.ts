@@ -2,8 +2,10 @@
 
 import { estimateGas, getPublicClient } from "@wagmi/core";
 import { formatEther, parseEther } from "viem";
+import deployedContracts from "~~/contracts/deployedContracts";
 import tokenListData from "~~/public/token-list.json";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
+import { Contract, ContractName } from "~~/utils/scaffold-eth/contract";
 
 // TODO: Use scaffold-eth hooks
 export const REDACT_CORE_ADDRESS = "0x3087103FB1638156758CFE89A489c890E522B82e" as `0x${string}`;
@@ -90,3 +92,21 @@ export function chunk<T>(array: T[], size: number): T[][] {
 
   return chunks;
 }
+
+export const getChainId = async () => {
+  const publicClient = getPublicClient(wagmiConfig);
+  return await publicClient.getChainId();
+};
+
+export const getDeployedContract = <TContractName extends ContractName>(
+  chain: number,
+  contractName: TContractName,
+): Contract<TContractName> => {
+  const deployedContract = deployedContracts[chain as keyof typeof deployedContracts][contractName];
+
+  if (!deployedContract) {
+    throw new Error(`Contract ${contractName} not found on chain ${chain}`);
+  }
+
+  return deployedContract;
+};
