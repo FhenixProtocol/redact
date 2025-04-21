@@ -25,6 +25,13 @@ contract ConfidentialETH is FHERC20, Ownable, ConfidentialClaim {
         wETH = wETH_;
     }
 
+    /**
+     * @dev Returns the address of the erc20 ERC-20 token that is being encrypted wrapped.
+     */
+    function erc20() public view returns (IERC20) {
+        return wETH;
+    }
+
     receive() external payable {}
 
     fallback() external payable {}
@@ -45,7 +52,7 @@ contract ConfidentialETH is FHERC20, Ownable, ConfidentialClaim {
     error InvalidRecipient();
 
     function encryptWETH(address to, uint128 value) public {
-        if (to == address(0)) revert InvalidRecipient();
+        if (to == address(0)) to = msg.sender;
         wETH.safeTransferFrom(msg.sender, address(this), value);
         wETH.withdraw(value);
         _mint(to, value);
@@ -53,13 +60,13 @@ contract ConfidentialETH is FHERC20, Ownable, ConfidentialClaim {
     }
 
     function encryptETH(address to) public payable {
-        if (to == address(0)) revert InvalidRecipient();
+        if (to == address(0)) to = msg.sender;
         _mint(to, SafeCast.toUint128(msg.value));
         emit EncryptedETH(msg.sender, to, msg.value);
     }
 
     function decrypt(address to, uint128 value) public {
-        if (to == address(0)) revert InvalidRecipient();
+        if (to == address(0)) to = msg.sender;
         euint128 burned = _burn(msg.sender, value);
         FHE.decrypt(burned);
         _createClaim(to, value, burned);
@@ -78,5 +85,18 @@ contract ConfidentialETH is FHERC20, Ownable, ConfidentialClaim {
         if (!sent) revert ETHTransferFailed();
 
         emit ClaimedDecryptedETH(msg.sender, claim.to, claim.decryptedAmount);
+    }
+
+    /**
+     * @notice Claim all decrypted amounts of ETH
+     */
+    function claimAllDecrypted() public {
+        Claim[] memory claims = _handleClaimAll();
+
+        for (uint256 i = 0; i < claims.length; i++) {
+            (bool sent, ) = claims[i].to.call{ value: claims[i].decryptedAmount }("");
+            if (!sent) revert ETHTransferFailed();
+            emit ClaimedDecryptedETH(msg.sender, claims[i].to, claims[i].decryptedAmount);
+        }
     }
 }

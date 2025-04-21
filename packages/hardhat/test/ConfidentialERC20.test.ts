@@ -187,5 +187,39 @@ describe("ConfidentialERC20", function () {
       );
       await hre.cofhe.mocks.expectPlaintext(await eBTC.encTotalSupply(), mintValue - transferValue);
     });
+    it("Should claim all decrypted amounts", async function () {
+      const { eBTC, bob, wBTC } = await setupFixture();
+
+      expect(await eBTC.totalSupply()).to.equal(0, "Total supply init 0");
+      expect(await eBTC.encTotalSupply()).to.equal(0, "Total supply not initialized (hash is 0)");
+
+      const mintValue = BigInt(10e8);
+      const transferValue = BigInt(1e8);
+
+      // Mint and encrypt wBTC
+      await wBTC.mint(bob, mintValue);
+      await wBTC.connect(bob).approve(eBTC.target, mintValue);
+      await eBTC.connect(bob).encrypt(bob.address, mintValue);
+
+      // Multiple decryptions
+
+      await eBTC.connect(bob).decrypt(bob.address, transferValue);
+      await eBTC.connect(bob).decrypt(bob.address, transferValue);
+
+      // Hardhat time travel 11 seconds
+      await hre.network.provider.send("evm_increaseTime", [11]);
+      await hre.network.provider.send("evm_mine");
+
+      prepExpectERC20BalancesChange(wBTC, bob.address);
+
+      // Claim all decrypted amounts
+      await eBTC.connect(bob).claimAllDecrypted();
+
+      await expectERC20BalancesChange(wBTC, bob.address, 2n * transferValue);
+
+      // Expect all decrypted amounts to be claimed
+      const claims = await eBTC.getUserClaims(bob.address);
+      expect(claims.length).to.equal(0, "Bob has no claimable amounts");
+    });
   });
 });

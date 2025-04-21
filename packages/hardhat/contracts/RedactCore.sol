@@ -27,6 +27,7 @@ contract RedactCore is Ownable2Step {
         if (address(eETH_) == address(0)) revert Invalid_eETH();
         wETH = wETH_;
         eETH = eETH_;
+        _fherc20Map.set(address(wETH), address(eETH));
     }
 
     event Fherc20Deployed(address indexed erc20, address indexed fherc20);

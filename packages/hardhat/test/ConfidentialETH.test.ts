@@ -191,5 +191,45 @@ describe("ConfidentialETH", function () {
       );
       await hre.cofhe.mocks.expectPlaintext(await eETH.encTotalSupply(), mintValue - transferValue);
     });
+    it("Should claim all decrypted amounts", async function () {
+      const { eETH, bob, wETH } = await setupFixture();
+
+      expect(await eETH.totalSupply()).to.equal(0, "Total supply init 0");
+      expect(await eETH.encTotalSupply()).to.equal(0, "Total supply not initialized (hash is 0)");
+
+      const mintValue = BigInt(10e8);
+      const transferValue = BigInt(1e8);
+
+      // Mint and encrypt wETH
+      await wETH.connect(bob).deposit({ value: mintValue });
+      await wETH.connect(bob).approve(eETH.target, mintValue);
+      await eETH.connect(bob).encryptWETH(bob.address, mintValue);
+
+      // Multiple decryptions
+
+      await eETH.connect(bob).decrypt(bob.address, transferValue);
+      await eETH.connect(bob).decrypt(bob.address, transferValue);
+
+      // Hardhat time travel 11 seconds
+      await hre.network.provider.send("evm_increaseTime", [11]);
+      await hre.network.provider.send("evm_mine");
+
+      const ethBalanceInit = await ethers.provider.getBalance(bob.address);
+
+      // Claim all decrypted amounts
+      const tx = await eETH.connect(bob).claimAllDecrypted();
+      const receipt = await tx.wait();
+      const gasCost = receipt ? receipt.gasUsed * tx.gasPrice : 0n;
+
+      const ethBalanceFinal = await ethers.provider.getBalance(bob.address);
+      expect(ethBalanceFinal).to.equal(
+        ethBalanceInit + 2n * transferValue - gasCost,
+        "Bob's ETH balance increased (with gas cost deducted)",
+      );
+
+      // Expect all decrypted amounts to be claimed
+      const claims = await eETH.getUserClaims(bob.address);
+      expect(claims.length).to.equal(0, "Bob has no claimable amounts");
+    });
   });
 });

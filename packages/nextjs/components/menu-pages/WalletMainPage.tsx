@@ -4,9 +4,8 @@ import React, { useState, useEffect } from "react";
 import { AddToken } from "../AddToken";
 import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
-import { AnimatePresence, motion } from "framer-motion";
-import { MinusIcon, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
-// Example icons
+import { Luggage, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
+import { formatUnits } from "viem";
 import { useAccount, useBalance } from "wagmi";
 import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
@@ -41,23 +40,14 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   }, [address]);
 
   const [isManageTokensOpen, setIsManageTokensOpen] = useState(false);
-  const { removeToken } = useTokenStore();
-
-  // const handleEncrypt = (token: TokenData) => {
-  //   console.log("Encrypt", token);
-  // };
-
-  // const handleDecrypt = (token: TokenData) => {
-  //   console.log("Decrypt", token);
-  // };
 
   // Handler for "Send" -> push a new page
   const handleSend = () => {
-    console.log(pushPage);
+    if (address == null) return;
     if (pushPage) {
       pushPage({
         id: "send-page",
-        title: truncateAddress(address!) + " Send",
+        title: truncateAddress(address) + " Send",
         component: <SendPage />,
       });
     }
@@ -142,14 +132,17 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
             <Button
               variant="ghost2"
               noOutline={true}
-              icon={isManageTokensOpen ? MinusIcon : PlusIcon}
+              icon={PlusIcon}
               className="w-full"
-              onClick={() => setIsManageTokensOpen(!isManageTokensOpen)}
+              onClick={() => {
+                setAddTokenModalOpen(true);
+                toggleDrawer();
+              }}
             >
-              Manage Tokens
+              Add Token
             </Button>
 
-            <AnimatePresence>
+            {/* <AnimatePresence>
               {isManageTokensOpen && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
@@ -160,9 +153,9 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
                   <AddToken onClose={() => setIsManageTokensOpen(false)} />
                 </motion.div>
               )}
-            </AnimatePresence>
+            </AnimatePresence> */}
           </div>
-        </TokenAccordion>
+        </TokenAccordion> */}
       </div>
 
       {/* You might want to add a refresh button somewhere */}
@@ -176,3 +169,63 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
     </div>
   );
 }
+
+const TokenAccordionTokens = () => {
+  const addresses = useConfidentialTokenPairAddresses();
+  return addresses.map(address => {
+    return <TokenAccordionItem key={address} pairAddress={address} />;
+  });
+};
+
+const ClaimsList = () => {
+  const claims = useAllClaims();
+  return (
+    <>
+      <div className="flex flex-row justify-between">
+        <div className="flex flex-row gap-2 font-semibold">Amount</div>
+        <div className="flex flex-row gap-2 font-semibold">Action</div>
+      </div>
+      <div className="flex flex-col gap-4 w-full">
+        {claims.map(claim => {
+          return <ClaimItem key={claim.ctHash.toString()} claim={claim} />;
+        })}
+      </div>
+    </>
+  );
+};
+
+const ClaimItem = ({ claim }: { claim: ClaimWithAddresses }) => {
+  const pair = useConfidentialTokenPair(claim.erc20Address);
+  const { onClaimFherc20, isClaiming } = useClaimFherc20Action();
+
+  if (pair == null) return null;
+  if (pair.confidentialToken == null) return null;
+
+  // TODO: Remove it from the store, not filter it out here
+  if (claim.claimed) return null;
+
+  const handleClaim = () => {
+    onClaimFherc20({
+      publicTokenSymbol: pair.publicToken.symbol,
+      claim,
+    });
+  };
+
+  return (
+    <div className="flex flex-row w-full items-center justify-between">
+      <div className="flex flex-row gap-2 items-center">
+        <b>{formatUnits(claim.requestedAmount, pair.publicToken.decimals)}</b>
+        <span className="text-sm">{pair.publicToken.symbol}</span>
+      </div>
+      <Button
+        variant="default"
+        size="xs"
+        onClick={handleClaim}
+        icon={claim.decrypted ? Luggage : undefined}
+        disabled={isClaiming || !claim.decrypted}
+      >
+        {claim.decrypted ? "CLAIM" : "PENDING"}
+      </Button>
+    </div>
+  );
+};

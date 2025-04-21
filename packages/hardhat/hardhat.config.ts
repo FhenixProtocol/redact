@@ -15,6 +15,8 @@ import generateTsAbis from "./scripts/generateTsAbis";
 
 import "cofhe-hardhat-plugin";
 
+import "./tasks/hh-prepare-wallet";
+
 // If not set, it uses ours Alchemy's default API key.
 // You can get your own at https://dashboard.alchemyapi.io
 const providerApiKey = process.env.ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
@@ -57,6 +59,10 @@ const config: HardhatUserConfig = {
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
         enabled: process.env.MAINNET_FORKING_ENABLED === "true",
+      },
+      mining: {
+        auto: true,
+        interval: [3000, 4000], // optional: simulate block time range
       },
     },
     mainnet: {
