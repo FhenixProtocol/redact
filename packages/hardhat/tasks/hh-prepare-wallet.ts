@@ -34,7 +34,7 @@ task("hh-prepare-wallet", "Send ETH to a test account")
 
     console.log("");
 
-    const erc20s = ["USDC", "wBTC", "MATIC", "FTM"];
+    const erc20s = ["wETH", "USDC", "wBTC", "MATIC", "FTM"];
 
     for (const contractName of erc20s) {
       await transferErc20(hre, contractName, to, 10n);
