@@ -10,12 +10,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
-import deployedContracts from "~~/contracts/deployedContracts";
 import { chunk, getChainId, getDeployedContract } from "~~/lib/common";
-import { Contract, ContractName } from "~~/utils/scaffold-eth/contract";
 
 type ChainRecord<T> = Record<number, T>;
 type AddressRecord<T> = Record<Address, T>;
+
+// existing list array of public token addresses
 
 export interface AddressPair {
   erc20Address: Address;
@@ -44,6 +44,7 @@ export interface ConfidentialTokenPair {
 
 export interface ConfidentialTokenPairBalances {
   publicBalance: bigint | undefined;
+  // Stored as a ctHash rather than the decrypted balance. The decrypt store is used to map this ctHash into the true decrypted balance.
   confidentialBalance: bigint | undefined;
   fherc20Allowance: bigint | undefined;
 }
