@@ -3,7 +3,7 @@
 import React from "react";
 import { SelectToken } from "~~/components/SelectToken";
 import { Modal } from "~~/components/ui/Modal";
-import { ConfidentialTokenPair } from "~~/services/store/tokenStore2";
+import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
 
 export function SelectTokenModal({
   open,

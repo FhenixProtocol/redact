@@ -14,7 +14,7 @@ import {
   TokenItemData,
   addArbitraryToken,
   searchArbitraryToken,
-} from "~~/services/store/tokenStore2";
+} from "~~/services/store/tokenStore";
 
 interface AddTokenProps {
   onClose?: () => void;

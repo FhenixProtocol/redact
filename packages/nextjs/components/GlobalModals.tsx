@@ -5,7 +5,7 @@ import { AddTokenModal } from "./AddTokenModal";
 import { SelectToken } from "./SelectToken";
 import { Modal } from "./ui/Modal";
 import { useGlobalState } from "~~/services/store/store";
-import { ConfidentialTokenPair } from "~~/services/store/tokenStore2";
+import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
 
 export const GlobalModals = () => {
   const {

@@ -5,7 +5,7 @@ import { useAccount, useChainId, useConfig, useWriteContract } from "wagmi";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { getDeployedContract } from "~~/lib/common";
-import { refetchSingleTokenPairBalances, refetchSingleTokenPairData } from "~~/services/store/tokenStore2";
+import { refetchSingleTokenPairBalances, refetchSingleTokenPairData } from "~~/services/store/tokenStore";
 
 export const useDeployFherc20Action = () => {
   const { writeContractAsync, isPending } = useWriteContract();

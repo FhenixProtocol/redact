@@ -13,7 +13,7 @@ import { TokenAccordionItem } from "~~/components/ui/FnxAccordion";
 import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
 import { truncateAddress } from "~~/lib/common";
 import { ClaimWithAddresses, useAllClaims } from "~~/services/store/claim";
-import { useConfidentialTokenPair, useConfidentialTokenPairAddresses } from "~~/services/store/tokenStore2";
+import { useConfidentialTokenPair, useConfidentialTokenPairAddresses } from "~~/services/store/tokenStore";
 
 /**
  * Main panel that shows the user's balance and has buttons for "Send" or "Receive."

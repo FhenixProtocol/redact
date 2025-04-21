@@ -4,7 +4,7 @@ import { Address } from "viem";
 import { useAccount, useChainId, useWriteContract } from "wagmi";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import { ClaimWithAddresses, fetchPairClaims, removeClaimedClaim } from "~~/services/store/claim";
-import { refetchSingleTokenPairBalances } from "~~/services/store/tokenStore2";
+import { refetchSingleTokenPairBalances } from "~~/services/store/tokenStore";
 
 export const useDecryptFherc20Action = () => {
   const { writeContractAsync, isPending } = useWriteContract();

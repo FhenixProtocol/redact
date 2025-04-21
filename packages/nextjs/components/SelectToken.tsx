@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { EncryptedBalance } from "./ui/EncryptedValue";
 import { TokenIcon } from "./ui/TokenIcon";
 import { PlusIcon } from "lucide-react";
@@ -6,14 +6,8 @@ import { formatUnits } from "viem";
 import { useChainId } from "wagmi";
 import { Button } from "~~/components/ui/Button";
 import { FnxInput } from "~~/components/ui/FnxInput";
-import { cn } from "~~/lib/utils";
 import { useGlobalState } from "~~/services/store/store";
-import {
-  ConfidentialTokenPair,
-  ConfidentialTokenPairBalances,
-  useConfidentialTokenPairBalances,
-  useTokenStore,
-} from "~~/services/store/tokenStore2";
+import { ConfidentialTokenPair, useConfidentialTokenPairBalances, useTokenStore } from "~~/services/store/tokenStore";
 
 interface SelectTokenProps {
   onSelectTokenPair: (tokenPair: ConfidentialTokenPair) => void;

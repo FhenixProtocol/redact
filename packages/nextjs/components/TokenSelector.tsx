@@ -12,7 +12,7 @@ import {
   useConfidentialTokenPair,
   useDefaultConfidentialTokenPair,
   useTokenStore,
-} from "~~/services/store/tokenStore2";
+} from "~~/services/store/tokenStore";
 
 interface TokenSelectorProps {
   value?: string; // Token address

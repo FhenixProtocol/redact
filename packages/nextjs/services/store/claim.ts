@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { wagmiConfig } from "../web3/wagmiConfig";
 import { superjsonStorage } from "./superjsonStorage";
-import { useConfidentialAddressPairs, useConfidentialTokenPairAddresses, useTokenStore } from "./tokenStore2";
+import { useConfidentialAddressPairs, useConfidentialTokenPairAddresses, useTokenStore } from "./tokenStore";
 import { WritableDraft } from "immer";
 import { Address } from "viem";
 import { deepEqual, useAccount, useChainId, usePublicClient } from "wagmi";

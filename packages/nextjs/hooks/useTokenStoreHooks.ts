@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useRefresh } from "./useRefresh";
 import { useAccount, useChainId } from "wagmi";
-import { fetchTokenPairBalances, fetchTokenPairsData } from "~~/services/store/tokenStore2";
+import { fetchTokenPairBalances, fetchTokenPairsData } from "~~/services/store/tokenStore";
 
 // Data flow
 // On load - fetch initial tokens and balances

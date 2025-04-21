@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
-import { getDecryptedValue, useDecryptValue } from "./decrypted";
-import { useConfidentialTokenPair, useConfidentialTokenPairBalances, useTokenStore } from "./tokenStore2";
+import { useDecryptValue } from "./decrypted";
+import { useConfidentialTokenPair, useConfidentialTokenPairBalances } from "./tokenStore";
 import { FheTypes } from "cofhejs/web";
 import { Address, formatUnits, parseUnits } from "viem";
 import { useAccount, useChainId } from "wagmi";

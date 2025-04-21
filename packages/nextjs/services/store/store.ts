@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import scaffoldConfig from "~~/scaffold.config";
-import { ConfidentialTokenPair } from "~~/services/store/tokenStore2";
+import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth";
 
 type GlobalState = {

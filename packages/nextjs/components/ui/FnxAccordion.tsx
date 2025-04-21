@@ -11,7 +11,7 @@ import {
   useConfidentialTokenPairBalances,
   useIsArbitraryToken,
   useRemoveArbitraryToken,
-} from "~~/services/store/tokenStore2";
+} from "~~/services/store/tokenStore";
 
 export interface TokenData {
   symbol: string;
@@ -88,11 +88,7 @@ export function TokenAccordion({
               <div className="flex items-center gap-2">
                 {/* Display total balance (sum of public and private) */}
                 <span>
-                  {token.isLoadingPublic || token.isLoadingPrivate ? (
-                    "Loading..."
-                  ) : (
-                    calculateTotalBalance(token)
-                  )}
+                  {token.isLoadingPublic || token.isLoadingPrivate ? "Loading..." : calculateTotalBalance(token)}
                 </span>
               </div>
             </div>
@@ -101,7 +97,9 @@ export function TokenAccordion({
             <div className="flex flex-col gap-2 py-2 px-4 bg">
               <div className="flex justify-between items-center">
                 <div className="flex-2">
-                  <span className="text-sm text-gray-500">Public: {token.isLoadingPublic ? "Loading..." : token.publicBalance || "0"}</span>
+                  <span className="text-sm text-gray-500">
+                    Public: {token.isLoadingPublic ? "Loading..." : token.publicBalance || "0"}
+                  </span>
                 </div>
                 <div className="flex-1 flex justify-end">
                   {onEncrypt && (
@@ -120,7 +118,9 @@ export function TokenAccordion({
 
               <div className="flex justify-between items-center">
                 <div className="flex-2">
-                  <span className="text-sm text-gray-500">Private: {token.isLoadingPrivate ? "Loading..." : token.privateBalance || "0"}</span>
+                  <span className="text-sm text-gray-500">
+                    Private: {token.isLoadingPrivate ? "Loading..." : token.privateBalance || "0"}
+                  </span>
                 </div>
                 <div className="flex-1 flex justify-end">
                   {onDecrypt && (
@@ -174,15 +174,17 @@ export const useOpenForDecryption = (token: TokenData | undefined) => {
 export function TokenAccordionItem({ pairAddress }: { pairAddress: string }) {
   const pair = useConfidentialTokenPair(pairAddress);
   const balances = useConfidentialTokenPairBalances(pairAddress);
-  const isArbitrary = useIsArbitraryToken(pair.publicToken.address);
+  const isArbitrary = useIsArbitraryToken(pair?.publicToken.address);
 
-  const openForEncryption = useOpenForEncryption(pair.publicToken);
-  const openForDecryption = useOpenForDecryption(pair.confidentialToken);
-  const removeArbitraryToken = useRemoveArbitraryToken(pair.publicToken.address);
+  const openForEncryption = useOpenForEncryption(pair?.publicToken);
+  const openForDecryption = useOpenForDecryption(pair?.confidentialToken);
+  const removeArbitraryToken = useRemoveArbitraryToken(pair?.publicToken.address);
 
   const pairHash = useMemo(() => {
-    return `${pair.publicToken.address}-${pair.confidentialToken?.address}`;
+    return `${pair?.publicToken.address}-${pair?.confidentialToken?.address}`;
   }, [pair]);
+
+  if (pair == null) return null;
 
   return (
     <AccordionItem value={pairHash} className="border-0">

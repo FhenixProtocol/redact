@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import { getTokenLogo } from "~~/lib/tokenUtils";
-import { TokenItemData } from "~~/services/store/tokenStore2";
+import { TokenItemData } from "~~/services/store/tokenStore";
 
 export function TokenIcon({ token }: { token: TokenItemData }) {
   const icon = useMemo(() => {
