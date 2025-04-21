@@ -1,18 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { AddToken } from "../AddToken";
+import React from "react";
+import { Accordion } from "../ui/Accordion";
 import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
-import { Luggage, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
+import { Luggage, MoveDownLeft, MoveUpRight } from "lucide-react";
 import { formatUnits } from "viem";
-import { useAccount, useBalance } from "wagmi";
+import { useAccount } from "wagmi";
 import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
-import { TokenAccordion, TokenData } from "~~/components/ui/FnxAccordion";
-import { customFormatEther, truncateAddress } from "~~/lib/common";
-import { useTokenStore } from "~~/services/store/tokenStore";
-import { useAllTokenBalances } from "~~/hooks/useTokenBalance";
+import { TokenAccordionItem } from "~~/components/ui/FnxAccordion";
+import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
+import { truncateAddress } from "~~/lib/common";
+import { ClaimWithAddresses, useAllClaims } from "~~/services/store/claim";
+import { useConfidentialTokenPair, useConfidentialTokenPairAddresses } from "~~/services/store/tokenStore2";
 
 /**
  * Main panel that shows the user's balance and has buttons for "Send" or "Receive."
@@ -20,26 +21,6 @@ import { useAllTokenBalances } from "~~/hooks/useTokenBalance";
  */
 export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   const { address } = useAccount();
-  const { tokens } = useTokenStore();
-  const {
-    data: balanceData,
-    isError,
-    isLoading: balanceLoading,
-  } = useBalance({
-    address,
-  });
-
-  // Add the useAllTokenBalances hook
-  const { refreshBalances, isLoadingPublic, isLoadingPrivate } = useAllTokenBalances(address);
-
-  // Use useEffect to fetch balances when component mounts
-  useEffect(() => {
-    if (address) {
-      refreshBalances();
-    }
-  }, [address]);
-
-  const [isManageTokensOpen, setIsManageTokensOpen] = useState(false);
 
   // Handler for "Send" -> push a new page
   const handleSend = () => {
@@ -64,31 +45,9 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
     }
   };
 
-  // Balance display
-  let balanceText = "Loading...";
-  if (!balanceLoading) {
-    if (isError || !balanceData) {
-      balanceText = "Error fetching balance";
-    } else {
-      balanceText = `${customFormatEther(balanceData.value, 4)} ${balanceData.symbol}`;
-    }
-  }
-
-  // Update the tokenDataForAccordion to use the loading states
-  const tokenDataForAccordion = tokens.map((token) => ({
-    symbol: token.symbol,
-    publicBalance: token.publicBalance || "0",
-    privateBalance: token.privateBalance || "0",
-    icon: token.image,
-    isCustom: token.isCustom || false,
-    address: token.address,
-    isLoadingPublic: token.isLoadingPublic || isLoadingPublic,
-    isLoadingPrivate: token.isLoadingPrivate || isLoadingPrivate,
-  }));
-
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-xxl font-bold text-primary self-center">{balanceText}</div>
+      <div className="text-xxl font-bold text-primary self-center">TODO: ETH BAL</div>
 
       <div className="flex gap-2 justify-center">
         <Button
@@ -112,60 +71,11 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
         </Button>
       </div>
       <div>
-        <TokenAccordion
-          tokens={tokenDataForAccordion}
-          editMode={isManageTokensOpen}
-          onRemove={(token: string) => {
-            removeToken(token);
-            console.log("Remove", token);
-          }}
-          onEncrypt={(token: TokenData) => {
-            console.log("Encrypt", token);
-            // Handle encryption
-          }}
-          onDecrypt={(token: TokenData) => {
-            console.log("Decrypt", token);
-            // Handle decryption
-          }}
-        >
-          <div className="flex flex-col gap-2 justify-center w-full">
-            <Button
-              variant="ghost2"
-              noOutline={true}
-              icon={PlusIcon}
-              className="w-full"
-              onClick={() => {
-                setAddTokenModalOpen(true);
-                toggleDrawer();
-              }}
-            >
-              Add Token
-            </Button>
-
-            {/* <AnimatePresence>
-              {isManageTokensOpen && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <AddToken onClose={() => setIsManageTokensOpen(false)} />
-                </motion.div>
-              )}
-            </AnimatePresence> */}
-          </div>
-        </TokenAccordion> */}
+        <Accordion type="single" collapsible>
+          <TokenAccordionTokens />
+        </Accordion>
+        <ClaimsList />
       </div>
-
-      {/* You might want to add a refresh button somewhere */}
-      <Button
-        variant="ghost"
-        onClick={refreshBalances}
-        disabled={isLoadingPublic || isLoadingPrivate}
-      >
-        Refresh Balances
-      </Button>
     </div>
   );
 }
