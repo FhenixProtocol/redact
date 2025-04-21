@@ -62,6 +62,15 @@ abstract contract ConfidentialClaim {
         _userClaims[claim.to].remove(ctHash);
     }
 
+    function _handleClaimAll() internal returns (Claim[] memory claims) {
+        claims = new Claim[](_userClaims[msg.sender].length());
+
+        uint256[] memory ctHashes = _userClaims[msg.sender].values();
+        for (uint256 i = 0; i < ctHashes.length; i++) {
+            claims[i] = _handleClaim(ctHashes[i]);
+        }
+    }
+
     function getClaim(uint256 ctHash) public view returns (Claim memory) {
         Claim memory _claim = _claims[ctHash];
         (uint256 amount, bool decrypted) = FHE.getDecryptResultSafe(ctHash);

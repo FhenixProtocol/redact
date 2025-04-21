@@ -78,14 +78,14 @@ contract ConfidentialERC20 is FHERC20, Ownable, ConfidentialClaim {
     }
 
     function encrypt(address to, uint128 value) public {
-        if (to == address(0)) revert InvalidRecipient();
+        if (to == address(0)) to = msg.sender;
         _erc20.safeTransferFrom(msg.sender, address(this), value);
         _mint(to, value);
         emit EncryptedERC20(msg.sender, to, value);
     }
 
     function decrypt(address to, uint128 value) public {
-        if (to == address(0)) revert InvalidRecipient();
+        if (to == address(0)) to = msg.sender;
         euint128 burned = _burn(msg.sender, value);
         FHE.decrypt(burned);
         _createClaim(to, value, burned);
@@ -102,5 +102,17 @@ contract ConfidentialERC20 is FHERC20, Ownable, ConfidentialClaim {
         // Send the ERC20 to the recipient
         _erc20.safeTransfer(claim.to, claim.decryptedAmount);
         emit ClaimedDecryptedERC20(msg.sender, claim.to, claim.decryptedAmount);
+    }
+
+    /**
+     * @notice Claim all decrypted amounts of the underlying ERC20
+     */
+    function claimAllDecrypted() public {
+        Claim[] memory claims = _handleClaimAll();
+
+        for (uint256 i = 0; i < claims.length; i++) {
+            _erc20.safeTransfer(claims[i].to, claims[i].decryptedAmount);
+            emit ClaimedDecryptedERC20(msg.sender, claims[i].to, claims[i].decryptedAmount);
+        }
     }
 }

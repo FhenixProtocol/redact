@@ -75,9 +75,11 @@ describe("RedactCore", function () {
       expect(ewBTCAddress).to.not.equal(ethers.ZeroAddress);
 
       const deployedFherc20s = await redactCore.getDeployedFherc20s();
-      expect(deployedFherc20s.length).to.equal(1);
-      expect(deployedFherc20s[0].erc20).to.equal(wBTC.target);
-      expect(deployedFherc20s[0].fherc20).to.equal(ewBTCAddress);
+
+      // eETH is already deployed, so we expect 2 after ewBTC deployment
+      expect(deployedFherc20s.length).to.equal(2);
+      expect(deployedFherc20s[1].erc20).to.equal(wBTC.target);
+      expect(deployedFherc20s[1].fherc20).to.equal(ewBTCAddress);
     });
 
     it("Should revert on already deployed FHERC20", async function () {
@@ -99,10 +101,13 @@ describe("RedactCore", function () {
       );
     });
 
-    it("Should revert on wETH", async function () {
+    it("Should revert on wETH (wETH is already deployed)", async function () {
       const { redactCore, wETH } = await setupFixture();
 
-      await expect(redactCore.deployFherc20(wETH.target)).to.be.revertedWithCustomError(redactCore, "Invalid_WETH");
+      await expect(redactCore.deployFherc20(wETH.target)).to.be.revertedWithCustomError(
+        redactCore,
+        "Invalid_AlreadyDeployed",
+      );
     });
   });
 
