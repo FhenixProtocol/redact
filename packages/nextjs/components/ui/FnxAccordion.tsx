@@ -229,7 +229,7 @@ export function TokenRowItem({ pairAddress }: { pairAddress: string }) {
           <div className="flex-2">
             {pair.confidentialTokenDeployed && (
               <span className="text-sm text-gray-500">
-                <EncryptedBalance value={balances.confidentialBalance} decimals={pair.confidentialToken?.decimals} />{" "}
+                <EncryptedBalance ctHash={balances.confidentialBalance} decimals={pair.confidentialToken?.decimals} />{" "}
                 {pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`}
               </span>
             )}

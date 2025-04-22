@@ -84,7 +84,7 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, initialPages, classNam
           Header
          -------------------------- */}
       <div className="p-4 w-full flex items-center relative">
-        <span className="absolute bottom-0 w-[90%]  border-b border-gray-200"></span>
+        <span className="absolute bottom-0 w-[90%]"></span>
         {currentPage?.header}
         {currentPage?.title && <h2 className="text-lg ml-2">{currentPage?.title}</h2>}
         <IconButton icon={ChevronLeft} className="text-primary" size="lg" aria-label="Go back" onClick={onClose} />

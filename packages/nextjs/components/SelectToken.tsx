@@ -132,7 +132,7 @@ function TokenListItem({ tokenPair, onSelect }: { tokenPair: ConfidentialTokenPa
           <span className="text-primary font-medium">{formattedPublicBalance}</span>
           {confidentialToken && (
             <span className="text-sm text-gray-500">
-              <EncryptedBalance value={balances?.confidentialBalance} decimals={confidentialToken.decimals} />{" "}
+              <EncryptedBalance ctHash={balances?.confidentialBalance} decimals={confidentialToken.decimals} />{" "}
               {confidentialToken.symbol}
             </span>
           )}

@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { Accordion } from "../ui/Accordion";
+import { EncryptedBalance } from "../ui/EncryptedValue";
+import { NumericValue } from "../ui/NumericValue";
 import { TokenIcon } from "../ui/TokenIcon";
 import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
@@ -160,15 +162,17 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
           <span>{pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`}</span>
         </div>
       </div>
-      <div className="flex flex-col">
-        <span>
-          {balances.publicBalance != null ? formatUnits(balances.publicBalance, pair.publicToken.decimals) : "..."}{" "}
-        </span>
-        <span>
-          {balances.confidentialBalance != null
-            ? formatUnits(balances.confidentialBalance, pair.confidentialToken?.decimals ?? pair.publicToken.decimals)
-            : "..."}
-        </span>
+      <div className="flex flex-col items-end">
+        <NumericValue
+          value={
+            balances.publicBalance != null ? formatUnits(balances.publicBalance, pair.publicToken.decimals) : "..."
+          }
+        />
+        <EncryptedBalance
+          ctHash={balances.confidentialBalance}
+          decimals={pair.confidentialToken?.decimals ?? pair.publicToken.decimals}
+          className="text-right"
+        />
       </div>
     </Button>
   );

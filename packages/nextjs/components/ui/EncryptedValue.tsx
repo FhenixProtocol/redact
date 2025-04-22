@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { NumericValue } from "./NumericValue";
 import { FheTypes, UnsealedItem } from "cofhejs/web";
 import { formatUnits } from "viem";
 import { cn } from "~~/lib/utils";
@@ -5,33 +7,50 @@ import { useDecryptValue } from "~~/services/store/decrypted";
 
 export function EncryptedValue<T extends FheTypes>({
   fheType,
-  value,
+  ctHash,
   className,
   transform,
 }: {
   fheType: T;
-  value: bigint | null | undefined;
+  ctHash: bigint | null | undefined;
   className?: string;
-  transform: (value: UnsealedItem<T> | null | undefined) => string;
+  transform: (value: UnsealedItem<T>) => string;
 }) {
-  const { value: decryptedValue } = useDecryptValue(fheType, value);
-  return <span className={cn(className)}>{transform(decryptedValue)}</span>;
+  const { value: decryptedValue } = useDecryptValue(fheType, ctHash);
+
+  const display = useMemo(() => {
+    if (ctHash == null) return "...";
+    if (decryptedValue == null) return "XXXXXX";
+    return transform(decryptedValue);
+  }, [ctHash, transform, decryptedValue]);
+
+  return (
+    <NumericValue
+      value={display}
+      prefix="#"
+      className={cn(
+        "border-primary bg-primary text-primary-foreground",
+        decryptedValue != null && "bg-transparent text-primary",
+        className,
+      )}
+    />
+  );
 }
 
 export function EncryptedBalance({
-  value,
+  ctHash,
   decimals = 18,
   className,
 }: {
-  value: bigint | null | undefined;
+  ctHash: bigint | null | undefined;
   decimals?: number;
   className?: string;
 }) {
   return (
     <EncryptedValue
       fheType={FheTypes.Uint128}
-      value={value}
-      transform={value => (value == null ? "..." : formatUnits(value, decimals))}
+      ctHash={ctHash}
+      transform={value => formatUnits(value, decimals)}
       className={className}
     />
   );
