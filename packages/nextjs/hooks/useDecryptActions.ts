@@ -5,11 +5,14 @@ import { useAccount, useChainId, useWriteContract } from "wagmi";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import { ClaimWithAddresses, fetchPairClaims, removeClaimedClaim } from "~~/services/store/claim";
 import { refetchSingleTokenPairBalances } from "~~/services/store/tokenStore";
+import { useTxLifecycle } from "./useTxLifecycle";
+import { TransactionActionType } from "~~/services/store/transactionStore";
 
 export const useDecryptFherc20Action = () => {
   const { writeContractAsync, isPending } = useWriteContract();
   const chainId = useChainId();
   const { address: account } = useAccount();
+  const trackTx = useTxLifecycle();
 
   const onDecryptFherc20 = useCallback(
     async ({
@@ -41,11 +44,19 @@ export const useDecryptFherc20Action = () => {
           args: [account, amount],
         });
 
-        toast.success(`Decrypted ${publicTokenSymbol}`);
+        const success = await trackTx(tx, {
+          tokenSymbol: publicTokenSymbol,
+          tokenAmount: amount.toString(),
+          actionType: TransactionActionType.Decrypt,
+        });
 
-        refetchSingleTokenPairBalances(publicTokenAddress);
-        fetchPairClaims({ erc20Address: publicTokenAddress, fherc20Address: confidentialTokenAddress });
-
+        if (success) {
+          toast.success(`Decrypted ${publicTokenSymbol}`);
+          refetchSingleTokenPairBalances(publicTokenAddress);
+          fetchPairClaims({ erc20Address: publicTokenAddress, fherc20Address: confidentialTokenAddress });
+        } else {
+          toast.error(`Failed to decrypt ${publicTokenSymbol}`);
+        }
         return tx;
       } catch (error) {
         console.error("Failed to decrypt token:", error);
@@ -53,7 +64,7 @@ export const useDecryptFherc20Action = () => {
         throw error;
       }
     },
-    [writeContractAsync, chainId, account],
+    [writeContractAsync, chainId, account, trackTx],
   );
 
   return { onDecryptFherc20, isDecrypting: isPending };
@@ -63,7 +74,7 @@ export const useClaimFherc20Action = () => {
   const { writeContractAsync, isPending } = useWriteContract();
   const chainId = useChainId();
   const { address: account } = useAccount();
-
+  const trackTx = useTxLifecycle();
   const onClaimFherc20 = useCallback(
     async ({ publicTokenSymbol, claim }: { publicTokenSymbol: string; claim: ClaimWithAddresses }) => {
       if (account == null) {
@@ -84,11 +95,20 @@ export const useClaimFherc20Action = () => {
           args: [claim.ctHash],
         });
 
-        toast.success(`Claimed ${publicTokenSymbol}`);
+        const success = await trackTx(tx, {
+          tokenSymbol: publicTokenSymbol,
+          tokenAmount: claim.decryptedAmount.toString(),
+          actionType: TransactionActionType.Claim,
+        });
 
-        removeClaimedClaim(claim);
-        fetchPairClaims(claim);
-        refetchSingleTokenPairBalances(claim.erc20Address);
+        if (success) {
+          toast.success(`Claimed ${publicTokenSymbol}`);
+          removeClaimedClaim(claim);
+          fetchPairClaims(claim);
+          refetchSingleTokenPairBalances(claim.erc20Address);
+        } else {
+          toast.error(`Failed to claim ${publicTokenSymbol}`);
+        }
 
         return tx;
       } catch (error) {
@@ -97,7 +117,7 @@ export const useClaimFherc20Action = () => {
         throw error;
       }
     },
-    [account, writeContractAsync, chainId],
+    [account, writeContractAsync, chainId, trackTx],
   );
 
   return { onClaimFherc20, isClaiming: isPending };
