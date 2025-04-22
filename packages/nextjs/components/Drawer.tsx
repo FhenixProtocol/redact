@@ -109,7 +109,7 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, initialPages, classNam
               initial="enter"
               animate="center"
               exit="exit"
-              className="flex-1 overflow-auto p-4"
+              className="flex-1 overflow-hidden p-4"
             >
               {/**
                * Here is the current page's component. If you need sub-navigation,

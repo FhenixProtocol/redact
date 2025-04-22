@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Accordion } from "../ui/Accordion";
 import { DisplayValue } from "../ui/DisplayValue";
 import { EncryptedBalance } from "../ui/EncryptedValue";
-import { PublicBalance } from "../ui/PublicValue";
+import { PublicBalance } from "../ui/PublicBalance";
 import { TokenIcon } from "../ui/TokenIcon";
 import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
