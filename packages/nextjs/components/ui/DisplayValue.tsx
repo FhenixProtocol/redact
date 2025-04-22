@@ -24,7 +24,12 @@ export function DisplayValue({
   }, [value, prefix, left, padding]);
 
   return (
-    <div className={cn("flex flex-row items-center gap-1 border-2 border-transparent px-1 py-0", className)}>
+    <div
+      className={cn(
+        "flex flex-row items-center justify-between gap-1 border-2 border-transparent px-1 py-0",
+        className,
+      )}
+    >
       {icon}
       <span className={cn("min-w-24 text-right font-mono whitespace-pre", left && "text-left")}>
         {displayWithPrefix}
