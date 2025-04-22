@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Accordion } from "../ui/Accordion";
 import { EncryptedBalance } from "../ui/EncryptedValue";
-import { NumericValue } from "../ui/NumericValue";
+import { DisplayValue } from "../ui/NumericValue";
 import { TokenIcon } from "../ui/TokenIcon";
 import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
@@ -157,22 +157,26 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
     >
       <div className="flex flex-row gap-2 items-center">
         <TokenIcon token={pair.publicToken} />
-        <div className="flex flex-col">
-          <span>{pair.publicToken.symbol}</span>
-          <span>{pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`}</span>
+        <div className="flex flex-col items-start">
+          <DisplayValue value={pair.publicToken.symbol} left />
+          <DisplayValue value={pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`} left />
         </div>
       </div>
       <div className="flex flex-col items-end">
-        <NumericValue
+        <DisplayValue
           value={
             balances.publicBalance != null ? formatUnits(balances.publicBalance, pair.publicToken.decimals) : "..."
           }
         />
-        <EncryptedBalance
-          ctHash={balances.confidentialBalance}
-          decimals={pair.confidentialToken?.decimals ?? pair.publicToken.decimals}
-          className="text-right"
-        />
+        {pair.confidentialTokenDeployed ? (
+          <EncryptedBalance
+            ctHash={balances.confidentialBalance}
+            decimals={pair.confidentialToken?.decimals ?? pair.publicToken.decimals}
+            className="text-right"
+          />
+        ) : (
+          <DisplayValue value="(not deployed)" className="italic" />
+        )}
       </div>
     </Button>
   );

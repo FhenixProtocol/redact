@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { NumericValue } from "./NumericValue";
+import { DisplayValue } from "./NumericValue";
 import { FheTypes, UnsealedItem } from "cofhejs/web";
 import { formatUnits } from "viem";
 import { cn } from "~~/lib/utils";
@@ -25,9 +25,10 @@ export function EncryptedValue<T extends FheTypes>({
   }, [ctHash, transform, decryptedValue]);
 
   return (
-    <NumericValue
+    <DisplayValue
       value={display}
       prefix="#"
+      padding={10}
       className={cn(
         "border-primary bg-primary text-primary-foreground",
         decryptedValue != null && "bg-transparent text-primary",
