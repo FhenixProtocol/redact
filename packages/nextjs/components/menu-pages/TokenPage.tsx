@@ -1,4 +1,5 @@
 import React from "react";
+import { DrawerChildProps } from "../Drawer";
 import { HashLink } from "../HashLink";
 import { Button } from "../ui/Button";
 import { DisplayValue } from "../ui/DisplayValue";
@@ -6,9 +7,12 @@ import { EncryptedBalance } from "../ui/EncryptedValue";
 import { PublicBalance } from "../ui/PublicValue";
 import { Separator } from "../ui/Separator";
 import { TokenIcon } from "../ui/TokenIcon";
-import { Eye, EyeOff } from "lucide-react";
+import { ReceivePage } from "./ReceivePage";
+import { SendPage } from "./SendPage";
+import { Eye, EyeOff, MoveDownLeft, MoveUpRight } from "lucide-react";
 import { formatUnits } from "viem";
-import { getConfidentialSymbol } from "~~/lib/common";
+import { useAccount } from "wagmi";
+import { getConfidentialSymbol, truncateAddress } from "~~/lib/common";
 import {
   ConfidentialTokenPair,
   ConfidentialTokenPairBalances,
@@ -16,7 +20,7 @@ import {
   useConfidentialTokenPairBalances,
 } from "~~/services/store/tokenStore";
 
-export function TokenPage({ pairAddress }: { pairAddress: string }) {
+export function TokenPage({ pairAddress, pushPage }: { pairAddress: string; pushPage: DrawerChildProps["pushPage"] }) {
   const pair = useConfidentialTokenPair(pairAddress);
   const balances = useConfidentialTokenPairBalances(pairAddress);
 
@@ -28,11 +32,11 @@ export function TokenPage({ pairAddress }: { pairAddress: string }) {
     );
 
   return (
-    <div className="p-4 pb-0 flex flex-col gap-4 h-full">
+    <div className="flex flex-col gap-6 h-full">
       <TokenHeader pair={pair} />
       <TokenTotalBalance pair={pair} />
       <TokenBalances pair={pair} balances={balances} />
-      <TokenSendReceive pair={pair} />
+      <TokenSendReceive pair={pair} pushPage={pushPage} />
       <TokenHistory pair={pair} />
     </div>
   );
@@ -114,10 +118,61 @@ const TokenBalances = ({
   );
 };
 
-const TokenSendReceive = ({ pair }: { pair: ConfidentialTokenPair }) => {
+const TokenSendReceive = ({
+  pair,
+  pushPage,
+}: {
+  pair: ConfidentialTokenPair;
+  pushPage: DrawerChildProps["pushPage"];
+}) => {
+  const { address } = useAccount();
+
+  // Handler for "Send" -> push a new page
+  const handleSend = () => {
+    if (address == null) return;
+    if (pushPage) {
+      pushPage({
+        id: "send-page",
+        title: truncateAddress(address) + " Send",
+        component: <SendPage />,
+      });
+    }
+  };
+
+  // Handler for "Receive" -> push a new page
+  const handleReceive = () => {
+    if (pushPage) {
+      pushPage({
+        id: "receive-page",
+        title: "Receive",
+        component: <ReceivePage />,
+      });
+    }
+  };
+
   return (
-    <div className="flex flex-row items-center mb-12 gap-4">
-      <div className="text-3xl text-primary font-semibold">Send / Receive</div>
+    <div className="flex gap-4 w-full">
+      <Button
+        variant="surface"
+        className="min-w-36 justify-center font-bold flex-1"
+        size="lg"
+        iconSize="lg"
+        icon={MoveUpRight}
+        onClick={handleSend}
+      >
+        SEND
+      </Button>
+
+      <Button
+        variant="surface"
+        className="min-w-36 justify-center font-bold flex-1"
+        size="lg"
+        iconSize="lg"
+        icon={MoveDownLeft}
+        onClick={handleReceive}
+      >
+        RECEIVE
+      </Button>
     </div>
   );
 };
