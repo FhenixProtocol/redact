@@ -1,11 +1,25 @@
 import React from "react";
 import { HashLink } from "../HashLink";
+import { Button } from "../ui/Button";
+import { DisplayValue } from "../ui/DisplayValue";
+import { EncryptedBalance } from "../ui/EncryptedValue";
+import { PublicBalance } from "../ui/PublicValue";
+import { Separator } from "../ui/Separator";
 import { TokenIcon } from "../ui/TokenIcon";
+import { Eye, EyeOff } from "lucide-react";
+import { formatUnits } from "viem";
 import { getConfidentialSymbol } from "~~/lib/common";
-import { ConfidentialTokenPair, useConfidentialTokenPair } from "~~/services/store/tokenStore";
+import {
+  ConfidentialTokenPair,
+  ConfidentialTokenPairBalances,
+  useConfidentialTokenPair,
+  useConfidentialTokenPairBalances,
+} from "~~/services/store/tokenStore";
 
 export function TokenPage({ pairAddress }: { pairAddress: string }) {
   const pair = useConfidentialTokenPair(pairAddress);
+  const balances = useConfidentialTokenPairBalances(pairAddress);
+
   if (pair == null)
     return (
       <div className="p-4 pb-0 flex flex-col gap-4 h-full">
@@ -17,7 +31,7 @@ export function TokenPage({ pairAddress }: { pairAddress: string }) {
     <div className="p-4 pb-0 flex flex-col gap-4 h-full">
       <TokenHeader pair={pair} />
       <TokenTotalBalance pair={pair} />
-      <TokenBalances pair={pair} />
+      <TokenBalances pair={pair} balances={balances} />
       <TokenSendReceive pair={pair} />
       <TokenHistory pair={pair} />
     </div>
@@ -54,10 +68,48 @@ const TokenTotalBalance = ({ pair }: { pair: ConfidentialTokenPair }) => {
   );
 };
 
-const TokenBalances = ({ pair }: { pair: ConfidentialTokenPair }) => {
+const TokenBalances = ({
+  pair,
+  balances,
+}: {
+  pair: ConfidentialTokenPair;
+  balances: ConfidentialTokenPairBalances;
+}) => {
   return (
-    <div className="flex flex-row items-center mb-12 gap-4">
-      <div className="text-3xl text-primary font-semibold">Balances</div>
+    <div className="flex flex-row items-center w-full bg-primary-foreground rounded-4xl p-4 gap-4">
+      <div className="flex flex-col flex-1 gap-2">
+        <div className="flex flex-row gap-1">
+          <TokenIcon token={pair.publicToken} size={24} />
+          <DisplayValue value={pair.publicToken.symbol} left />
+        </div>
+
+        <div className="flex flex-row justify-between text-primary items-center">
+          <PublicBalance balance={balances.publicBalance} decimals={pair.publicToken.decimals} className="w-full" />
+        </div>
+
+        <Button variant="outline" size="sm" className="w-min">
+          ENCRYPT
+        </Button>
+      </div>
+      <Separator orientation="vertical" />
+      <div className="flex flex-col flex-1 gap-2">
+        <div className="flex flex-row gap-1">
+          <TokenIcon token={pair.confidentialToken} size={24} confidential />
+          <DisplayValue value={getConfidentialSymbol(pair)} left />
+        </div>
+
+        <div className="flex flex-row justify-end">
+          <EncryptedBalance
+            ctHash={balances.confidentialBalance}
+            decimals={pair.confidentialToken?.decimals}
+            className="w-full"
+          />
+        </div>
+
+        <Button variant="outline" size="sm" className="w-min" disabled={pair.confidentialToken == null}>
+          DECRYPT
+        </Button>
+      </div>
     </div>
   );
 };

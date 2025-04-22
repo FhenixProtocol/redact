@@ -10,21 +10,21 @@ export function TokenIcon({
   className,
   confidential,
 }: {
-  token: TokenItemData;
+  token?: TokenItemData;
   size?: number;
   className?: string;
   confidential?: boolean;
 }) {
   const icon = useMemo(() => {
-    if (token.symbol) return getTokenLogo(token.symbol);
+    if (token?.symbol) return getTokenLogo(token.symbol);
     return "/token-icons/default-token.webp";
-  }, [token.symbol]);
+  }, [token?.symbol]);
 
   return (
     <div className={cn("relative", className)} style={{ width: `${size}px`, height: `${size}px` }}>
       <Image
         src={icon}
-        alt={token.symbol ?? "Token Icon"}
+        alt={token?.symbol ?? "Token Icon"}
         width={size}
         height={size}
         className={cn("object-cover")}

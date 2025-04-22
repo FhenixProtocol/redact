@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import { Accordion } from "../ui/Accordion";
+import { DisplayValue } from "../ui/DisplayValue";
 import { EncryptedBalance } from "../ui/EncryptedValue";
-import { DisplayValue } from "../ui/NumericValue";
+import { PublicBalance } from "../ui/PublicValue";
 import { TokenIcon } from "../ui/TokenIcon";
 import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
@@ -178,11 +179,7 @@ const TokenRowItem = ({
         </div>
       </div>
       <div className="flex flex-col items-end">
-        <DisplayValue
-          value={
-            balances.publicBalance != null ? formatUnits(balances.publicBalance, pair.publicToken.decimals) : "..."
-          }
-        />
+        <PublicBalance balance={balances.publicBalance} decimals={pair.publicToken.decimals} />
         {pair.confidentialTokenDeployed ? (
           <EncryptedBalance
             ctHash={balances.confidentialBalance}

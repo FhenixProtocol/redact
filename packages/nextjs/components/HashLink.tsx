@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
-import { CheckIcon, CopyCheckIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { HashLinkType, useHashLink } from "~~/hooks/useHashLink";
 import { cn } from "~~/lib/utils";

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
-import { DisplayValue } from "./NumericValue";
+import { DisplayValue } from "./DisplayValue";
 import { FheTypes, UnsealedItem } from "cofhejs/web";
+import { EyeOff } from "lucide-react";
 import { formatUnits } from "viem";
 import { cn } from "~~/lib/utils";
 import { useDecryptValue } from "~~/services/store/decrypted";
@@ -27,7 +28,7 @@ export function EncryptedValue<T extends FheTypes>({
   return (
     <DisplayValue
       value={display}
-      prefix="#"
+      icon={<EyeOff className="w-5 h-5" />}
       padding={10}
       className={cn(
         "border-primary bg-primary text-primary-foreground",
