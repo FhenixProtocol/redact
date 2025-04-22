@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Settings, X } from "lucide-react";
+import { ChevronLeft, Settings, X } from "lucide-react";
 import { SettingsPage } from "~~/components/menu-pages/SettingsPage";
 import { IconButton } from "~~/components/ui/IconButton";
 import { cn } from "~~/lib/utils";
@@ -15,7 +15,8 @@ export interface DrawerChildProps {
 /** A single 'page' in the drawer's navigation stack */
 export interface DrawerPage {
   id: string;
-  title: string;
+  title?: string;
+  header?: React.ReactElement;
   component: React.ReactElement<DrawerChildProps>;
 }
 
@@ -82,16 +83,11 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, initialPages, classNam
       {/* --------------------------
           Header
          -------------------------- */}
-      <div className="p-4 flex items-center relative">
+      <div className="p-4 w-full flex items-center relative">
         <span className="absolute bottom-0 w-[90%]  border-b border-gray-200"></span>
-        {pages.length > 1 ? (
-          // If more than one page, show 'Back' arrow
-          <IconButton icon={ArrowLeft} size="lg" aria-label="Go back" onClick={popPage} />
-        ) : (
-          // Otherwise, show 'Close' (X)
-          <IconButton icon={X} size="lg" aria-label="Close drawer" onClick={onClose} />
-        )}
-        <h2 className="text-lg font-bold ml-2">{currentPage?.title ?? ""}</h2>
+        {currentPage?.header}
+        {currentPage?.title && <h2 className="text-lg ml-2">{currentPage?.title}</h2>}
+        <IconButton icon={ChevronLeft} className="text-primary" size="lg" aria-label="Go back" onClick={onClose} />
       </div>
 
       {/* --------------------------
