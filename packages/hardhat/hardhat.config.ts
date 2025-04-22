@@ -16,6 +16,7 @@ import generateTsAbis from "./scripts/generateTsAbis";
 import "cofhe-hardhat-plugin";
 
 import "./tasks/hh-prepare-wallet";
+import "./tasks/deploy-with-pk";
 
 // If not set, it uses ours Alchemy's default API key.
 // You can get your own at https://dashboard.alchemyapi.io
