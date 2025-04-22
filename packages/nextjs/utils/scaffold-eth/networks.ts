@@ -135,6 +135,23 @@ export function getBlockExplorerAddressLink(network: chains.Chain, address: stri
 }
 
 /**
+ * Gives the block explorer URL for a given token.
+ * Defaults to Etherscan if no (wagmi) block explorer is configured for the network.
+ */
+export function getBlockExplorerTokenLink(network: chains.Chain, address: string) {
+  const blockExplorerBaseURL = network.blockExplorers?.default?.url;
+  if (network.id === chains.hardhat.id) {
+    return `/blockexplorer/token/${address}`;
+  }
+
+  if (!blockExplorerBaseURL) {
+    return `https://etherscan.io/token/${address}`;
+  }
+
+  return `${blockExplorerBaseURL}/token/${address}`;
+}
+
+/**
  * @returns targetNetworks array containing networks configured in scaffold.config including extra network metadata
  */
 export function getTargetNetworks(): ChainWithAttributes[] {

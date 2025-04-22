@@ -7,10 +7,11 @@ import { DisplayValue } from "../ui/NumericValue";
 import { TokenIcon } from "../ui/TokenIcon";
 import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
+import { TokenPage } from "./TokenPage";
 import { Luggage, MoveDownLeft, MoveUpRight } from "lucide-react";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
-import { DrawerChildProps } from "~~/components/Drawer";
+import { DrawerChildProps, DrawerPage } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
 import { Separator } from "~~/components/ui/Separator";
 import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
@@ -38,7 +39,7 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
       <TabRow selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
       <Separator />
       <div>
-        <Tokens />
+        <Tokens pushPage={pushPage} />
         {/* <ClaimsList /> */}
       </div>
     </div>
@@ -133,14 +134,22 @@ const TabRow = ({
   );
 };
 
-const Tokens = () => {
+const Tokens = ({ pushPage }: DrawerChildProps) => {
   const addresses = useConfidentialTokenPairAddresses();
   return addresses.map((address, i) => {
-    return <TokenRowItem key={address} pairAddress={address} index={i} />;
+    return <TokenRowItem key={address} pairAddress={address} index={i} pushPage={pushPage} />;
   });
 };
 
-const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: number }) => {
+const TokenRowItem = ({
+  pairAddress,
+  index,
+  pushPage,
+}: {
+  pairAddress: string;
+  index: number;
+  pushPage: DrawerChildProps["pushPage"];
+}) => {
   const pair = useConfidentialTokenPair(pairAddress);
   const balances = useConfidentialTokenPairBalances(pairAddress);
 
@@ -154,6 +163,12 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
         "rounded-none flex flex-row items-center justify-between p-2 w-full text-primary font-normal",
         index % 2 === 0 && "bg-surface",
       )}
+      onClick={() => {
+        pushPage?.({
+          id: "token-page",
+          component: <TokenPage pairAddress={pairAddress} />,
+        });
+      }}
     >
       <div className="flex flex-row gap-2 items-center">
         <TokenIcon token={pair.publicToken} />
