@@ -43,7 +43,7 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
       ? [
           {
             id: "wallet-main",
-            header: <DrawerConnectedHeader />,
+            // header: <DrawerConnectedHeader />,
             component: <WalletMainPanel />,
           },
         ]
@@ -104,25 +104,5 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
-  );
-};
-
-const DrawerConnectedHeader = () => {
-  const { address, isConnected } = useAccount();
-  if (!isConnected || address == null) return null;
-
-  return (
-    <div className="flex flex-1 items-center justify-between h-full">
-      <div className="flex h-full items-center justify-center">
-        <div className="flex w-12 items-center justify-center">
-          <WalletIcon className="w-4 h-4 text-primary" />
-        </div>
-        <Separator orientation="vertical" />
-      </div>
-      <div className="flex gap-4 items-center justify-center">
-        <WalletIcon className="w-4 h-4 text-primary" />
-        <div className="text-sm text-primary">{truncateAddress(address, 10, 10)}</div>
-      </div>
-    </div>
   );
 };
