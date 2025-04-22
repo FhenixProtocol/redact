@@ -171,7 +171,7 @@ export const useOpenForDecryption = (token: TokenData | undefined) => {
   }, [token]);
 };
 
-export function TokenAccordionItem({ pairAddress }: { pairAddress: string }) {
+export function TokenRowItem({ pairAddress }: { pairAddress: string }) {
   const pair = useConfidentialTokenPair(pairAddress);
   const balances = useConfidentialTokenPairBalances(pairAddress);
   const isArbitrary = useIsArbitraryToken(pair?.publicToken.address);
@@ -180,114 +180,104 @@ export function TokenAccordionItem({ pairAddress }: { pairAddress: string }) {
   const openForDecryption = useOpenForDecryption(pair?.confidentialToken);
   const removeArbitraryToken = useRemoveArbitraryToken(pair?.publicToken.address);
 
-  const pairHash = useMemo(() => {
-    return `${pair?.publicToken.address}-${pair?.confidentialToken?.address}`;
-  }, [pair]);
-
   if (pair == null) return null;
 
   return (
-    <AccordionItem value={pairHash} className="border-0">
-      <AccordionTrigger className="hover:no-underline px-4 py-2">
-        <div className="flex w-full justify-between items-center">
-          <div className="flex items-center gap-2">
-            <TokenIcon token={pair.publicToken} />
-            <span>{pair.publicToken.symbol}</span>
-            {isArbitrary && <span className="text-xs text-gray-500">(User Added)</span>}
-          </div>
-          <div className="flex items-center gap-2">
-            <span>
+    <>
+      <div className="flex w-full justify-between items-center">
+        <div className="flex items-center gap-2">
+          <TokenIcon token={pair.publicToken} />
+          <span>{pair.publicToken.symbol}</span>
+          {isArbitrary && <span className="text-xs text-gray-500">(User Added)</span>}
+        </div>
+        <div className="flex items-center gap-2">
+          <span>
+            {balances.publicBalance != null ? formatUnits(balances.publicBalance, pair.publicToken.decimals) : "..."}{" "}
+            {pair.publicToken.symbol}
+          </span>
+        </div>
+      </div>
+      <div className="flex flex-col gap-2 py-2 px-4 bg">
+        <div className="flex justify-between items-center">
+          <div className="flex-2">
+            <span className="text-sm text-gray-500">
               {balances.publicBalance != null ? formatUnits(balances.publicBalance, pair.publicToken.decimals) : "..."}{" "}
               {pair.publicToken.symbol}
             </span>
           </div>
-        </div>
-      </AccordionTrigger>
-      <AccordionContent className="px-4">
-        <div className="flex flex-col gap-2 py-2 px-4 bg">
-          <div className="flex justify-between items-center">
-            <div className="flex-2">
-              <span className="text-sm text-gray-500">
-                {balances.publicBalance != null
-                  ? formatUnits(balances.publicBalance, pair.publicToken.decimals)
-                  : "..."}{" "}
-                {pair.publicToken.symbol}
-              </span>
-            </div>
-            <div className="flex-1 flex justify-end gap-1">
-              <Button
-                size="xs"
-                variant="default"
-                icon={EyeOff}
-                onClick={openForEncryption}
-                className="font-bold uppercase flex-1"
-              >
-                Encrypt
-              </Button>
-              <Button
-                variant="default"
-                size="xs"
-                className="px-1 justify-center font-bold"
-                icon={MoveUpRight}
-                onClick={() => console.log("SEND TOKEN")}
-              ></Button>
-            </div>
+          <div className="flex-1 flex justify-end gap-1">
+            <Button
+              size="xs"
+              variant="default"
+              icon={EyeOff}
+              onClick={openForEncryption}
+              className="font-bold uppercase flex-1"
+            >
+              Encrypt
+            </Button>
+            <Button
+              variant="default"
+              size="xs"
+              className="px-1 justify-center font-bold"
+              icon={MoveUpRight}
+              onClick={() => console.log("SEND TOKEN")}
+            ></Button>
           </div>
+        </div>
 
-          <div className="flex justify-between items-center">
-            <div className="flex-2">
-              {pair.confidentialTokenDeployed && (
-                <span className="text-sm text-gray-500">
-                  <EncryptedBalance value={balances.confidentialBalance} decimals={pair.confidentialToken?.decimals} />{" "}
-                  {pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`}
-                </span>
-              )}
-              {!pair.confidentialTokenDeployed && (
-                <span className="text-sm text-gray-500">
-                  {pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`} <i>(Not Deployed)</i>
-                </span>
-              )}
-            </div>
-            <div className="flex-1 flex justify-end gap-1">
+        <div className="flex justify-between items-center">
+          <div className="flex-2">
+            {pair.confidentialTokenDeployed && (
+              <span className="text-sm text-gray-500">
+                <EncryptedBalance value={balances.confidentialBalance} decimals={pair.confidentialToken?.decimals} />{" "}
+                {pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`}
+              </span>
+            )}
+            {!pair.confidentialTokenDeployed && (
+              <span className="text-sm text-gray-500">
+                {pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`} <i>(Not Deployed)</i>
+              </span>
+            )}
+          </div>
+          <div className="flex-1 flex justify-end gap-1">
+            <Button
+              disabled={!pair.confidentialTokenDeployed}
+              size="xs"
+              variant="default"
+              icon={Eye}
+              onClick={openForDecryption}
+              className="uppercase flex-1"
+            >
+              Decrypt
+            </Button>
+            <Button
+              disabled={!pair.confidentialTokenDeployed}
+              variant="default"
+              size="xs"
+              className="px-1 justify-center font-bold"
+              icon={MoveUpRight}
+              onClick={() => console.log("SEND TOKEN")}
+            ></Button>
+          </div>
+        </div>
+
+        {isArbitrary && (
+          <div className="flex justify-end">
+            <div className="flex-2" />
+            <div className="flex flex-1 justify-end">
               <Button
-                disabled={!pair.confidentialTokenDeployed}
                 size="xs"
-                variant="default"
-                icon={Eye}
-                onClick={openForDecryption}
+                variant="destructive"
+                icon={X}
+                onClick={removeArbitraryToken}
                 className="uppercase flex-1"
               >
-                Decrypt
+                Remove
               </Button>
-              <Button
-                disabled={!pair.confidentialTokenDeployed}
-                variant="default"
-                size="xs"
-                className="px-1 justify-center font-bold"
-                icon={MoveUpRight}
-                onClick={() => console.log("SEND TOKEN")}
-              ></Button>
             </div>
           </div>
-
-          {isArbitrary && (
-            <div className="flex justify-end">
-              <div className="flex-2" />
-              <div className="flex flex-1 justify-end">
-                <Button
-                  size="xs"
-                  variant="destructive"
-                  icon={X}
-                  onClick={removeArbitraryToken}
-                  className="uppercase flex-1"
-                >
-                  Remove
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </AccordionContent>
-    </AccordionItem>
+        )}
+      </div>
+    </>
   );
 }

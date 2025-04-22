@@ -24,7 +24,6 @@ import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
   const { address, isConnected } = useAccount();
-  const [drawerTitle, setDrawerTitle] = useState("Menu");
   const router = useRouter();
 
   // Get drawer state from global state
@@ -32,14 +31,6 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   const setIsDrawerOpen = useCallback((open: boolean) => {
     useGlobalState.setState({ isDrawerOpen: open });
   }, []);
-
-  useEffect(() => {
-    if (isConnected) {
-      setDrawerTitle(truncateAddress(address!, 10, 10));
-    } else {
-      setDrawerTitle("Connect Wallet");
-    }
-  }, [isConnected, address]);
 
   useEffect(() => {
     if (!address) {

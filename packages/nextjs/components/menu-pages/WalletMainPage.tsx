@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Accordion } from "../ui/Accordion";
+import { TokenIcon } from "../ui/TokenIcon";
 import { ReceivePage } from "./ReceivePage";
 import { SendPage } from "./SendPage";
 import { Luggage, MoveDownLeft, MoveUpRight } from "lucide-react";
@@ -9,17 +10,44 @@ import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
-import { TokenAccordionItem } from "~~/components/ui/FnxAccordion";
+import { Separator } from "~~/components/ui/Separator";
 import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
 import { truncateAddress } from "~~/lib/common";
+import { cn } from "~~/lib/utils";
 import { ClaimWithAddresses, useAllClaims } from "~~/services/store/claim";
-import { useConfidentialTokenPair, useConfidentialTokenPairAddresses } from "~~/services/store/tokenStore";
+import {
+  useConfidentialTokenPair,
+  useConfidentialTokenPairAddresses,
+  useConfidentialTokenPairBalances,
+  useIsArbitraryToken,
+} from "~~/services/store/tokenStore";
 
 /**
  * Main panel that shows the user's balance and has buttons for "Send" or "Receive."
  * Clicking these buttons pushes a new page into the drawer.
  */
 export function WalletMainPanel({ pushPage }: DrawerChildProps) {
+  const [selectedTab, setSelectedTab] = useState<"tokens" | "history">("tokens");
+
+  return (
+    <div className="flex flex-col gap-2">
+      <EthBalanceRow />
+      <SendReceiveButtonsRow pushPage={pushPage} />
+      <TabRow selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+      <Separator />
+      <div>
+        <Tokens />
+        {/* <ClaimsList /> */}
+      </div>
+    </div>
+  );
+}
+
+const EthBalanceRow = () => {
+  return <div className="text-xxl font-bold text-primary self-center">TODO: ETH BAL</div>;
+};
+
+const SendReceiveButtonsRow = ({ pushPage }: DrawerChildProps) => {
   const { address } = useAccount();
 
   // Handler for "Send" -> push a new page
@@ -46,52 +74,111 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="text-xxl font-bold text-primary self-center">TODO: ETH BAL</div>
+    <div className="flex gap-4 w-full">
+      <Button
+        variant="surface"
+        className="min-w-36 justify-center font-bold flex-1"
+        size="lg"
+        iconSize="lg"
+        icon={MoveUpRight}
+        onClick={handleSend}
+      >
+        SEND
+      </Button>
 
-      <div className="flex gap-2 justify-center">
-        <Button
-          variant="surface"
-          className="min-w-36 justify-center font-bold"
-          size="md"
-          icon={MoveUpRight}
-          onClick={handleSend}
-        >
-          SEND
-        </Button>
-
-        <Button
-          variant="surface"
-          className="min-w-36 justify-center font-bold"
-          size="md"
-          icon={MoveDownLeft}
-          onClick={handleReceive}
-        >
-          RECEIVE
-        </Button>
-      </div>
-      <div>
-        <Accordion type="single" collapsible>
-          <TokenAccordionTokens />
-        </Accordion>
-        <ClaimsList />
-      </div>
+      <Button
+        variant="surface"
+        className="min-w-36 justify-center font-bold flex-1"
+        size="lg"
+        iconSize="lg"
+        icon={MoveDownLeft}
+        onClick={handleReceive}
+      >
+        RECEIVE
+      </Button>
     </div>
   );
-}
+};
 
-const TokenAccordionTokens = () => {
+const TabRow = ({
+  selectedTab,
+  setSelectedTab,
+}: {
+  selectedTab: "tokens" | "history";
+  setSelectedTab: (tab: "tokens" | "history") => void;
+}) => {
+  return (
+    <div className="flex justify-around">
+      <Button
+        variant="text"
+        className={selectedTab === "tokens" ? "font-semibold underline" : ""}
+        size="md"
+        noOutline
+        onClick={() => setSelectedTab("tokens")}
+      >
+        Tokens
+      </Button>
+      <Button
+        variant="text"
+        className={selectedTab === "history" ? "font-semibold underline" : ""}
+        size="md"
+        noOutline
+        onClick={() => setSelectedTab("history")}
+      >
+        History
+      </Button>
+    </div>
+  );
+};
+
+const Tokens = () => {
   const addresses = useConfidentialTokenPairAddresses();
-  return addresses.map(address => {
-    return <TokenAccordionItem key={address} pairAddress={address} />;
+  return addresses.map((address, i) => {
+    return <TokenRowItem key={address} pairAddress={address} index={i} />;
   });
+};
+
+const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: number }) => {
+  const pair = useConfidentialTokenPair(pairAddress);
+  const balances = useConfidentialTokenPairBalances(pairAddress);
+
+  if (pair == null) return null;
+
+  return (
+    <Button
+      variant="ghost"
+      noOutline
+      className={cn(
+        "rounded-none flex flex-row items-center justify-between p-2 w-full text-primary font-normal",
+        index % 2 === 0 && "bg-surface",
+      )}
+    >
+      <div className="flex flex-row gap-2 items-center">
+        <TokenIcon token={pair.publicToken} />
+        <div className="flex flex-col">
+          <span>{pair.publicToken.symbol}</span>
+          <span>{pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`}</span>
+        </div>
+      </div>
+      <div className="flex flex-col">
+        <span>
+          {balances.publicBalance != null ? formatUnits(balances.publicBalance, pair.publicToken.decimals) : "..."}{" "}
+        </span>
+        <span>
+          {balances.confidentialBalance != null
+            ? formatUnits(balances.confidentialBalance, pair.confidentialToken?.decimals ?? pair.publicToken.decimals)
+            : "..."}
+        </span>
+      </div>
+    </Button>
+  );
 };
 
 const ClaimsList = () => {
   const claims = useAllClaims();
   return (
     <>
-      <div className="flex flex-row justify-between">
+      <div className="flex flex-row justify-around">
         <div className="flex flex-row gap-2 font-semibold">Amount</div>
         <div className="flex flex-row gap-2 font-semibold">Action</div>
       </div>
