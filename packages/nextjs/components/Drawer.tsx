@@ -10,7 +10,7 @@ import { Button } from "./ui/Button";
 import { Separator } from "./ui/Separator";
 import { ArrowBack, Logout } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronsLeft, Settings, WalletIcon } from "lucide-react";
+import { ChevronLeft, ChevronsLeft, Settings, WalletIcon, X } from "lucide-react";
 import { zeroAddress } from "viem";
 import { useAccount, useDisconnect } from "wagmi";
 import { SettingsPage } from "~~/components/menu-pages/SettingsPage";
@@ -94,8 +94,16 @@ const DrawerContentHeader = () => {
 
 const DrawerHeaderBackButton = () => {
   const backAction = useDrawerBackButtonAction();
+  const pagesCount = useDrawerPagesCount();
+
   return (
-    <IconButton icon={ChevronsLeft} className="text-primary" size="lg" aria-label="Go back" onClick={backAction} />
+    <IconButton
+      icon={pagesCount === 1 ? X : ChevronLeft}
+      className="text-primary"
+      size="lg"
+      aria-label="Go back"
+      onClick={backAction}
+    />
   );
 };
 
