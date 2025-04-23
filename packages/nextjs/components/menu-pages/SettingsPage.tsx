@@ -1,15 +1,12 @@
 import React from "react";
-import { PermitsPage } from "./PermitsPage";
 import { AddModeratorOutlined, DescriptionOutlined } from "@mui/icons-material";
 import { Moon, Sun } from "lucide-react";
-import { DrawerChildProps } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
 import { Switcher } from "~~/components/ui/Switcher";
 import { useTheme } from "~~/hooks/useTheme";
 
-export function SettingsPage({ pushPage }: DrawerChildProps) {
+export function SettingsPage() {
   const { theme, setTheme } = useTheme();
-
   const handleThemeChange = (value: number) => {
     const newTheme = value === 0 ? "light" : "dark";
     setTheme(newTheme);
@@ -18,20 +15,7 @@ export function SettingsPage({ pushPage }: DrawerChildProps) {
   return (
     <div className="p-4 pb-0 flex flex-col gap-4 h-full">
       <div className="text-3xl text-primary font-semibold mb-12">Settings</div>
-      <Button
-        size="md"
-        iconSize="lg"
-        variant="surface"
-        icon={AddModeratorOutlined}
-        onClick={() =>
-          pushPage &&
-          pushPage({
-            id: "permits-page",
-            title: "Permits",
-            component: <PermitsPage />,
-          })
-        }
-      >
+      <Button size="md" iconSize="lg" variant="surface" icon={AddModeratorOutlined}>
         Create or Share Permits
       </Button>
       <Button size="md" iconSize="lg" variant="surface" icon={DescriptionOutlined}>
