@@ -18,6 +18,7 @@ import {
   useConfidentialTokenPair,
   useConfidentialTokenPairBalances,
 } from "~~/services/store/tokenStore";
+import { TransactionHistory } from "../TransactionHistory";
 
 export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) {
   const pair = useConfidentialTokenPair(pairAddress);
@@ -165,108 +166,7 @@ const TokenHistory = ({ pair }: { pair: ConfidentialTokenPair }) => {
     <div className="flex flex-col gap-4 flex-grow overflow-hidden">
       <div className="text-lg text-primary font-semibold">{pair.publicToken.symbol} history:</div>
       <Separator />
-      <div className="flex-grow overflow-x-hidden overflow-y-auto">
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <MoveUpRight className="text-green-500" />
-              <div>
-                <div className="font-medium">Sent to 0x1234...5678</div>
-                <div className="text-sm text-gray-500">2 hours ago</div>
-              </div>
-            </div>
-            <PublicBalance balance={1000000000000000000n} className="text-green-500" />
-          </div>
-
-          <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <MoveDownLeft className="text-blue-500" />
-              <div>
-                <div className="font-medium">Received from 0xabcd...ef01</div>
-                <div className="text-sm text-gray-500">Yesterday</div>
-              </div>
-            </div>
-            <PublicBalance balance={2500000000000000000n} className="text-blue-500" />
-          </div>
-
-          <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <MoveUpRight className="text-green-500" />
-              <div>
-                <div className="font-medium">Sent to 0x9876...5432</div>
-                <div className="text-sm text-gray-500">3 days ago</div>
-              </div>
-            </div>
-            <PublicBalance balance={500000000000000000n} className="text-green-500" />
-          </div>
-
-          <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <MoveUpRight className="text-green-500" />
-              <div>
-                <div className="font-medium">Sent to 0x1234...5678</div>
-                <div className="text-sm text-gray-500">2 hours ago</div>
-              </div>
-            </div>
-            <PublicBalance balance={1000000000000000000n} className="text-green-500" />
-          </div>
-
-          <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <MoveDownLeft className="text-blue-500" />
-              <div>
-                <div className="font-medium">Received from 0xabcd...ef01</div>
-                <div className="text-sm text-gray-500">Yesterday</div>
-              </div>
-            </div>
-            <PublicBalance balance={2500000000000000000n} className="text-blue-500" />
-          </div>
-
-          <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <MoveUpRight className="text-green-500" />
-              <div>
-                <div className="font-medium">Sent to 0x9876...5432</div>
-                <div className="text-sm text-gray-500">3 days ago</div>
-              </div>
-            </div>
-            <PublicBalance balance={500000000000000000n} className="text-green-500" />
-          </div>
-
-          <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <MoveUpRight className="text-green-500" />
-              <div>
-                <div className="font-medium">Sent to 0x1234...5678</div>
-                <div className="text-sm text-gray-500">2 hours ago</div>
-              </div>
-            </div>
-            <PublicBalance balance={1000000000000000000n} className="text-green-500" />
-          </div>
-
-          <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <MoveDownLeft className="text-blue-500" />
-              <div>
-                <div className="font-medium">Received from 0xabcd...ef01</div>
-                <div className="text-sm text-gray-500">Yesterday</div>
-              </div>
-            </div>
-            <PublicBalance balance={2500000000000000000n} className="text-blue-500" />
-          </div>
-
-          <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <MoveUpRight className="text-green-500" />
-              <div>
-                <div className="font-medium">Sent to 0x9876...5432</div>
-                <div className="text-sm text-gray-500">3 days ago</div>
-              </div>
-            </div>
-            <PublicBalance balance={500000000000000000n} className="text-green-500" />
-          </div>
-        </div>
-      </div>
+      <TransactionHistory pair={pair} />
     </div>
   );
 };

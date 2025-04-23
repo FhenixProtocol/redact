@@ -46,7 +46,8 @@ export const useDecryptFherc20Action = () => {
 
         const success = await trackTx(tx, {
           tokenSymbol: publicTokenSymbol,
-          tokenAmount: amount.toString(),
+          tokenAddress: publicTokenAddress,
+          tokenAmount: amount,
           actionType: TransactionActionType.Decrypt,
         });
 
@@ -97,7 +98,8 @@ export const useClaimFherc20Action = () => {
 
         const success = await trackTx(tx, {
           tokenSymbol: publicTokenSymbol,
-          tokenAmount: claim.decryptedAmount.toString(),
+          tokenAddress: claim.erc20Address,
+          tokenAmount: claim.decryptedAmount,
           actionType: TransactionActionType.Claim,
         });
 

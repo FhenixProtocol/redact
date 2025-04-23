@@ -36,7 +36,8 @@ export const useDeployFherc20Action = () => {
 
         const success = await trackTx(txHash, {
           tokenSymbol: publicTokenSymbol,
-          tokenAmount: "0",
+          tokenAddress,
+          tokenAmount: BigInt(0),
           actionType: TransactionActionType.Deploy,
         });
 
@@ -93,7 +94,8 @@ export const useApproveFherc20Action = () => {
 
         const success = await trackTx(txHash, {
           tokenSymbol: publicTokenSymbol,
-          tokenAmount: amount.toString(),
+          tokenAddress: publicTokenAddress,
+          tokenAmount: amount,
           actionType: TransactionActionType.Approve,
         });
 
@@ -155,7 +157,8 @@ export const useEncryptErc20Action = () => {
 
         const success = await trackTx(txHash, {
           tokenSymbol: publicTokenSymbol,
-          tokenAmount: amount.toString(),
+          tokenAddress: publicTokenAddress,
+          tokenAmount: amount,
           actionType: TransactionActionType.Encrypt,
         });
 

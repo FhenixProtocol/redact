@@ -18,6 +18,7 @@ import {
   useConfidentialTokenPairAddresses,
   useConfidentialTokenPairBalances,
 } from "~~/services/store/tokenStore";
+import { TransactionHistory } from "../TransactionHistory";
 
 /**
  * Main panel that shows the user's balance and has buttons for "Send" or "Receive."
@@ -34,6 +35,7 @@ export function WalletMainPanel() {
       <Separator />
       <div>
         <Tokens />
+        {selectedTab === "history" && <TransactionHistory />}
         {/* <ClaimsList /> */}
       </div>
     </div>
