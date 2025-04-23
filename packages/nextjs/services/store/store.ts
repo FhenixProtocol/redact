@@ -12,8 +12,6 @@ type GlobalState = {
   setIsNativeCurrencyFetching: (newIsNativeCurrencyFetching: boolean) => void;
   targetNetwork: ChainWithAttributes;
   setTargetNetwork: (newTargetNetwork: ChainWithAttributes) => void;
-  isDrawerOpen: boolean;
-  toggleDrawer: () => void;
 
   // Add Token Modal
   isAddTokenModalOpen: boolean;
@@ -39,8 +37,6 @@ export const useGlobalState = create<GlobalState>(set => ({
     set(state => ({ nativeCurrency: { ...state.nativeCurrency, isFetching: newValue } })),
   targetNetwork: scaffoldConfig.targetNetworks[0],
   setTargetNetwork: (newTargetNetwork: ChainWithAttributes) => set(() => ({ targetNetwork: newTargetNetwork })),
-  isDrawerOpen: false,
-  toggleDrawer: () => set(state => ({ isDrawerOpen: !state.isDrawerOpen })),
 
   // Add Token Modal
   isAddTokenModalOpen: false,

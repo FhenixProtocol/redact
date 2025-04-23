@@ -1,29 +1,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { Accordion } from "../ui/Accordion";
 import { DisplayValue } from "../ui/DisplayValue";
 import { EncryptedBalance } from "../ui/EncryptedValue";
 import { PublicBalance } from "../ui/PublicBalance";
 import { TokenIcon } from "../ui/TokenIcon";
-import { ReceivePage } from "./ReceivePage";
-import { SendPage } from "./SendPage";
-import { TokenPage } from "./TokenPage";
 import { Luggage, MoveDownLeft, MoveUpRight } from "lucide-react";
 import { formatUnits } from "viem";
-import { useAccount } from "wagmi";
-import { DrawerChildProps, DrawerPage } from "~~/components/Drawer";
 import { Button } from "~~/components/ui/Button";
 import { Separator } from "~~/components/ui/Separator";
 import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
-import { truncateAddress } from "~~/lib/common";
 import { cn } from "~~/lib/utils";
 import { ClaimWithAddresses, useAllClaims } from "~~/services/store/claim";
+import { DrawerPageName, useDrawerPushPage } from "~~/services/store/drawerStore";
 import {
   useConfidentialTokenPair,
   useConfidentialTokenPairAddresses,
   useConfidentialTokenPairBalances,
-  useIsArbitraryToken,
 } from "~~/services/store/tokenStore";
 import { TransactionHistory } from "../TransactionHistory";
 
@@ -31,17 +24,17 @@ import { TransactionHistory } from "../TransactionHistory";
  * Main panel that shows the user's balance and has buttons for "Send" or "Receive."
  * Clicking these buttons pushes a new page into the drawer.
  */
-export function WalletMainPanel({ pushPage }: DrawerChildProps) {
+export function WalletMainPanel() {
   const [selectedTab, setSelectedTab] = useState<"tokens" | "history">("tokens");
 
   return (
     <div className="flex flex-col gap-2">
       <EthBalanceRow />
-      <SendReceiveButtonsRow pushPage={pushPage} />
+      <SendReceiveButtonsRow />
       <TabRow selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
       <Separator />
       <div>
-        {selectedTab === "tokens" && <Tokens pushPage={pushPage} />}
+        <Tokens />
         {selectedTab === "history" && <TransactionHistory />}
         {/* <ClaimsList /> */}
       </div>
@@ -53,31 +46,8 @@ const EthBalanceRow = () => {
   return <div className="text-xxl font-bold text-primary self-center">TODO: ETH BAL</div>;
 };
 
-const SendReceiveButtonsRow = ({ pushPage }: DrawerChildProps) => {
-  const { address } = useAccount();
-
-  // Handler for "Send" -> push a new page
-  const handleSend = () => {
-    if (address == null) return;
-    if (pushPage) {
-      pushPage({
-        id: "send-page",
-        title: truncateAddress(address) + " Send",
-        component: <SendPage />,
-      });
-    }
-  };
-
-  // Handler for "Receive" -> push a new page
-  const handleReceive = () => {
-    if (pushPage) {
-      pushPage({
-        id: "receive-page",
-        title: "Receive",
-        component: <ReceivePage />,
-      });
-    }
-  };
+const SendReceiveButtonsRow = () => {
+  const pushPage = useDrawerPushPage();
 
   return (
     <div className="flex gap-4 w-full">
@@ -87,7 +57,7 @@ const SendReceiveButtonsRow = ({ pushPage }: DrawerChildProps) => {
         size="lg"
         iconSize="lg"
         icon={MoveUpRight}
-        onClick={handleSend}
+        onClick={() => pushPage({ page: DrawerPageName.Send, pairAddress: undefined })}
       >
         SEND
       </Button>
@@ -98,7 +68,7 @@ const SendReceiveButtonsRow = ({ pushPage }: DrawerChildProps) => {
         size="lg"
         iconSize="lg"
         icon={MoveDownLeft}
-        onClick={handleReceive}
+        onClick={() => pushPage({ page: DrawerPageName.Receive, pairAddress: undefined })}
       >
         RECEIVE
       </Button>
@@ -137,24 +107,17 @@ const TabRow = ({
   );
 };
 
-const Tokens = ({ pushPage }: DrawerChildProps) => {
+const Tokens = () => {
   const addresses = useConfidentialTokenPairAddresses();
   return addresses.map((address, i) => {
-    return <TokenRowItem key={address} pairAddress={address} index={i} pushPage={pushPage} />;
+    return <TokenRowItem key={address} pairAddress={address} index={i} />;
   });
 };
 
-const TokenRowItem = ({
-  pairAddress,
-  index,
-  pushPage,
-}: {
-  pairAddress: string;
-  index: number;
-  pushPage: DrawerChildProps["pushPage"];
-}) => {
+const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: number }) => {
   const pair = useConfidentialTokenPair(pairAddress);
   const balances = useConfidentialTokenPairBalances(pairAddress);
+  const pushPage = useDrawerPushPage();
 
   if (pair == null) return null;
 
@@ -167,9 +130,9 @@ const TokenRowItem = ({
         index % 2 === 0 && "bg-surface",
       )}
       onClick={() => {
-        pushPage?.({
-          id: "token-page",
-          component: <TokenPage pairAddress={pairAddress} />,
+        pushPage({
+          page: DrawerPageName.Token,
+          pairAddress: pairAddress,
         });
       }}
     >

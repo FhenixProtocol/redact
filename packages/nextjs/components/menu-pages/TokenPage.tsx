@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import { DrawerChildProps } from "../Drawer";
 import { HashLink } from "../HashLink";
 import { BalanceDisplay } from "../ui/BalanceDisplay";
 import { Button } from "../ui/Button";
@@ -8,14 +7,11 @@ import { EncryptedBalance } from "../ui/EncryptedValue";
 import { PublicBalance } from "../ui/PublicBalance";
 import { Separator } from "../ui/Separator";
 import { TokenIcon } from "../ui/TokenIcon";
-import { ReceivePage } from "./ReceivePage";
-import { SendPage } from "./SendPage";
 import { FheTypes } from "cofhejs/web";
-import { Eye, EyeOff, MoveDownLeft, MoveUpRight } from "lucide-react";
-import { formatUnits } from "viem";
-import { useAccount } from "wagmi";
-import { getConfidentialSymbol, truncateAddress } from "~~/lib/common";
+import { MoveDownLeft, MoveUpRight } from "lucide-react";
+import { getConfidentialSymbol } from "~~/lib/common";
 import { useDecryptValue } from "~~/services/store/decrypted";
+import { DrawerPageName, useDrawerPushPage } from "~~/services/store/drawerStore";
 import {
   ConfidentialTokenPair,
   ConfidentialTokenPairBalances,
@@ -24,14 +20,14 @@ import {
 } from "~~/services/store/tokenStore";
 import { TransactionHistory } from "../TransactionHistory";
 
-export function TokenPage({ pairAddress, pushPage }: { pairAddress: string; pushPage: DrawerChildProps["pushPage"] }) {
+export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) {
   const pair = useConfidentialTokenPair(pairAddress);
   const balances = useConfidentialTokenPairBalances(pairAddress);
 
-  if (pair == null)
+  if (pair == null || pairAddress == null)
     return (
       <div className="p-4 pb-0 flex flex-col gap-4 h-full">
-        <div className="text-3xl text-primary font-semibold mb-12">Token not found</div>
+        <div className="text-3xl text-primary font-semibold mb-12">Token not found / provided</div>
       </div>
     );
 
@@ -40,7 +36,7 @@ export function TokenPage({ pairAddress, pushPage }: { pairAddress: string; push
       <TokenHeader pair={pair} />
       <TokenTotalBalance pair={pair} balances={balances} />
       <TokenBalances pair={pair} balances={balances} />
-      <TokenSendReceive pair={pair} pushPage={pushPage} />
+      <TokenSendReceive pair={pair} />
       <TokenHistory pair={pair} />
     </div>
   );
@@ -135,35 +131,8 @@ const TokenBalances = ({
   );
 };
 
-const TokenSendReceive = ({
-  pair,
-  pushPage,
-}: {
-  pair: ConfidentialTokenPair;
-  pushPage: DrawerChildProps["pushPage"];
-}) => {
-  const { address } = useAccount();
-
-  // Handler for "Send" -> push a new page
-  const handleSend = () => {
-    if (address == null) return;
-    if (pushPage) {
-      pushPage({
-        id: "send-page",
-        component: <SendPage />,
-      });
-    }
-  };
-
-  // Handler for "Receive" -> push a new page
-  const handleReceive = () => {
-    if (pushPage) {
-      pushPage({
-        id: "receive-page",
-        component: <ReceivePage />,
-      });
-    }
-  };
+const TokenSendReceive = ({ pair }: { pair: ConfidentialTokenPair }) => {
+  const pushPage = useDrawerPushPage();
 
   return (
     <div className="flex gap-4 w-full">
@@ -173,7 +142,7 @@ const TokenSendReceive = ({
         size="lg"
         iconSize="lg"
         icon={MoveUpRight}
-        onClick={handleSend}
+        onClick={() => pushPage({ page: DrawerPageName.Send, pairAddress: pair.publicToken.address })}
       >
         SEND
       </Button>
@@ -184,7 +153,7 @@ const TokenSendReceive = ({
         size="lg"
         iconSize="lg"
         icon={MoveDownLeft}
-        onClick={handleReceive}
+        onClick={() => pushPage({ page: DrawerPageName.Receive, pairAddress: pair.publicToken.address })}
       >
         RECEIVE
       </Button>

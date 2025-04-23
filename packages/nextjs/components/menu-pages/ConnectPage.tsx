@@ -7,7 +7,7 @@ import { Button } from "~~/components/ui/Button";
 
 const excludeConnectors = ["keplr"];
 
-export const WalletLister = () => {
+export const ConnectPage = () => {
   const { connect, connectors } = useConnect();
 
   // Use this to prevent hydration errors
@@ -34,9 +34,8 @@ export const WalletLister = () => {
             <Button
               key={`${connector.id}-${index}`}
               onClick={() => connect({ connector })}
-              style={{ marginRight: "1rem", padding: "0.5rem 1rem" }}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full mr-1 px-1 py-0.5"
             >
               {connector.id === "metaMask" && (
                 <img src="/metamask-icon.png" alt="MetaMask" className="w-6 h-6" width={24} height={24} />
