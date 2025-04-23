@@ -1,15 +1,17 @@
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 import { Address, erc20Abi } from "viem";
-import { useAccount, useChainId, useConfig, useWriteContract } from "wagmi";
+import { useAccount, useChainId, usePublicClient, useWriteContract } from "wagmi";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import deployedContracts from "~~/contracts/deployedContracts";
-import { getDeployedContract } from "~~/lib/common";
 import { refetchSingleTokenPairBalances, refetchSingleTokenPairData } from "~~/services/store/tokenStore";
+import { TransactionActionType, TransactionStatus, useTransactionStore } from "~~/services/store/transactionStore";
+import { useTxLifecycle } from "./useTxLifecycle";
 
 export const useDeployFherc20Action = () => {
   const { writeContractAsync, isPending } = useWriteContract();
   const chainId = useChainId();
+  const trackTx = useTxLifecycle();
 
   const onDeployFherc20 = useCallback(
     async ({ tokenAddress, publicTokenSymbol }: { tokenAddress: Address; publicTokenSymbol: string }) => {
@@ -18,45 +20,51 @@ export const useDeployFherc20Action = () => {
         return;
       }
 
+      const redactCoreContract = deployedContracts[chainId as keyof typeof deployedContracts]?.["RedactCore"];
+      if (!redactCoreContract) {
+        toast.error("RedactCore contract not found on current network");
+        return;
+      }
+
       try {
-        // Get contract data from deployedContracts
-        const redactCoreContract = deployedContracts[chainId as keyof typeof deployedContracts]?.["RedactCore"];
-
-        if (!redactCoreContract) {
-          toast.error("RedactCore contract not found on current network");
-          return;
-        }
-
-        // Call deployFherc20
-        const tx = await writeContractAsync({
+        const txHash = await writeContractAsync({
           address: redactCoreContract.address as Address,
           abi: redactCoreContract.abi,
           functionName: "deployFherc20",
           args: [tokenAddress],
         });
 
-        // Show success notification once the transaction is confirmed
-        toast.success(`e${publicTokenSymbol} deployed`);
+        const success = await trackTx(txHash, {
+          tokenSymbol: publicTokenSymbol,
+          tokenAmount: "0",
+          actionType: TransactionActionType.Deploy,
+        });
 
-        refetchSingleTokenPairData(tokenAddress);
-        refetchSingleTokenPairBalances(tokenAddress);
+        if (success) {
+          toast.success(`e${publicTokenSymbol} deployed`);
+          refetchSingleTokenPairData(tokenAddress);
+          refetchSingleTokenPairBalances(tokenAddress);
+        } else {
+          toast.error(`Failed to deploy e${publicTokenSymbol}`);
+        }
 
-        return tx;
+        return txHash;
       } catch (error) {
-        console.error("Failed to deploy confidential token:", error);
         toast.error("Failed to deploy confidential token");
         throw error;
       }
     },
-    [writeContractAsync, chainId],
+    [writeContractAsync, chainId, trackTx],
   );
 
   return { onDeployFherc20, isDeploying: isPending };
 };
 
+
 export const useApproveFherc20Action = () => {
   const { writeContractAsync, isPending } = useWriteContract();
   const chainId = useChainId();
+  const trackTx = useTxLifecycle();
 
   const onApproveFherc20 = useCallback(
     async ({
@@ -76,34 +84,44 @@ export const useApproveFherc20Action = () => {
       }
 
       try {
-        const tx = await writeContractAsync({
+        const txHash = await writeContractAsync({
           address: publicTokenAddress,
           abi: erc20Abi,
           functionName: "approve",
           args: [confidentialTokenAddress, amount],
         });
 
-        toast.success(`${publicTokenSymbol} approved`);
+        const success = await trackTx(txHash, {
+          tokenSymbol: publicTokenSymbol,
+          tokenAmount: amount.toString(),
+          actionType: TransactionActionType.Approve,
+        });
 
-        refetchSingleTokenPairBalances(publicTokenAddress);
+        if (success) {
+          toast.success(`${publicTokenSymbol} approved`);
+          refetchSingleTokenPairBalances(publicTokenAddress);
+        } else {
+          toast.error(`Failed to approve ${publicTokenSymbol}`);
+        }
 
-        return tx;
+        return txHash;
       } catch (error) {
-        console.error("Failed to approve confidential token:", error);
         toast.error("Failed to approve confidential token");
         throw error;
       }
     },
-    [writeContractAsync, chainId],
+    [writeContractAsync, trackTx],
   );
 
   return { onApproveFherc20, isApproving: isPending };
 };
 
+
 export const useEncryptErc20Action = () => {
   const { writeContractAsync, isPending } = useWriteContract();
   const chainId = useChainId();
   const { address: account } = useAccount();
+  const trackTx = useTxLifecycle();
 
   const onEncryptErc20 = useCallback(
     async ({
@@ -128,25 +146,33 @@ export const useEncryptErc20Action = () => {
       }
 
       try {
-        const tx = await writeContractAsync({
+        const txHash = await writeContractAsync({
           address: confidentialTokenAddress,
           abi: confidentialErc20Abi,
           functionName: "encrypt",
           args: [account, amount],
         });
 
-        toast.success(`Encrypted ${publicTokenSymbol}`);
+        const success = await trackTx(txHash, {
+          tokenSymbol: publicTokenSymbol,
+          tokenAmount: amount.toString(),
+          actionType: TransactionActionType.Encrypt,
+        });
 
-        refetchSingleTokenPairBalances(publicTokenAddress);
+        if (success) {
+          toast.success(`Encrypted ${publicTokenSymbol}`);
+          refetchSingleTokenPairBalances(publicTokenAddress);
+        } else {
+          toast.error(`Failed to encrypt ${publicTokenSymbol}`);
+        }
 
-        return tx;
+        return txHash;
       } catch (error) {
-        console.error("Failed to encrypt token:", error);
         toast.error("Failed to encrypt token");
         throw error;
       }
     },
-    [writeContractAsync, chainId, account],
+    [account, writeContractAsync, trackTx],
   );
 
   return { onEncryptErc20, isEncrypting: isPending };
