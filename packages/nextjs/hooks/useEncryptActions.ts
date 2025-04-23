@@ -8,48 +8,6 @@ import { refetchSingleTokenPairBalances, refetchSingleTokenPairData } from "~~/s
 import { TransactionActionType, TransactionStatus, useTransactionStore } from "~~/services/store/transactionStore";
 import { useTxLifecycle } from "./useTxLifecycle";
 
-// Shared helper
-// const useTxLifecycle = () => {
-//   const chainId = useChainId();
-//   const publicClient = usePublicClient();
-//   const addTx = useTransactionStore(s => s.addTransaction);
-//   const updateTx = useTransactionStore(s => s.updateTransactionStatus);
-
-
-//   const trackTx = useCallback(
-//     async (
-//       hash: `0x${string}`,
-//       {
-//         tokenSymbol,
-//         tokenAmount,
-//         actionType,
-//       }: { tokenSymbol: string; tokenAmount: string; actionType: TransactionActionType },
-//     ) => {
-//       addTx({
-//         hash,
-//         tokenSymbol,
-//         tokenAmount,
-//         chainId,
-//         actionType,
-//       });
-
-//       try {
-//         const receipt = await publicClient.waitForTransactionReceipt({ hash });
-//         console.log("receipt", receipt, hash);
-//         updateTx(chainId, hash, receipt.status === "success" ? TransactionStatus.Confirmed : TransactionStatus.Failed);
-//         return receipt.status === "success";
-//       } catch {
-//         updateTx(chainId, hash, TransactionStatus.Failed);
-//         return false;
-//       }
-//     },
-//     [addTx, updateTx, publicClient, chainId],
-//   );
-
-//   return trackTx;
-// };
-
-
 export const useDeployFherc20Action = () => {
   const { writeContractAsync, isPending } = useWriteContract();
   const chainId = useChainId();
