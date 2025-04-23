@@ -534,3 +534,46 @@ html {
 body {
   font-size: 16px;
 }
+
+
+
+/* apply to any overflowing element */
+.styled-scrollbar {
+  overflow: auto;            /* make it scrollable          */
+  scrollbar-gutter: stable;  /* keeps layout from shifting   */
+}
+
+/* ---------- WebKit browsers (Chrome, Edge, Safari) ---------- */
+.styled-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.styled-scrollbar::-webkit-scrollbar-track {
+  background: transparent;   /* invisible track              */
+}
+
+.styled-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;   /* hidden by default            */
+  border-radius: 4px;
+}
+
+/* thumb appears on hover */
+.styled-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(102, 102, 102, 0.5);
+}
+
+/* darker when you hover the thumb itself */
+.styled-scrollbar:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(136, 136, 136, 0.8);
+}
+
+/* ---------- Firefox fallback ---------- */
+.styled-scrollbar {
+  scrollbar-width: thin;               /* thin bar, hidden */
+  scrollbar-color: transparent transparent;
+}
+
+.styled-scrollbar:hover {
+  scrollbar-color: #666 transparent;   /* shows on hover   */
+}
