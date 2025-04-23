@@ -7,21 +7,19 @@ import { useAccount } from "wagmi";
 import { Button } from "~~/components/ui/Button";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 import { truncateAddress } from "~~/lib/common";
-import { useGlobalState } from "~~/services/store/store";
+import { useSetDrawerOpen } from "~~/services/store/drawerStore";
 
 export const Header = () => {
   const { targetNetwork } = useTargetNetwork();
   const isLocalNetwork = targetNetwork.id === hardhat.id;
   const { address, isConnected } = useAccount();
-
-  // Get the toggleDrawer function from global state
-  const toggleDrawer = useGlobalState(state => state.toggleDrawer);
+  const setDrawerOpen = useSetDrawerOpen();
 
   const burgerMenuRef = useRef<HTMLDivElement>(null);
   useOutsideClick(
     burgerMenuRef,
     useCallback(() => {
-      useGlobalState.setState({ isDrawerOpen: false });
+      setDrawerOpen(false);
     }, []),
   );
 
@@ -31,7 +29,12 @@ export const Header = () => {
         <div className="logo" aria-label="Logo" />
       </div>
       <div>
-        <Button variant="surface" className="rounded-md button-shadow" noOutline={true} onClick={toggleDrawer}>
+        <Button
+          variant="surface"
+          className="rounded-md button-shadow"
+          noOutline={true}
+          onClick={() => setDrawerOpen(true)}
+        >
           <Wallet className="w-4 h-4" />
           {isConnected ? truncateAddress(address!) : "Connect Wallet"}
         </Button>

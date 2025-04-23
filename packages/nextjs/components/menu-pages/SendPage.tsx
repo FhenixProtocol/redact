@@ -1,9 +1,10 @@
 import React from "react";
 
-export function SendPage() {
+export function SendPage({ pairAddress }: { pairAddress: string | undefined }) {
   return (
     <div>
       <h1>Send Page</h1>
+      <span>{pairAddress}</span>
     </div>
   );
   // const [switcherValue, setSwitcherValue] = useState(0);

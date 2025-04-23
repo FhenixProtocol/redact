@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 import { useAccount } from "wagmi";
 import { Button } from "~~/components/ui/Button";
 
-export function ReceivePage() {
+export function ReceivePage({ pairAddress }: { pairAddress: string | undefined }) {
   const { address } = useAccount();
   //   const [addressType, setAddressType] = useState<"public" | "confidential">("public");
   const copyToClipboard = async () => {
