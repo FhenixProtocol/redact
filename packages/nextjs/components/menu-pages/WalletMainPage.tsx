@@ -25,6 +25,7 @@ import {
   useConfidentialTokenPairBalances,
   useIsArbitraryToken,
 } from "~~/services/store/tokenStore";
+import { TransactionHistory } from "../TransactionHistory";
 
 /**
  * Main panel that shows the user's balance and has buttons for "Send" or "Receive."
@@ -40,7 +41,8 @@ export function WalletMainPanel({ pushPage }: DrawerChildProps) {
       <TabRow selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
       <Separator />
       <div>
-        <Tokens pushPage={pushPage} />
+        {selectedTab === "tokens" && <Tokens pushPage={pushPage} />}
+        {selectedTab === "history" && <TransactionHistory />}
         {/* <ClaimsList /> */}
       </div>
     </div>

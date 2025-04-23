@@ -1,24 +1,30 @@
 import { formatDistanceToNow } from "date-fns";
+import { formatUnits } from "viem";
 import { useChainId } from "wagmi";
+import { ConfidentialTokenPair, useConfidentialTokenPair } from "~~/services/store/tokenStore";
 import {
   TransactionStatus,
   actionToString,
   statusToString,
   useTransactionStore,
 } from "~~/services/store/transactionStore";
+import { HashLink } from "./HashLink";
 
 interface TransactionHistoryProps {
-  symbol: string | undefined;
+  pair?: ConfidentialTokenPair;
 }
 
-export const TransactionHistory = ({ symbol }: TransactionHistoryProps) => {
+export const TransactionHistory = ({ pair }: TransactionHistoryProps) => {
   const chainId = useChainId();
   const transactionsStore = useTransactionStore();
 
   const transactions =
-    symbol !== undefined
-      ? transactionsStore.getAllTransactionsByToken(chainId, symbol)
+    pair !== undefined
+      ? transactionsStore.getAllTransactionsByToken(chainId, pair.publicToken.address)
       : transactionsStore.getAllTransactions(chainId);
+
+  // Create a Map to store token address => decimals mapping
+  const decimalsSet: { [key: string]: number } = {};
 
   if (!transactions.length) {
     return (
@@ -29,53 +35,56 @@ export const TransactionHistory = ({ symbol }: TransactionHistoryProps) => {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="flex-grow overflow-x-hidden overflow-y-auto w-full max-w-4xl mx-auto styled-scrollbar">
       <div className="space-y-4">
-        {transactions.map(tx => (
-          <div key={tx.hash} className="bg-base-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4">
-              <div className="text-green-500 text-xl">
-                <img
-                  src={`/icons/${actionToString(tx.actionType)}.svg`}
-                  alt={actionToString(tx.actionType)}
-                  className="w-6 h-6"
-                />
-              </div>
-              <div className="flex-grow">
-                <div className="flex flex-col flex-start items-start gap-1">
-                  <div className="font-semibold">{actionToString(tx.actionType)}</div>
+        {transactions.map(tx => {
+          
+          // Get or set decimals for this token
+          // Or we can just add the decimals to the transaction object
+          let decimals = decimalsSet[tx.tokenAddress];
+          if (decimals === undefined) {
+            const tokenPair = useConfidentialTokenPair(tx.tokenAddress);
+            decimals = tokenPair?.publicToken.decimals ?? 18; // fallback to 18 if not found
+            decimalsSet[tx.tokenAddress] = decimals;
+          }
+
+          return (
+            <div key={tx.hash} className="bg-base-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex h-13 gap-4">
+                <div className="text-green-500 text-xl flex items-center">
+                  <img
+                    src={`/icons/${actionToString(tx.actionType)}.svg`}
+                    alt={actionToString(tx.actionType)}
+                    className="w-8 h-8"
+                  />
+                </div>
+
+                <div className="flex flex-col flex-grow justify-between items-stretch">
+                  <div className="text-md font-semibold text-primary self-start mb-auto p-0 m-0">{actionToString(tx.actionType)}</div>
                   <div
-                    className={`text-xs font-medium ${
+                    className={`text-sm font-semibold self-start mt-auto ${
                       tx.status === TransactionStatus.Pending
                         ? "text-yellow-800"
                         : tx.status === TransactionStatus.Confirmed
-                          ? "text-green-800"
-                          : "text-red-800"
+                          ? "text-success-500"
+                          : "text-error"
                     }`}
                   >
                     {statusToString(tx.status)}
                   </div>
-                  <div className="text-xs text-gray-500">{formatDistanceToNow(tx.timestamp, { addSuffix: true })}</div>                  
-                </div>
-                
-              </div>
-              <div className="flex flex-col items-end">
-                <div className="text-sm text-gray-500">
-                    {tx.tokenAmount} {tx.tokenSymbol}
+                  <div className="text-xs text-gray-500">{formatDistanceToNow(tx.timestamp, { addSuffix: true })}</div>
                 </div>
 
-                <a
-                  href={`https://sepolia.etherscan.io/tx/${tx.hash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-1 text-blue-500 hover:text-blue-700"
-                >
-                  ↗️
-                </a>
+                <div className="flex flex-col justify-between items-stretch">
+                  <div className="text-md font-semibold text-primary self-end">
+                    {formatUnits(tx.tokenAmount, decimals)} {tx.tokenSymbol}
+                  </div>
+                  <HashLink className="text-xs text-gray-500" buttonSize={3} copyStrokeWidth={1.0} type="token" hash={tx.hash} copyable />
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

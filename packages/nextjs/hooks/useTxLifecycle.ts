@@ -14,13 +14,15 @@ export const useTxLifecycle = () => {
       {
         tokenSymbol,
         tokenAmount,
+        tokenAddress,
         actionType,
-      }: { tokenSymbol: string; tokenAmount: string; actionType: TransactionActionType },
+      }: { tokenSymbol: string; tokenAmount: bigint; tokenAddress: string; actionType: TransactionActionType },
     ) => {
       addTx({
         hash,
         tokenSymbol,
         tokenAmount,
+        tokenAddress,
         chainId,
         actionType,
       });

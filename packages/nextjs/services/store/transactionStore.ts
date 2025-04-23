@@ -28,7 +28,8 @@ export interface RedactTransaction {
   hash: string;
   status: TransactionStatus;
   tokenSymbol: string;
-  tokenAmount: string; 
+  tokenAmount: bigint; 
+  tokenAddress: string;
   chainId: number;
   actionType: TransactionActionType;
   timestamp: number;
@@ -39,7 +40,7 @@ export interface TransactionStore {
   addTransaction: (transaction: Omit<RedactTransaction, "status" | "timestamp">) => void;
   getTransaction: (chainId: number, hash: string) => RedactTransaction | undefined;
   getAllTransactions: (chainId: number) => RedactTransaction[];
-  getAllTransactionsByToken: (chainId: number, tokenSymbol: string) => RedactTransaction[];
+  getAllTransactionsByToken: (chainId: number, publicTokenAddress: string) => RedactTransaction[];
   updateTransactionStatus: (chainId: number, hash: string, status: TransactionStatus) => void;
 }
 
@@ -112,11 +113,14 @@ export const useTransactionStore = create<TransactionStore>()(
           : [];
       },
 
-      getAllTransactionsByToken: (chainId: number, tokenSymbol: string): RedactTransaction[] => {
+      getAllTransactionsByToken: (chainId: number, tokenAddress: string): RedactTransaction[] => {
         const chainTxs = get().transactions[chainId];
         return chainTxs
           ? Object.values(chainTxs)
-              .filter(tx => tx.tokenSymbol.toLowerCase() === tokenSymbol.toLowerCase())
+              .filter(tx => {
+                if (!tx.tokenAddress || !tokenAddress) return false;
+                return tx.tokenAddress.toLowerCase() === tokenAddress.toLowerCase();
+              })
               .sort((a, b) => b.timestamp - a.timestamp) // newest first
           : [];
       },
