@@ -12,7 +12,8 @@ import { FheTypes } from "cofhejs/web";
 import { MoveDownLeft, MoveUpRight } from "lucide-react";
 import { getConfidentialSymbol } from "~~/lib/common";
 import { useDecryptValue } from "~~/services/store/decrypted";
-import { DrawerPageName, useDrawerPushPage } from "~~/services/store/drawerStore";
+import { DrawerPageName, useDrawerPushPage, useSetDrawerOpen } from "~~/services/store/drawerStore";
+import { useEncryptDecryptSetIsEncrypt, useSelectEncryptDecryptToken } from "~~/services/store/encryptDecrypt";
 import {
   ConfidentialTokenPair,
   ConfidentialTokenPairBalances,
@@ -92,6 +93,15 @@ const TokenBalances = ({
   pair: ConfidentialTokenPair;
   balances: ConfidentialTokenPairBalances;
 }) => {
+  const setIsEncrypt = useEncryptDecryptSetIsEncrypt();
+  const setToken = useSelectEncryptDecryptToken();
+  const setDrawerOpen = useSetDrawerOpen();
+  const handleEncryptDecrypt = (isEncrypt: boolean) => {
+    setIsEncrypt(isEncrypt);
+    setToken(pair.confidentialToken?.address ?? null);
+    setDrawerOpen(false);
+  };
+
   return (
     <div className="flex flex-row items-center w-full bg-primary-foreground rounded-4xl p-4 gap-4">
       <div className="flex flex-col flex-1 gap-2">
@@ -104,7 +114,7 @@ const TokenBalances = ({
           <PublicBalance balance={balances.publicBalance} decimals={pair.publicToken.decimals} className="w-full" />
         </div>
 
-        <Button variant="outline" size="sm" className="w-min">
+        <Button variant="outline" size="sm" className="w-min" onClick={() => handleEncryptDecrypt(true)}>
           ENCRYPT
         </Button>
       </div>
@@ -123,7 +133,13 @@ const TokenBalances = ({
           />
         </div>
 
-        <Button variant="outline" size="sm" className="w-min" disabled={pair.confidentialToken == null}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-min"
+          disabled={pair.confidentialToken == null}
+          onClick={() => handleEncryptDecrypt(false)}
+        >
           DECRYPT
         </Button>
       </div>
