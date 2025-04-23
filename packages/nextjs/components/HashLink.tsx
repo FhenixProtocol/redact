@@ -10,11 +10,15 @@ export const HashLink = ({
   hash,
   className,
   copyable,
+  buttonSize = 4,
+  copyStrokeWidth = 2,
 }: {
   type: HashLinkType;
   hash: string;
   className?: string;
   copyable?: boolean;
+  buttonSize?: number;
+  copyStrokeWidth?: number;
 }) => {
   const { href, ellipsed } = useHashLink(type, hash);
 
@@ -25,14 +29,14 @@ export const HashLink = ({
         className={cn("whitespace-pre font-mono hover:underline text-sm flex flex-row gap-1", className)}
       >
         {ellipsed}
-        <ExternalLinkIcon className="w-4 h-4" />
+        <ExternalLinkIcon className={`w-${buttonSize} h-${buttonSize}`} />
       </Link>
-      {copyable && <CopyButton className="w-4 h-4" address={hash} />}
+      {copyable && <CopyButton copyStrokeWidth={copyStrokeWidth} className={`w-${buttonSize} h-${buttonSize}`} address={hash} />}
     </div>
   );
 };
 
-export const CopyButton = ({ className, address }: { className?: string; address: string }) => {
+export const CopyButton = ({ className, address, copyStrokeWidth }: { className?: string; address: string; copyStrokeWidth?: number }) => {
   const [addressCopied, setAddressCopied] = useState(false);
   return (
     <CopyToClipboard
@@ -48,7 +52,7 @@ export const CopyButton = ({ className, address }: { className?: string; address
         {addressCopied ? (
           <CheckIcon className={className} aria-hidden="true" />
         ) : (
-          <CopyIcon className={className} aria-hidden="true" />
+          <CopyIcon className={className} strokeWidth={copyStrokeWidth} aria-hidden="true" />
         )}
       </button>
     </CopyToClipboard>
