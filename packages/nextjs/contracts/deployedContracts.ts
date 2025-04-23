@@ -2590,6 +2590,13 @@ const deployedContracts = {
           type: "function",
         },
         {
+          inputs: [],
+          name: "claimAllDecrypted",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
           inputs: [
             {
               internalType: "uint256",

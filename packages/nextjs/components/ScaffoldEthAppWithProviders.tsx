@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WalletIcon } from "lucide-react";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { useTheme } from "next-themes";
 import { Toaster } from "react-hot-toast";
@@ -14,6 +15,7 @@ import { Header } from "~~/components/Header";
 import { WalletLister } from "~~/components/WalletConnectorsList";
 import { WalletMainPanel } from "~~/components/menu-pages/WalletMainPage";
 import { BlockieAvatar } from "~~/components/scaffold-eth";
+import { Separator } from "~~/components/ui/Separator";
 import { useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
 import { truncateAddress } from "~~/lib/common";
 import { useGlobalState } from "~~/services/store/store";
@@ -22,7 +24,6 @@ import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
   const { address, isConnected } = useAccount();
-  const [drawerTitle, setDrawerTitle] = useState("Menu");
   const router = useRouter();
 
   // Get drawer state from global state
@@ -32,34 +33,27 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (isConnected) {
-      setDrawerTitle(truncateAddress(address!, 10, 10));
-    } else {
-      setDrawerTitle("Connect Wallet");
-    }
-  }, [isConnected, address]);
-
-  useEffect(() => {
     if (!address) {
       router.push("/");
     }
   }, [address, router]);
 
-  const initialPages: DrawerPage[] = isConnected
-    ? [
-        {
-          id: "wallet-main",
-          title: truncateAddress(address!, 10, 10),
-          component: <WalletMainPanel />,
-        },
-      ]
-    : [
-        {
-          id: "wallet-lister",
-          title: "Connect Wallet",
-          component: <WalletLister />,
-        },
-      ];
+  const initialPages: DrawerPage[] =
+    isConnected && address != null
+      ? [
+          {
+            id: "wallet-main",
+            // header: <DrawerConnectedHeader />,
+            component: <WalletMainPanel />,
+          },
+        ]
+      : [
+          {
+            id: "wallet-lister",
+            title: "Connect Wallet",
+            component: <WalletLister />,
+          },
+        ];
 
   return (
     <>

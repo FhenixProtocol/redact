@@ -1,10 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Button } from "./ui/Button";
+import { Separator } from "./ui/Separator";
+import { ArrowBack, ArrowLeft, Logout } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Settings, X } from "lucide-react";
+import { ChevronLeft, ChevronsLeft, Settings, WalletIcon, X } from "lucide-react";
+import { useAccount, useDisconnect } from "wagmi";
 import { SettingsPage } from "~~/components/menu-pages/SettingsPage";
 import { IconButton } from "~~/components/ui/IconButton";
+import { truncateAddress } from "~~/lib/common";
 import { cn } from "~~/lib/utils";
 
 export interface DrawerChildProps {
@@ -15,7 +20,8 @@ export interface DrawerChildProps {
 /** A single 'page' in the drawer's navigation stack */
 export interface DrawerPage {
   id: string;
-  title: string;
+  title?: string;
+  header?: React.ReactElement;
   component: React.ReactElement<DrawerChildProps>;
 }
 
@@ -42,6 +48,7 @@ export interface DrawerProps {
 const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, initialPages, className }) => {
   // Current stack of pages
   const [pages, setPages] = useState<DrawerPage[]>(initialPages);
+  const [direction, setDirection] = useState<"left" | "right">("right");
 
   // Whenever `isOpen` changes from false→true, reset to the initial pages:
   useEffect(() => {
@@ -53,20 +60,22 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, initialPages, classNam
   /** Push a new page onto the stack */
   function pushPage(page: DrawerPage) {
     setPages(prev => [...prev, page]);
+    setDirection("right");
   }
 
   /** Pop the top page off the stack */
   function popPage() {
     setPages(prev => prev.slice(0, -1));
+    setDirection("left");
   }
 
   const currentPage = pages[pages.length - 1];
 
   // Framer Motion slide animation
   const slideVariants = {
-    enter: { x: "100%" }, // page enters from the right
-    center: { x: 0 }, // page is centered
-    exit: { x: "-100%" }, // page exits to the left
+    enter: { opacity: 0, x: direction === "right" ? "50px" : "-50px" }, // page enters from the right or left
+    center: { opacity: 1, x: 0 }, // page is centered
+    exit: { opacity: 0, x: direction === "left" ? "-50px" : "50px" }, // page exits to the opposite side
   };
 
   return (
@@ -82,16 +91,10 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, initialPages, classNam
       {/* --------------------------
           Header
          -------------------------- */}
-      <div className="p-4 flex items-center relative">
-        <span className="absolute bottom-0 w-[90%]  border-b border-gray-200"></span>
-        {pages.length > 1 ? (
-          // If more than one page, show 'Back' arrow
-          <IconButton icon={ArrowLeft} size="lg" aria-label="Go back" onClick={popPage} />
-        ) : (
-          // Otherwise, show 'Close' (X)
-          <IconButton icon={X} size="lg" aria-label="Close drawer" onClick={onClose} />
-        )}
-        <h2 className="text-lg font-bold ml-2">{currentPage?.title ?? ""}</h2>
+      <div className="p-4 w-full flex items-center justify-between relative">
+        <DrawerConnectedHeader />
+        {currentPage?.title && <h2 className="text-3xl text-primary">{currentPage?.title}</h2>}
+        <IconButton icon={ChevronsLeft} className="text-primary" size="lg" aria-label="Go back" onClick={onClose} />
       </div>
 
       {/* --------------------------
@@ -103,10 +106,10 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, initialPages, classNam
             <motion.div
               key={currentPage.id}
               variants={slideVariants}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="flex-1 overflow-auto p-4"
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="flex-1 overflow-hidden p-4"
             >
               {/**
                * Here is the current page's component. If you need sub-navigation,
@@ -120,24 +123,73 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, initialPages, classNam
           )}
         </AnimatePresence>
       </div>
-      {currentPage?.id !== "settings-page" && (
-        <div className="p-4">
-          <p className="text-sm text-gray-600">
-            <Settings
-              className="cursor-pointer"
-              onClick={() => {
-                pushPage({
-                  id: "settings-page",
-                  title: "Settings",
-                  component: <SettingsPage />,
-                });
-              }}
-            />
-          </p>
-        </div>
-      )}
+
+      <AnimatePresence>
+        {pages.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="p-4 pb-0 w-full"
+          >
+            <Button
+              size="md"
+              iconSize="lg"
+              variant="surface"
+              className="w-full"
+              icon={ArrowBack}
+              onClick={() => popPage()}
+            >
+              Back
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="p-4 flex flex-row justify-between">
+        <SettingsButton pushPage={pushPage} disabled={currentPage?.id === "settings-page"} />
+        <LogoutButton />
+      </div>
     </div>
   );
+};
+
+const DrawerConnectedHeader = () => {
+  const { address, isConnected } = useAccount();
+  if (!isConnected || address == null) return null;
+
+  return (
+    <div className="flex flex-1 items-center justify-between h-full">
+      <div className="flex h-full items-center justify-center">
+        <div className="flex w-12 items-center justify-center">
+          <WalletIcon className="w-4 h-4 text-primary" />
+        </div>
+        <Separator orientation="vertical" />
+      </div>
+      <div className="flex gap-4 items-center justify-center">
+        <WalletIcon className="w-4 h-4 text-primary" />
+        <div className="text-sm text-primary">{truncateAddress(address, 10, 10)}</div>
+      </div>
+    </div>
+  );
+};
+
+const SettingsButton = ({ pushPage, disabled }: { pushPage: (page: DrawerPage) => void; disabled: boolean }) => {
+  return (
+    <Settings
+      className={cn("cursor-pointer text-primary", disabled && "cursor-not-allowed opacity-30")}
+      onClick={() => {
+        pushPage({
+          id: "settings-page",
+          component: <SettingsPage />,
+        });
+      }}
+    />
+  );
+};
+
+const LogoutButton = () => {
+  const { disconnectAsync } = useDisconnect();
+  return <Logout className="cursor-pointer text-primary" onClick={() => disconnectAsync()} />;
 };
 
 export default Drawer;

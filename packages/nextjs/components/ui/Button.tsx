@@ -7,7 +7,7 @@ import { cn } from "~~/lib/utils";
 // Import icon type
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "default" | "surface" | "destructive" | "ghost" | "ghost2";
+  variant?: "default" | "surface" | "destructive" | "ghost" | "ghost2" | "text" | "outline";
   size?: "md" | "xs" | "sm" | "lg";
   icon?: LucideIcon | React.ComponentType | null;
   iconSize?: "md" | "xs" | "sm" | "lg";
@@ -22,6 +22,8 @@ const buttonVariants = {
   surface: "bg-surface hover:bg-button-hover text-primary-accent",
   ghost: "bg-transparent hover:bg-primary-accent/10 text-primary-accent",
   ghost2: "bg-transparent text-primary-accent",
+  text: "bg-transparent text-primary font-normal hover:bg-transparent hover:underline hover:font-semibold",
+  outline: "bg-transparent border-2 border-primary-accent text-primary-accent hover:bg-primary-accent/10",
 };
 
 const sizeVariants = {

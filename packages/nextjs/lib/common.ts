@@ -4,6 +4,7 @@ import { estimateGas, getPublicClient } from "@wagmi/core";
 import { formatEther, parseEther } from "viem";
 import deployedContracts from "~~/contracts/deployedContracts";
 import tokenListData from "~~/public/token-list.json";
+import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 import { Contract, ContractName } from "~~/utils/scaffold-eth/contract";
 
@@ -109,4 +110,9 @@ export const getDeployedContract = <TContractName extends ContractName>(
   }
 
   return deployedContract;
+};
+
+export const getConfidentialSymbol = (pair?: ConfidentialTokenPair) => {
+  if (pair == null) return "TOKEN";
+  return pair?.confidentialToken?.symbol ?? `e${pair?.publicToken.symbol}`;
 };
