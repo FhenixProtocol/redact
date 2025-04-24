@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { HashLink } from "../HashLink";
+import { TransactionHistory } from "../TransactionHistory";
 import { BalanceDisplay } from "../ui/BalanceDisplay";
 import { Button } from "../ui/Button";
 import { DisplayValue } from "../ui/DisplayValue";
@@ -18,7 +19,6 @@ import {
   useConfidentialTokenPair,
   useConfidentialTokenPairBalances,
 } from "~~/services/store/tokenStore";
-import { TransactionHistory } from "../TransactionHistory";
 
 export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) {
   const pair = useConfidentialTokenPair(pairAddress);
@@ -56,7 +56,7 @@ const TokenHeader = ({ pair }: { pair: ConfidentialTokenPair }) => {
           {pair.confidentialToken?.address ? (
             <HashLink type="token" hash={pair.confidentialToken?.address} copyable />
           ) : (
-            <div className="whitespace-pre font-mono text-primary italic text-sm">(not deployed)</div>
+            <div className="whitespace-pre font-reddit-mono text-primary italic text-sm">(not deployed)</div>
           )}
         </div>
       </div>

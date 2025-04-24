@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { TransactionGuide } from "./TransactionGuide";
+import { TxGuideStepState } from "./TransactionGuide";
 import { Spinner } from "./ui/Spinner";
 import { Check } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
@@ -59,6 +61,8 @@ export function MainTokenSwapping() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 justify-center items-start">
+            <EncryptTransactionGuide />
+            {/* <DecryptTransactionGuide /> */}
             <DeployFherc20Button />
             <AllowanceRow />
             <ApproveButton />
@@ -71,6 +75,36 @@ export function MainTokenSwapping() {
     </div>
   );
 }
+
+// TEMP
+
+const EncryptTransactionGuide = () => {
+  const pair = useEncryptDecryptPair();
+
+  const steps = [
+    {
+      title: "Deploy",
+      cta: `Deploy e${pair?.publicToken.symbol}`,
+      hint: "Deploy the confidential token",
+      state: TxGuideStepState.Success,
+    },
+    {
+      title: "Approve",
+      cta: `Approve ${pair?.publicToken.symbol}`,
+      hint: "Approve the confidential token",
+      state: TxGuideStepState.Ready,
+    },
+    {
+      title: "Encrypt",
+      cta: `Encrypt ${pair?.publicToken.symbol}`,
+      hint: "Encrypt the token",
+      state: TxGuideStepState.Ready,
+    },
+  ];
+  return <TransactionGuide steps={steps} />;
+};
+
+// END TEMP
 
 const ConnectOverlay = () => {
   const { isConnected } = useAccount();

@@ -44,7 +44,7 @@ export function TokenSelector({ value, isEncrypt, onChange, className }: TokenSe
     >
       {displayPair ? (
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 flex items-center justify-center overflow-hidden">
+          <div className="w-6 h-6 flex items-center justify-center overflow-hidden -ml-2">
             <TokenIcon token={displayPair.publicToken} />
           </div>
           <span className="font-medium">
@@ -54,7 +54,7 @@ export function TokenSelector({ value, isEncrypt, onChange, className }: TokenSe
           </span>
         </div>
       ) : (
-        <span>Select Token</span>
+        <span>Select</span>
       )}
     </Button>
   );

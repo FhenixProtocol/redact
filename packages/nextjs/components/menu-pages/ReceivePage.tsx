@@ -38,7 +38,7 @@ export function ReceivePage({ pairAddress }: { pairAddress: string | undefined }
             </div>
           </div>
           <div className="flex items-center gap-2 bg-white p-2 rounded-full border border-primary-accent">
-            <p className="text-sm font-mono px-2 text-primary-accent">
+            <p className="text-sm font-reddit-mono px-2 text-primary-accent">
               {address.slice(0, 6)}...{address.slice(-4)}
             </p>
             <Button

@@ -61,7 +61,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={cn(
           // Base classes
-          "cursor-pointer rounded-full font-bold transition-colors",
+          "cursor-pointer rounded-full font-semibold transition-colors font-reddit-mono",
           // Outline classes (conditional)
           !noOutline && "focus:outline-hidden focus:ring-2 focus:ring-offset-2",
           // Layout classes
