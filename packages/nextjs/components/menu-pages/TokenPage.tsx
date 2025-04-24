@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { HashLink } from "../HashLink";
+import { TransactionHistory } from "../TransactionHistory";
 import { BalanceDisplay } from "../ui/BalanceDisplay";
 import { Button } from "../ui/Button";
 import { DisplayValue } from "../ui/DisplayValue";
@@ -12,14 +13,13 @@ import { MoveDownLeft, MoveUpRight } from "lucide-react";
 import { getConfidentialSymbol } from "~~/lib/common";
 import { useDecryptValue } from "~~/services/store/decrypted";
 import { DrawerPageName, useDrawerPushPage, useSetDrawerOpen } from "~~/services/store/drawerStore";
+import { useEncryptDecryptSetIsEncrypt, useSelectEncryptDecryptToken } from "~~/services/store/encryptDecrypt";
 import {
   ConfidentialTokenPair,
   ConfidentialTokenPairBalances,
   useConfidentialTokenPair,
   useConfidentialTokenPairBalances,
 } from "~~/services/store/tokenStore";
-import { TransactionHistory } from "../TransactionHistory";
-import { useEncryptDecryptSetIsEncrypt, useSelectEncryptDecryptToken } from "~~/services/store/encryptDecrypt";
 
 export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) {
   const pair = useConfidentialTokenPair(pairAddress);
@@ -57,7 +57,7 @@ const TokenHeader = ({ pair }: { pair: ConfidentialTokenPair }) => {
           {pair.confidentialToken?.address ? (
             <HashLink type="token" hash={pair.confidentialToken?.address} copyable />
           ) : (
-            <div className="whitespace-pre font-mono text-primary italic text-sm">(not deployed)</div>
+            <div className="whitespace-pre font-reddit-mono text-primary italic text-sm">(not deployed)</div>
           )}
         </div>
       </div>
@@ -133,7 +133,13 @@ const TokenBalances = ({
           />
         </div>
 
-        <Button variant="outline" size="sm" className="w-min" disabled={pair.confidentialToken == null} onClick={() => handleEncryptDecrypt(false)}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-min"
+          disabled={pair.confidentialToken == null}
+          onClick={() => handleEncryptDecrypt(false)}
+        >
           DECRYPT
         </Button>
       </div>

@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { EncryptedBalance } from "./ui/EncryptedValue";
+import { PublicBalance } from "./ui/PublicBalance";
 import { TokenIcon } from "./ui/TokenIcon";
 import { PlusIcon } from "lucide-react";
-import { formatUnits } from "viem";
 import { useChainId } from "wagmi";
 import { Button } from "~~/components/ui/Button";
 import { FnxInput } from "~~/components/ui/FnxInput";
+import { getConfidentialSymbol } from "~~/lib/common";
 import { useGlobalState } from "~~/services/store/store";
 import { ConfidentialTokenPair, useConfidentialTokenPairBalances, useTokenStore } from "~~/services/store/tokenStore";
 
@@ -111,13 +112,8 @@ function TokenListItem({ tokenPair, onSelect }: { tokenPair: ConfidentialTokenPa
   const { publicToken, confidentialToken } = tokenPair;
   const balances = useConfidentialTokenPairBalances(publicToken.address);
 
-  const formattedPublicBalance = useMemo(() => {
-    if (balances?.publicBalance === undefined) return "—";
-    return formatUnits(balances.publicBalance, publicToken.decimals);
-  }, [balances?.publicBalance, publicToken.decimals]);
-
   return (
-    <Button variant="surface" className="p-3 w-full justify-start hover:bg-white/10" onClick={onSelect}>
+    <Button variant="surface" className="p-3 rounded-none w-full justify-start hover:bg-white/10" onClick={onSelect}>
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 flex items-center justify-center overflow-hidden">
@@ -125,16 +121,13 @@ function TokenListItem({ tokenPair, onSelect }: { tokenPair: ConfidentialTokenPa
           </div>
           <div className="flex flex-col">
             <span className="text-primary font-semibold">{publicToken.symbol}</span>
-            <span className="text-sm text-gray-500">{publicToken.name}</span>
+            <span className="text-sm text-gray-500">{getConfidentialSymbol(tokenPair)}</span>
           </div>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-primary font-medium">{formattedPublicBalance}</span>
+          <PublicBalance balance={balances?.publicBalance} decimals={publicToken.decimals} />
           {confidentialToken && (
-            <span className="text-sm text-gray-500">
-              <EncryptedBalance ctHash={balances?.confidentialBalance} decimals={confidentialToken.decimals} />{" "}
-              {confidentialToken.symbol}
-            </span>
+            <EncryptedBalance ctHash={balances?.confidentialBalance} decimals={confidentialToken.decimals} />
           )}
         </div>
       </div>

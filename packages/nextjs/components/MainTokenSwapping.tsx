@@ -1,7 +1,7 @@
+import { useMemo } from "react";
 import Image from "next/image";
-import { Spinner } from "./ui/Spinner";
-import { Check } from "@mui/icons-material";
-import { AnimatePresence, motion } from "framer-motion";
+import { TransactionGuide } from "./TransactionGuide";
+import { TxGuideStepState } from "./TransactionGuide";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatUnits } from "viem";
@@ -12,18 +12,17 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~~/compone
 import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { useCofhe } from "~~/hooks/useCofhe";
-import { useDecryptFherc20Action } from "~~/hooks/useDecryptActions";
+import { useClaimFherc20Action, useDecryptFherc20Action } from "~~/hooks/useDecryptActions";
 import { useApproveFherc20Action, useDeployFherc20Action, useEncryptErc20Action } from "~~/hooks/useEncryptActions";
+import { getConfidentialSymbol } from "~~/lib/common";
 import {
   useEncryptDecryptBalances,
-  useEncryptDecryptFormattedAllowance,
   useEncryptDecryptInputValue,
   useEncryptDecryptIsEncrypt,
   useEncryptDecryptPair,
   useEncryptDecryptPercentValue,
   useEncryptDecryptRawInputValue,
   useEncryptDecryptRequiresApproval,
-  useEncryptDecryptRequiresDeployment,
   useEncryptDecryptSetIsEncrypt,
   useEncryptDecryptValueError,
   useSelectEncryptDecryptToken,
@@ -59,12 +58,8 @@ export function MainTokenSwapping() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 justify-center items-start">
-            <DeployFherc20Button />
-            <AllowanceRow />
-            <ApproveButton />
-            <EncryptButton />
-
-            <DecryptButton />
+            {isEncrypt && <EncryptTransactionGuide />}
+            {!isEncrypt && <DecryptTransactionGuide />}
           </CardFooter>
         </Card>
       </div>
@@ -189,25 +184,18 @@ const AmountErrorRow = () => {
   const valueError = useEncryptDecryptValueError();
 
   return (
-    <AnimatePresence>
-      {valueError != null && (
-        <motion.div
-          key="error"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="w-full flex flex-row gap-2 items-center justify-end mt-6"
-        >
-          <div className="text-sm text-destructive italic ml-4">{valueError}</div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className="w-full flex flex-row gap-2 items-start justify-end mt-6 min-h-6">
+      <div className="text-sm text-destructive italic ml-4">{valueError}</div>
+    </div>
   );
 };
 
-const DeployFherc20Button = () => {
-  const isEncrypt = useEncryptDecryptIsEncrypt();
+const EncryptTransactionGuide = () => {
   const pair = useEncryptDecryptPair();
+  const valueError = useEncryptDecryptValueError();
+
+  // Deploy
+
   const { onDeployFherc20, isDeploying } = useDeployFherc20Action();
 
   const handleDeploy = () => {
@@ -215,67 +203,17 @@ const DeployFherc20Button = () => {
     onDeployFherc20({ tokenAddress: pair.publicToken.address, publicTokenSymbol: pair.publicToken.symbol });
   };
 
-  return (
-    <AnimatePresence>
-      {isEncrypt && pair != null && pair.confidentialTokenDeployed === false && (
-        <motion.div
-          key="deploy"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="w-full flex flex-col gap-2"
-        >
-          <div className="text-sm text-theme-black italic text-left ml-4">
-            The confidential token <b>e{pair.publicToken.symbol}</b> has not been deployed yet and requires deployment
-            before you can encrypt your <b>{pair.publicToken.symbol}</b> balance.
-          </div>
-          <div className="flex flex-row gap-2 items-center">
-            <div className="text-sm text-theme-black">0.</div>
-            <Button
-              className="w-full"
-              icon={isDeploying ? Spinner : Check}
-              onClick={handleDeploy}
-              disabled={isDeploying}
-            >
-              {isDeploying ? "Deploying..." : `Deploy e${pair?.publicToken.symbol}`}
-            </Button>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
+  const deployState = useMemo(() => {
+    if (pair == null) return TxGuideStepState.Ready;
+    if (pair.confidentialTokenDeployed) return TxGuideStepState.Success;
+    if (isDeploying) return TxGuideStepState.Loading;
+    return TxGuideStepState.Ready;
+  }, [pair, isDeploying]);
 
-const AllowanceRow = () => {
-  const isEncrypt = useEncryptDecryptIsEncrypt();
-  const allowance = useEncryptDecryptFormattedAllowance();
+  // Approve
 
-  return (
-    <AnimatePresence>
-      {isEncrypt && (
-        <motion.div
-          key="allowance"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="w-full flex flex-col gap-2 justify-center"
-        >
-          <div className="flex flex-row gap-2 justify-between items-center mx-4">
-            <div className="text-sm text-theme-black">Allowance:</div>
-            <div className="text-sm text-theme-black">{allowance}</div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
-
-const ApproveButton = () => {
-  const pair = useEncryptDecryptPair();
   const rawInputValue = useEncryptDecryptRawInputValue();
-  const valueError = useEncryptDecryptValueError();
   const requiresApproval = useEncryptDecryptRequiresApproval();
-  const requiresDeployment = useEncryptDecryptRequiresDeployment();
   const { onApproveFherc20, isApproving } = useApproveFherc20Action();
 
   const handleApprove = () => {
@@ -295,40 +233,15 @@ const ApproveButton = () => {
     });
   };
 
-  return (
-    <AnimatePresence>
-      {requiresApproval && (
-        <motion.div
-          key="approve-button"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="w-full flex flex-row gap-2 items-center"
-        >
-          <div className="text-sm text-theme-black">1.</div>
-          <Button
-            className="w-full"
-            icon={Check}
-            onClick={handleApprove}
-            disabled={valueError != null || isApproving || requiresDeployment}
-          >
-            {isApproving
-              ? "Approving..."
-              : `Approve ${pair?.publicToken.symbol != null ? pair?.publicToken.symbol : ""}`}
-          </Button>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
+  const approveState = useMemo(() => {
+    if (pair == null) return TxGuideStepState.Ready;
+    if (!requiresApproval) return TxGuideStepState.Success;
+    if (isApproving) return TxGuideStepState.Loading;
+    return TxGuideStepState.Ready;
+  }, [pair, isApproving, requiresApproval]);
 
-const EncryptButton = () => {
-  const isEncrypt = useEncryptDecryptIsEncrypt();
-  const pair = useEncryptDecryptPair();
-  const rawInputValue = useEncryptDecryptRawInputValue();
-  const valueError = useEncryptDecryptValueError();
-  const requiresDeployment = useEncryptDecryptRequiresDeployment();
-  const requiresApproval = useEncryptDecryptRequiresApproval();
+  // Encrypt
+
   const { onEncryptErc20, isEncrypting } = useEncryptErc20Action();
 
   const handleEncrypt = () => {
@@ -348,37 +261,55 @@ const EncryptButton = () => {
     });
   };
 
-  return (
-    <AnimatePresence>
-      {isEncrypt && (
-        <motion.div
-          key="encrypt-button"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="w-full flex flex-row gap-2 items-center"
-        >
-          {requiresApproval && <div className="text-sm text-theme-black">2.</div>}
-          <Button
-            className="w-full"
-            icon={EyeOff}
-            onClick={handleEncrypt}
-            disabled={valueError != null || isEncrypting || requiresDeployment || requiresApproval}
-          >
-            {isEncrypting ? "Encrypting..." : "Encrypt"}
-          </Button>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+  const encryptState = useMemo(() => {
+    if (isEncrypting) return TxGuideStepState.Loading;
+    return TxGuideStepState.Ready;
+  }, [isEncrypting]);
+
+  // Steps
+
+  const steps = [
+    {
+      title: "Deploy",
+      cta: pair == null ? "Select a token" : `DEPLOY e${pair?.publicToken.symbol}`,
+      hint: "Deploy the confidential token",
+      state: deployState,
+      action: handleDeploy,
+      disabled: pair == null || isDeploying,
+    },
+    {
+      title: "Approve",
+      cta: pair == null ? "Select a token" : `APPROVE ${pair?.publicToken.symbol}`,
+      hint: "Approve the confidential token",
+      state: approveState,
+      action: handleApprove,
+      disabled: pair == null || valueError != null || isApproving,
+    },
+    {
+      title: "Encrypt",
+      cta: pair == null ? "Select a token" : `ENCRYPT ${pair?.publicToken.symbol}`,
+      hint: "Encrypt the token",
+      state: encryptState,
+      action: handleEncrypt,
+      disabled: pair == null || valueError != null || requiresApproval || isEncrypting,
+    },
+  ];
+  return <TransactionGuide title="Encryption steps:" steps={steps} />;
 };
 
-const DecryptButton = () => {
-  const isEncrypt = useEncryptDecryptIsEncrypt();
-  const { onDecryptFherc20, isDecrypting } = useDecryptFherc20Action();
+const DecryptTransactionGuide = () => {
   const pair = useEncryptDecryptPair();
-  const rawInputValue = useEncryptDecryptRawInputValue();
   const valueError = useEncryptDecryptValueError();
+  const rawInputValue = useEncryptDecryptRawInputValue();
+
+  // Decrypt
+
+  const { onDecryptFherc20, isDecrypting } = useDecryptFherc20Action();
+  const decryptState = useMemo(() => {
+    // TODO: Add more states
+    if (isDecrypting) return TxGuideStepState.Loading;
+    return TxGuideStepState.Ready;
+  }, [isDecrypting]);
 
   const handleDecrypt = () => {
     if (pair == null) {
@@ -397,21 +328,50 @@ const DecryptButton = () => {
     });
   };
 
-  return (
-    <AnimatePresence>
-      {!isEncrypt && (
-        <motion.div
-          key="decrypt-button"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="w-full flex flex-row gap-2 items-center"
-        >
-          <Button className="w-full" icon={Eye} onClick={handleDecrypt} disabled={valueError != null || isDecrypting}>
-            {isDecrypting ? "Decrypting..." : "Decrypt"}
-          </Button>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+  // Wait for decryption
+
+  // TODO: state = loading if any claim pending, state = success if all claims ready
+  // TODO: state = ready if no claims in list
+  const waitForDecryptState = TxGuideStepState.Ready;
+
+  // Claim
+
+  const { onClaimFherc20, isClaiming } = useClaimFherc20Action();
+  const claimState = useMemo(() => {
+    // TODO: Add more states
+    if (isClaiming) return TxGuideStepState.Loading;
+    return TxGuideStepState.Ready;
+  }, [isClaiming]);
+
+  const handleClaim = () => {
+    console.log("Claim");
+  };
+
+  // Steps
+
+  const steps = [
+    {
+      title: "Decrypt",
+      cta: pair == null ? "Select a token" : `DECRYPT ${getConfidentialSymbol(pair)}`,
+      hint: "Decrypt the token",
+      state: decryptState,
+      action: handleDecrypt,
+      disabled: pair == null || isDecrypting,
+    },
+    {
+      title: "Wait for Decryption",
+      cta: pair == null ? "Select a token" : `WAIT FOR DECRYPTION`,
+      hint: "Wait for the token to be decrypted",
+      state: waitForDecryptState,
+    },
+    {
+      title: "Claim",
+      cta: pair == null ? "Select a token" : `CLAIM ${getConfidentialSymbol(pair)}`,
+      hint: "Claim the token",
+      state: claimState,
+      action: handleClaim,
+      disabled: pair == null || valueError != null || isClaiming,
+    },
+  ];
+  return <TransactionGuide title="Decryption steps:" steps={steps} />;
 };

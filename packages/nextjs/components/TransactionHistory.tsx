@@ -1,3 +1,4 @@
+import { HashLink } from "./HashLink";
 import { formatDistanceToNow } from "date-fns";
 import { formatUnits } from "viem";
 import { useChainId } from "wagmi";
@@ -8,7 +9,6 @@ import {
   statusToString,
   useTransactionStore,
 } from "~~/services/store/transactionStore";
-import { HashLink } from "./HashLink";
 
 interface TransactionHistoryProps {
   pair?: ConfidentialTokenPair;
@@ -38,7 +38,6 @@ export const TransactionHistory = ({ pair }: TransactionHistoryProps) => {
     <div className="flex-grow overflow-x-hidden overflow-y-auto w-full max-w-4xl mx-auto styled-scrollbar">
       <div className="space-y-4">
         {transactions.map(tx => {
-          
           // Get or set decimals for this token
           // Or we can just add the decimals to the transaction object
           let decimals = decimalsSet[tx.tokenAddress];
@@ -60,7 +59,9 @@ export const TransactionHistory = ({ pair }: TransactionHistoryProps) => {
                 </div>
 
                 <div className="flex flex-col flex-grow justify-between items-stretch">
-                  <div className="text-md font-semibold text-primary self-start mb-auto p-0 m-0">{actionToString(tx.actionType)}</div>
+                  <div className="text-md font-semibold text-primary self-start mb-auto p-0 m-0">
+                    {actionToString(tx.actionType)}
+                  </div>
                   <div
                     className={`text-sm font-semibold self-start mt-auto ${
                       tx.status === TransactionStatus.Pending
@@ -79,7 +80,14 @@ export const TransactionHistory = ({ pair }: TransactionHistoryProps) => {
                   <div className="text-md font-semibold text-primary self-end">
                     {formatUnits(tx.tokenAmount, decimals)} {tx.tokenSymbol}
                   </div>
-                  <HashLink className="text-xs text-gray-500" buttonSize={3} copyStrokeWidth={1.0} type="token" hash={tx.hash} copyable />
+                  <HashLink
+                    className="text-xs text-gray-500"
+                    buttonSize={3}
+                    copyStrokeWidth={1.0}
+                    type="token"
+                    hash={tx.hash}
+                    copyable
+                  />
                 </div>
               </div>
             </div>

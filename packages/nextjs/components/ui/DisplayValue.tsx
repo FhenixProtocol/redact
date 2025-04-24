@@ -31,7 +31,7 @@ export function DisplayValue({
       )}
     >
       {icon}
-      <span className={cn("min-w-24 text-right font-mono whitespace-pre", left && "text-left")}>
+      <span className={cn("min-w-24 text-right font-reddit-mono whitespace-pre", left && "text-left")}>
         {displayWithPrefix}
       </span>
     </div>

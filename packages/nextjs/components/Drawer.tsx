@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { CopyButton } from "./HashLink";
 import { ConnectPage } from "./menu-pages/ConnectPage";
 import { WalletMainPanel } from "./menu-pages/MainPage";
 import { ReceivePage } from "./menu-pages/ReceivePage";
@@ -168,6 +169,7 @@ const DrawerConnectedHeader = () => {
       <div className="flex gap-4 items-center justify-center">
         <WalletIcon className="w-4 h-4 text-primary" />
         <div className="text-sm text-primary">{truncateAddress(address ?? zeroAddress, 10, 10)}</div>
+        <CopyButton address={address ?? zeroAddress} className="w-4 h-4" />
       </div>
     </div>
   );

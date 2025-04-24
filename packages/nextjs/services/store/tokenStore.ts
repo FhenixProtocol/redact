@@ -477,7 +477,7 @@ export const _fetchTokenPairsData = async (
 
 export const fetchTokenPairsData = async () => {
   const chain = await getChainId();
-  const erc20Addresses = Object.keys(useTokenStore.getState().arbitraryTokens[chain]);
+  const erc20Addresses = Object.keys(useTokenStore.getState().arbitraryTokens?.[chain] ?? {});
   const pairs = await _fetchTokenPairsData(chain, erc20Addresses);
   useTokenStore.setState(state => {
     _addPairsToStore(state, chain, pairs);
