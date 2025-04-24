@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Button } from "./ui/Button";
-import { Circle, CircleCheck, CircleDot, CircleX, LoaderCircle } from "lucide-react";
+import { Circle, CircleAlert, CircleCheck, CircleDot, CircleX, LoaderCircle } from "lucide-react";
 import { cn } from "~~/lib/utils";
 
 export enum TxGuideStepState {
@@ -17,20 +17,26 @@ type TxGuideStep = {
   action?: () => void;
   state: TxGuideStepState;
   errorMessage?: string;
+  disabled?: boolean;
 };
 
 type TxGuideProps = {
+  title: string;
   steps: TxGuideStep[];
 };
 
-export const TransactionGuide: React.FC<TxGuideProps> = ({ steps }) => {
+export const TransactionGuide: React.FC<TxGuideProps> = ({ title, steps }) => {
   const activeStepIndex = useMemo(() => {
     return steps.findIndex(step => step.state !== TxGuideStepState.Success);
   }, [steps]);
 
   return (
     <div className="flex flex-col gap-2 bg-primary-foreground rounded-4xl p-4 w-full">
-      <div className="flex flex-row gap-2 p-4 pt-6 justify-around items-center">
+      <div className="flex flex-row justify-start items-center gap-2 text-primary">
+        <CircleAlert />
+        <span className="font-semibold">{title}</span>
+      </div>
+      <div className="flex flex-row gap-2 p-4 pt-8 justify-around items-center">
         {steps.map((step, index) => (
           <React.Fragment key={index}>
             <TxGuideStep step={step} stepIndex={index} activeStepIndex={activeStepIndex} />
@@ -45,7 +51,9 @@ export const TransactionGuide: React.FC<TxGuideProps> = ({ steps }) => {
           </React.Fragment>
         ))}
       </div>
-      <ActionButton step={steps[activeStepIndex]} />
+      <div className="flex flex-row justify-start items-center">
+        <ActionButton step={steps[activeStepIndex]} />
+      </div>
     </div>
   );
 };
@@ -74,7 +82,7 @@ const getStepColor = (state: TxGuideStepState, isActive: boolean) => {
     case TxGuideStepState.Error:
       return "text-destructive";
     case TxGuideStepState.Loading:
-      return "text-warning";
+      return "text-warning-500";
     case TxGuideStepState.Ready:
       return isActive ? "text-primary-accent" : "text-primary";
   }
@@ -124,15 +132,17 @@ const TxGuideStepCircleIcon = ({
   const Icon = getStepIcon(state, isActive);
   const color = getStepColor(state, isActive);
 
-  return <Icon className={cn(color)} />;
+  const loading = state === TxGuideStepState.Loading;
+
+  return <Icon className={cn(color, loading && "animate-spin")} />;
 };
 
 const ActionButton = ({ step }: { step?: TxGuideStep }) => {
-  const disabled = step == null || step.action == null;
+  const disabled = step == null || step.action == null || step.disabled;
   const text = step?.cta ?? step?.title ?? "";
   return (
-    <Button variant={disabled ? "ghost" : "default"} size="md" disabled={disabled}>
-      {text.toUpperCase()}
+    <Button variant={disabled ? "ghost" : "default"} size="md" disabled={disabled} onClick={step?.action}>
+      {text}
     </Button>
   );
 };
