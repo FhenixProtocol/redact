@@ -268,12 +268,17 @@ export const useRefetchPendingClaims = () => {
   const { address: account } = useAccount();
   const pendingClaims = usePendingClaims();
   const { refresh } = useRefresh(10000);
+  const lastFetchTime = useRef<number>(0);
 
   useEffect(() => {
     if (pendingClaims.length === 0) return;
     if (account == null) return;
 
+    const now = Date.now();
+    if (now - lastFetchTime.current < 10_000) return; // Prevent refetching too frequently
+
     const fetchAndStoreClaims = async () => {
+      lastFetchTime.current = now;
       const refetchedClaimsMap = await _refetchPendingClaims(pendingClaims);
       useClaimStore.setState(state => {
         _addClaimsToStore(state, chain, refetchedClaimsMap);
