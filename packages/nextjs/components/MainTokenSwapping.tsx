@@ -2,9 +2,6 @@ import { useMemo } from "react";
 import Image from "next/image";
 import { TransactionGuide } from "./TransactionGuide";
 import { TxGuideStepState } from "./TransactionGuide";
-import { Spinner } from "./ui/Spinner";
-import { Check } from "@mui/icons-material";
-import { AnimatePresence, motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatUnits } from "viem";
@@ -15,18 +12,17 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~~/compone
 import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { useCofhe } from "~~/hooks/useCofhe";
-import { useDecryptFherc20Action } from "~~/hooks/useDecryptActions";
+import { useClaimFherc20Action, useDecryptFherc20Action } from "~~/hooks/useDecryptActions";
 import { useApproveFherc20Action, useDeployFherc20Action, useEncryptErc20Action } from "~~/hooks/useEncryptActions";
+import { getConfidentialSymbol } from "~~/lib/common";
 import {
   useEncryptDecryptBalances,
-  useEncryptDecryptFormattedAllowance,
   useEncryptDecryptInputValue,
   useEncryptDecryptIsEncrypt,
   useEncryptDecryptPair,
   useEncryptDecryptPercentValue,
   useEncryptDecryptRawInputValue,
   useEncryptDecryptRequiresApproval,
-  useEncryptDecryptRequiresDeployment,
   useEncryptDecryptSetIsEncrypt,
   useEncryptDecryptValueError,
   useSelectEncryptDecryptToken,
@@ -62,14 +58,8 @@ export function MainTokenSwapping() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 justify-center items-start">
-            <EncryptTransactionGuide />
-            {/* <DecryptTransactionGuide /> */}
-            {/* <DeployFherc20Button />
-            <AllowanceRow />
-            <ApproveButton />
-            <EncryptButton />
-
-            <DecryptButton /> */}
+            {isEncrypt && <EncryptTransactionGuide />}
+            {!isEncrypt && <DecryptTransactionGuide />}
           </CardFooter>
         </Card>
       </div>
@@ -307,12 +297,19 @@ const EncryptTransactionGuide = () => {
   return <TransactionGuide title="Encryption steps:" steps={steps} />;
 };
 
-const DecryptButton = () => {
-  const isEncrypt = useEncryptDecryptIsEncrypt();
-  const { onDecryptFherc20, isDecrypting } = useDecryptFherc20Action();
+const DecryptTransactionGuide = () => {
   const pair = useEncryptDecryptPair();
-  const rawInputValue = useEncryptDecryptRawInputValue();
   const valueError = useEncryptDecryptValueError();
+  const rawInputValue = useEncryptDecryptRawInputValue();
+
+  // Decrypt
+
+  const { onDecryptFherc20, isDecrypting } = useDecryptFherc20Action();
+  const decryptState = useMemo(() => {
+    // TODO: Add more states
+    if (isDecrypting) return TxGuideStepState.Loading;
+    return TxGuideStepState.Ready;
+  }, [isDecrypting]);
 
   const handleDecrypt = () => {
     if (pair == null) {
@@ -331,21 +328,50 @@ const DecryptButton = () => {
     });
   };
 
-  return (
-    <AnimatePresence>
-      {!isEncrypt && (
-        <motion.div
-          key="decrypt-button"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="w-full flex flex-row gap-2 items-center"
-        >
-          <Button className="w-full" icon={Eye} onClick={handleDecrypt} disabled={valueError != null || isDecrypting}>
-            {isDecrypting ? "Decrypting..." : "Decrypt"}
-          </Button>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+  // Wait for decryption
+
+  // TODO: state = loading if any claim pending, state = success if all claims ready
+  // TODO: state = ready if no claims in list
+  const waitForDecryptState = TxGuideStepState.Ready;
+
+  // Claim
+
+  const { onClaimFherc20, isClaiming } = useClaimFherc20Action();
+  const claimState = useMemo(() => {
+    // TODO: Add more states
+    if (isClaiming) return TxGuideStepState.Loading;
+    return TxGuideStepState.Ready;
+  }, [isClaiming]);
+
+  const handleClaim = () => {
+    console.log("Claim");
+  };
+
+  // Steps
+
+  const steps = [
+    {
+      title: "Decrypt",
+      cta: pair == null ? "Select a token" : `DECRYPT ${getConfidentialSymbol(pair)}`,
+      hint: "Decrypt the token",
+      state: decryptState,
+      action: handleDecrypt,
+      disabled: pair == null || isDecrypting,
+    },
+    {
+      title: "Wait for Decryption",
+      cta: pair == null ? "Select a token" : `WAIT FOR DECRYPTION`,
+      hint: "Wait for the token to be decrypted",
+      state: waitForDecryptState,
+    },
+    {
+      title: "Claim",
+      cta: pair == null ? "Select a token" : `CLAIM ${getConfidentialSymbol(pair)}`,
+      hint: "Claim the token",
+      state: claimState,
+      action: handleClaim,
+      disabled: pair == null || valueError != null || isClaiming,
+    },
+  ];
+  return <TransactionGuide title="Decryption steps:" steps={steps} />;
 };
