@@ -31,12 +31,22 @@ export const HashLink = ({
         {ellipsed}
         <ExternalLinkIcon className={`w-${buttonSize} h-${buttonSize}`} />
       </Link>
-      {copyable && <CopyButton copyStrokeWidth={copyStrokeWidth} className={`w-${buttonSize} h-${buttonSize}`} address={hash} />}
+      {copyable && (
+        <CopyButton copyStrokeWidth={copyStrokeWidth} className={`w-${buttonSize} h-${buttonSize}`} address={hash} />
+      )}
     </div>
   );
 };
 
-export const CopyButton = ({ className, address, copyStrokeWidth }: { className?: string; address: string; copyStrokeWidth?: number }) => {
+export const CopyButton = ({
+  className,
+  address,
+  copyStrokeWidth,
+}: {
+  className?: string;
+  address: string;
+  copyStrokeWidth?: number;
+}) => {
   const [addressCopied, setAddressCopied] = useState(false);
   return (
     <CopyToClipboard
