@@ -1,17 +1,18 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import { useTxLifecycle } from "./useTxLifecycle";
 import toast from "react-hot-toast";
 import { Address, erc20Abi } from "viem";
-import { useAccount, useChainId, usePublicClient, useWriteContract } from "wagmi";
+import { useAccount, useChainId, useWriteContract } from "wagmi";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { refetchSingleTokenPairBalances, refetchSingleTokenPairData } from "~~/services/store/tokenStore";
-import { TransactionActionType, TransactionStatus, useTransactionStore } from "~~/services/store/transactionStore";
-import { useTxLifecycle } from "./useTxLifecycle";
+import { TransactionActionType } from "~~/services/store/transactionStore";
 
 export const useDeployFherc20Action = () => {
-  const { writeContractAsync, isPending } = useWriteContract();
+  const { writeContractAsync } = useWriteContract();
   const chainId = useChainId();
   const trackTx = useTxLifecycle();
+  const [isPending, setIsPending] = useState(false);
 
   const onDeployFherc20 = useCallback(
     async ({ tokenAddress, publicTokenSymbol }: { tokenAddress: Address; publicTokenSymbol: string }) => {
@@ -27,6 +28,7 @@ export const useDeployFherc20Action = () => {
       }
 
       try {
+        setIsPending(true);
         const txHash = await writeContractAsync({
           address: redactCoreContract.address as Address,
           abi: redactCoreContract.abi,
@@ -41,6 +43,8 @@ export const useDeployFherc20Action = () => {
           actionType: TransactionActionType.Deploy,
         });
 
+        setIsPending(false);
+
         if (success) {
           toast.success(`e${publicTokenSymbol} deployed`);
           refetchSingleTokenPairData(tokenAddress);
@@ -51,6 +55,7 @@ export const useDeployFherc20Action = () => {
 
         return txHash;
       } catch (error) {
+        setIsPending(false);
         toast.error("Failed to deploy confidential token");
         throw error;
       }
@@ -61,11 +66,10 @@ export const useDeployFherc20Action = () => {
   return { onDeployFherc20, isDeploying: isPending };
 };
 
-
 export const useApproveFherc20Action = () => {
-  const { writeContractAsync, isPending } = useWriteContract();
-  const chainId = useChainId();
+  const { writeContractAsync } = useWriteContract();
   const trackTx = useTxLifecycle();
+  const [isPending, setIsPending] = useState(false);
 
   const onApproveFherc20 = useCallback(
     async ({
@@ -85,6 +89,7 @@ export const useApproveFherc20Action = () => {
       }
 
       try {
+        setIsPending(true);
         const txHash = await writeContractAsync({
           address: publicTokenAddress,
           abi: erc20Abi,
@@ -98,6 +103,7 @@ export const useApproveFherc20Action = () => {
           tokenAmount: amount,
           actionType: TransactionActionType.Approve,
         });
+        setIsPending(false);
 
         if (success) {
           toast.success(`${publicTokenSymbol} approved`);
@@ -108,6 +114,7 @@ export const useApproveFherc20Action = () => {
 
         return txHash;
       } catch (error) {
+        setIsPending(false);
         toast.error("Failed to approve confidential token");
         throw error;
       }
@@ -118,10 +125,9 @@ export const useApproveFherc20Action = () => {
   return { onApproveFherc20, isApproving: isPending };
 };
 
-
 export const useEncryptErc20Action = () => {
-  const { writeContractAsync, isPending } = useWriteContract();
-  const chainId = useChainId();
+  const { writeContractAsync } = useWriteContract();
+  const [isPending, setIsPending] = useState(false);
   const { address: account } = useAccount();
   const trackTx = useTxLifecycle();
 
@@ -148,6 +154,7 @@ export const useEncryptErc20Action = () => {
       }
 
       try {
+        setIsPending(true);
         const txHash = await writeContractAsync({
           address: confidentialTokenAddress,
           abi: confidentialErc20Abi,
@@ -161,7 +168,7 @@ export const useEncryptErc20Action = () => {
           tokenAmount: amount,
           actionType: TransactionActionType.Encrypt,
         });
-
+        setIsPending(false);
         if (success) {
           toast.success(`Encrypted ${publicTokenSymbol}`);
           refetchSingleTokenPairBalances(publicTokenAddress);
@@ -171,6 +178,7 @@ export const useEncryptErc20Action = () => {
 
         return txHash;
       } catch (error) {
+        setIsPending(false);
         toast.error("Failed to encrypt token");
         throw error;
       }
