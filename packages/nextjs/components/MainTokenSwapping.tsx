@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { TransactionGuide } from "./TransactionGuide";
 import { TxGuideStepState } from "./TransactionGuide";
@@ -198,6 +198,48 @@ const EncryptTransactionGuide = () => {
     return TxGuideStepState.Ready;
   }, [pair, isDeploying]);
 
+  // Encrypt
+
+  const { onEncryptErc20, isEncrypting } = useEncryptErc20Action();
+
+  const handleEncrypt = () => {
+    if (pair == null) {
+      toast.error("No token selected");
+      return;
+    }
+    if (pair.confidentialToken == null) {
+      toast.error("No confidential token deployed");
+      return;
+    }
+    onEncryptErc20({
+      publicTokenSymbol: pair.publicToken.symbol,
+      publicTokenAddress: pair.publicToken.address,
+      confidentialTokenAddress: pair.confidentialToken.address,
+      amount: rawInputValue,
+    });
+  };
+
+  const [encryptState, setEncryptState] = useState<TxGuideStepState>(TxGuideStepState.Ready);
+  const prevEncrypting = useRef(isEncrypting);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    if (isEncrypting) {
+      // went to “true” → immediately show Loading
+      setEncryptState(TxGuideStepState.Loading);
+    } else if (prevEncrypting.current) {
+      // transition **true → false** → show Success, then Ready after 5 s
+      setEncryptState(TxGuideStepState.Success);
+      timer = setTimeout(() => setEncryptState(TxGuideStepState.Ready), 5_000);
+    }
+    // update ref for next run
+    prevEncrypting.current = isEncrypting;
+
+    // cleanup if the component unmounts or `isEncrypting` flips again
+    return () => timer && clearTimeout(timer);
+  }, [isEncrypting]);
+
   // Approve
 
   const rawInputValue = useEncryptDecryptRawInputValue();
@@ -226,36 +268,14 @@ const EncryptTransactionGuide = () => {
 
   const approveState = useMemo(() => {
     if (pair == null) return TxGuideStepState.Ready;
-    if (!requiresApproval) return TxGuideStepState.Success;
+    if (encryptState === TxGuideStepState.Success || encryptState === TxGuideStepState.Loading)
+      return TxGuideStepState.Success;
+
     if (isApproving) return TxGuideStepState.Loading;
+    if (!requiresApproval) return TxGuideStepState.Success;
+
     return TxGuideStepState.Ready;
-  }, [pair, isApproving, requiresApproval]);
-
-  // Encrypt
-
-  const { onEncryptErc20, isEncrypting } = useEncryptErc20Action();
-
-  const handleEncrypt = () => {
-    if (pair == null) {
-      toast.error("No token selected");
-      return;
-    }
-    if (pair.confidentialToken == null) {
-      toast.error("No confidential token deployed");
-      return;
-    }
-    onEncryptErc20({
-      publicTokenSymbol: pair.publicToken.symbol,
-      publicTokenAddress: pair.publicToken.address,
-      confidentialTokenAddress: pair.confidentialToken.address,
-      amount: rawInputValue,
-    });
-  };
-
-  const encryptState = useMemo(() => {
-    if (isEncrypting) return TxGuideStepState.Loading;
-    return TxGuideStepState.Ready;
-  }, [isEncrypting]);
+  }, [pair, isApproving, requiresApproval, encryptState]);
 
   // ERRS
 
