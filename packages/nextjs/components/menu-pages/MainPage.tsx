@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import { TransactionHistory } from "../TransactionHistory";
+import { CleartextBalance } from "../ui/CleartextBalance";
 import { DisplayValue } from "../ui/DisplayValue";
 import { EncryptedBalance } from "../ui/EncryptedValue";
-import { PublicBalance } from "../ui/PublicBalance";
 import { TokenIcon } from "../ui/TokenIcon";
 import { Luggage, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
 import { formatUnits } from "viem";
@@ -146,7 +146,7 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
         </div>
       </div>
       <div className="flex flex-col items-end">
-        <PublicBalance balance={balances.publicBalance} decimals={pair.publicToken.decimals} />
+        <CleartextBalance balance={balances.publicBalance} decimals={pair.publicToken.decimals} />
         {pair.confidentialTokenDeployed ? (
           <EncryptedBalance
             ctHash={balances.confidentialBalance}
