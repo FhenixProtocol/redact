@@ -12,6 +12,7 @@ import { ArrowBack } from "@mui/icons-material";
 import { FheTypes } from "cofhejs/web";
 import { MoveDownLeft, MoveUpRight, X } from "lucide-react";
 import { getConfidentialSymbol } from "~~/lib/common";
+import { usePairClaims } from "~~/services/store/claim";
 import { useDecryptValue } from "~~/services/store/decrypted";
 import {
   DrawerPageName,
@@ -45,6 +46,7 @@ export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) 
       <TokenHeader pair={pair} />
       <TokenTotalBalance pair={pair} balances={balances} />
       <TokenBalances pair={pair} balances={balances} />
+      <TokenClaim pair={pair} />
       <TokenSendReceive pair={pair} />
       <TokenHistory pair={pair} />
     </div>
@@ -153,6 +155,11 @@ const TokenBalances = ({
       </div>
     </div>
   );
+};
+
+const TokenClaim = ({ pair }: { pair: ConfidentialTokenPair }) => {
+  const pairClaims = usePairClaims(pair.publicToken.address);
+  return <div>Claim</div>;
 };
 
 const TokenSendReceive = ({ pair }: { pair: ConfidentialTokenPair }) => {

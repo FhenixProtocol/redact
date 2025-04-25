@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { wagmiConfig } from "../web3/wagmiConfig";
 import { superjsonStorage } from "./superjsonStorage";
-import { useConfidentialAddressPairs, useConfidentialTokenPairAddresses, useTokenStore } from "./tokenStore";
+import { useConfidentialAddressPairs, useDeepEqual } from "./tokenStore";
 import { WritableDraft } from "immer";
 import { Address } from "viem";
-import { deepEqual, useAccount, useChainId, usePublicClient } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { getAccount, getPublicClient } from "wagmi/actions";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -112,6 +112,7 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
 };
 
 const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
+  console.log("REFETCHING PENDING CLAIMS", { pendingClaims });
   const publicClient = getPublicClient(wagmiConfig);
 
   const results = await publicClient?.multicall({
@@ -203,14 +204,45 @@ const usePendingClaims = () => {
 
   return useMemo(() => {
     return Object.values(claims ?? {}).flatMap(claims => Object.values(claims).filter(claim => !claim.decrypted));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claims, account]);
+};
+
+export const usePairClaims = (pairAddress?: Address) => {
+  const chain = useChainId();
+  const { address: account } = useAccount();
+
+  return useClaimStore(
+    useDeepEqual(state => {
+      if (account == null || pairAddress == null) return null;
+      const claims = state.claims[chain]?.[pairAddress];
+
+      // Collect the total requested amount, decrypted amount, and pending amount for the pair
+      return Object.values(claims ?? {}).reduce(
+        (acc, claim) => {
+          if (claim.claimed) return acc;
+
+          const totalRequestedAmount = acc.totalRequestedAmount + claim.requestedAmount;
+          const totalDecryptedAmount = acc.totalDecryptedAmount + (claim.decrypted ? claim.decryptedAmount : 0n);
+          const totalPendingAmount = acc.totalPendingAmount + (claim.decrypted ? 0n : claim.requestedAmount);
+
+          return {
+            totalRequestedAmount,
+            totalDecryptedAmount,
+            totalPendingAmount,
+          };
+        },
+        { totalRequestedAmount: 0n, totalDecryptedAmount: 0n, totalPendingAmount: 0n },
+      );
+    }),
+  );
 };
 
 export const useRefetchPendingClaims = () => {
   const chain = useChainId();
   const { address: account } = useAccount();
   const pendingClaims = usePendingClaims();
-  const { refresh } = useRefresh(5000);
+  const { refresh } = useRefresh(10000);
 
   useEffect(() => {
     if (pendingClaims.length === 0) return;
@@ -224,7 +256,7 @@ export const useRefetchPendingClaims = () => {
     };
 
     fetchAndStoreClaims();
-  }, [pendingClaims, refresh]);
+  }, [account, chain, pendingClaims, refresh]);
 };
 
 export const useAllClaims = () => {
