@@ -159,7 +159,22 @@ const TokenBalances = ({
 
 const TokenClaim = ({ pair }: { pair: ConfidentialTokenPair }) => {
   const pairClaims = usePairClaims(pair.publicToken.address);
-  return <div>Claim</div>;
+
+  if (pairClaims == null || pairClaims.totalRequestedAmount === 0n) return null;
+
+  return (
+    <div className="flex flex-row items-center w-full bg-primary-foreground rounded-4xl p-4 gap-4">
+      <div className="flex flex-col flex-1 gap-2">
+        <span className="text-primary font-semibold">Requested: {pairClaims.totalRequestedAmount}</span>
+        <span className="text-primary font-semibold">Decrypted: {pairClaims.totalDecryptedAmount}</span>
+        <span className="text-primary font-semibold">Pending: {pairClaims.totalPendingAmount}</span>
+      </div>
+
+      <Button variant="default" size="md" className="w-min" onClick={() => console.log("CLAIM ALL")}>
+        CLAIM
+      </Button>
+    </div>
+  );
 };
 
 const TokenSendReceive = ({ pair }: { pair: ConfidentialTokenPair }) => {
