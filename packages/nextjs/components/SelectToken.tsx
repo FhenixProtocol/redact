@@ -117,7 +117,7 @@ function TokenListItem({ tokenPair, onSelect }: { tokenPair: ConfidentialTokenPa
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 flex items-center justify-center overflow-hidden">
-            <TokenIcon token={publicToken} />
+            <TokenIcon publicToken={publicToken} />
           </div>
           <div className="flex flex-col">
             <span className="text-primary font-semibold">{publicToken.symbol}</span>

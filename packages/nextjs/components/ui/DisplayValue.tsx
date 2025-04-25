@@ -1,3 +1,4 @@
+import React from "react";
 import { cn } from "~~/lib/utils";
 
 export type DisplayValueProps = {
@@ -15,20 +16,24 @@ export function DisplayValue({
   icon,
   className,
   left,
-}: DisplayValueProps & { value: string }) {
+  children,
+}: DisplayValueProps & { value: string; children?: React.ReactNode }) {
   return (
     <div
       className={cn(
-        "flex flex-row items-center justify-between gap-1 border-2 border-transparent px-1 py-0 font-semibold text-primary",
+        "flex flex-row items-center justify-between gap-1 border-2 border-transparent px-1 py-0 font-semibold text-primary relative",
         className,
       )}
     >
-      {icon}
-      <span className={cn("text-right font-reddit-mono whitespace-pre self-end", left && "text-left self-start")}>
-        {prefix}
-        {value}
-        {suffix}
-      </span>
+      {children}
+      <div className="flex flex-row items-center justify-between w-full z-0">
+        {icon}
+        <span className={cn("text-right font-reddit-mono whitespace-pre self-end", left && "text-left self-start")}>
+          {prefix}
+          {value}
+          {suffix}
+        </span>
+      </div>
     </div>
   );
 }

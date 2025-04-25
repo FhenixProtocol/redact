@@ -1,5 +1,6 @@
 import { DisplayBalance } from "./DisplayBalance";
 import { Eye } from "lucide-react";
+import { cn } from "~~/lib/utils";
 
 export function CleartextBalance({
   balance,
@@ -16,7 +17,7 @@ export function CleartextBalance({
     <DisplayBalance
       balance={balance}
       decimals={decimals}
-      className={className}
+      className={cn("min-w-24", className)}
       icon={<Eye className="w-5 h-5" />}
       left={left}
     />

@@ -139,7 +139,7 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
       }}
     >
       <div className="flex flex-row gap-2 items-center">
-        <TokenIcon token={pair.publicToken} />
+        <TokenIcon publicToken={pair.publicToken} />
         <div className="flex flex-col items-start">
           <DisplayValue value={pair.publicToken.symbol} left />
           <DisplayValue value={pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`} left />

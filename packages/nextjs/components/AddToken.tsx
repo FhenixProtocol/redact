@@ -1,7 +1,6 @@
-import React, { useMemo, useState } from "react";
-import Image from "next/image";
+import React, { useState } from "react";
 import { EncryptedBalance } from "./ui/EncryptedValue";
-import { TokenIcon } from "./ui/TokenIcon";
+import { TokenIconSymbol } from "./ui/TokenIconSymbol";
 import { ClearOutlined } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlusIcon, TriangleAlert } from "lucide-react";
@@ -10,7 +9,6 @@ import { formatUnits, isAddress } from "viem";
 import { Button } from "~~/components/ui/Button";
 import { FnxInput } from "~~/components/ui/FnxInput";
 import { Spinner } from "~~/components/ui/Spinner";
-import { getTokenLogo } from "~~/lib/tokenUtils";
 import {
   ConfidentialTokenPairWithBalances,
   TokenItemData,
@@ -149,10 +147,7 @@ export const PublicTokenDetails = ({
           transition={{ duration: 0.2 }}
           className="flex flex-row border-1 border-primary-accent rounded-lg p-2 items-center gap-4 min-h-20"
         >
-          <div className="flex items-center justify-start rounded-full p-2 pr-4 bg-button-hover gap-2 min-w-28">
-            <TokenIcon token={tokenDetails} />
-            <div className="text-primary-accent font-semibold font-reddit-mono">{symbol}</div>
-          </div>
+          <TokenIconSymbol publicToken={tokenDetails} className="text-primary-accent bg-button-hover" />
           <div className="flex flex-col flex-1 gap-2">
             <span className="text-primary font-semibold font-reddit-mono">{name}</span>
             <div className="flex flex-row justify-between gap-4 text-sm text-gray-500">
@@ -199,10 +194,12 @@ export const ConfidentialTokenDetails = ({
           transition={{ duration: 0.2 }}
           className="flex flex-row border-1 border-primary-accent rounded-lg p-2 items-center gap-4 min-h-20"
         >
-          <div className="flex items-center justify-start rounded-full p-2 pr-4 bg-button-hover gap-2 min-w-28">
-            <TokenIcon token={confidentialTokenDetails} confidential={true} />
-            <div className="text-primary-accent font-semibold font-reddit-mono">{confidentialSymbol}</div>
-          </div>
+          <TokenIconSymbol
+            publicToken={publicTokenDetails}
+            confidentialToken={confidentialTokenDetails}
+            isConfidential={true}
+            className="text-primary-accent bg-button-hover"
+          />
           {requiresDeployment && (
             <div className="flex flex-col flex-1 gap-2 text-sm text-primary">
               <b>Does not exist.</b>

@@ -60,7 +60,7 @@ export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) 
 const TokenHeader = ({ pair }: { pair: ConfidentialTokenPair }) => {
   return (
     <div className="flex flex-row items-center gap-4">
-      <TokenIcon token={pair.publicToken} size={36} />
+      <TokenIcon publicToken={pair.publicToken} size={36} />
       <div className="flex flex-col flex-1">
         <div className="flex flex-row gap-2 items-center justify-between">
           <div className="text-lg text-primary">{pair?.publicToken.symbol}</div>
@@ -119,10 +119,7 @@ const TokenBalancesRow = ({
   return (
     <div className="flex flex-row items-center w-full bg-primary-foreground rounded-4xl p-4 gap-4">
       <div className="flex flex-col flex-1 gap-2">
-        <div className="flex flex-row gap-1">
-          <TokenIcon token={pair.publicToken} size={24} />
-          <DisplayValue value={pair.publicToken.symbol} left />
-        </div>
+        <TokenIconSymbol publicToken={pair.publicToken} />
 
         <div className="flex flex-row justify-between text-primary items-center">
           <CleartextBalance balance={balances.publicBalance} decimals={pair.publicToken.decimals} className="w-full" />
@@ -134,10 +131,7 @@ const TokenBalancesRow = ({
       </div>
       <Separator orientation="vertical" />
       <div className="flex flex-col flex-1 gap-2">
-        <div className="flex flex-row gap-1">
-          <TokenIcon token={pair.confidentialToken} size={24} confidential />
-          <DisplayValue value={getConfidentialSymbol(pair)} left />
-        </div>
+        <TokenIconSymbol publicToken={pair.publicToken} confidentialToken={pair.confidentialToken} isConfidential />
 
         <div className="flex flex-row justify-end">
           <EncryptedBalance
@@ -201,7 +195,7 @@ const TokenClaimRow = ({ pair }: { pair: ConfidentialTokenPair }) => {
         </div>
 
         <div className="flex flex-row gap-2 justify-between items-center">
-          <TokenIconSymbol token={pair.publicToken} />
+          <TokenIconSymbol publicToken={pair.publicToken} />
 
           <div className="flex flex-row gap-2 items-center justify-center">
             {isPending && (
