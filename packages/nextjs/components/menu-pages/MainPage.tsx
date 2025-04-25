@@ -6,7 +6,7 @@ import { DisplayValue } from "../ui/DisplayValue";
 import { EncryptedBalance } from "../ui/EncryptedValue";
 import { PublicBalance } from "../ui/PublicBalance";
 import { TokenIcon } from "../ui/TokenIcon";
-import { Luggage, MoveDownLeft, MoveUpRight, Plus, PlusIcon } from "lucide-react";
+import { Luggage, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
 import { formatUnits } from "viem";
 import { Button } from "~~/components/ui/Button";
 import { Separator } from "~~/components/ui/Separator";
