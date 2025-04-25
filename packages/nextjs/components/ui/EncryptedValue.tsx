@@ -29,9 +29,8 @@ export function EncryptedValue<T extends FheTypes>({
     <DisplayValue
       value={display}
       icon={<EyeOff className="w-5 h-5" />}
-      padding={10}
       className={cn(
-        "border-primary bg-primary text-primary-foreground",
+        "border-primary bg-primary text-primary-foreground min-w-24",
         decryptedValue != null && "bg-transparent text-primary",
         className,
       )}
