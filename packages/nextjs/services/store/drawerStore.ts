@@ -31,6 +31,18 @@ const useDrawerStore = create<DrawerStore>()(
   })),
 );
 
+// Actions
+
+export const setDrawerPairAddress = (pairAddress: string | undefined) => {
+  useDrawerStore.setState(state => {
+    const stackPage = state.stack[state.stack.length - 1];
+    if (stackPage == null) return;
+    stackPage.pairAddress = pairAddress;
+  });
+};
+
+// Hooks
+
 const useDrawerStack = () => {
   return useDrawerStore(state => state.stack);
 };
@@ -52,6 +64,11 @@ export const useDrawerPage = (): DrawerPage => {
     if (stackPage == null) return { page: DrawerPageName.Main, pairAddress: undefined };
     return stackPage;
   }, [isConnected, account, stackPage]);
+};
+
+export const useDrawerPairAddress = () => {
+  const stackPage = useDrawerStackPage();
+  return stackPage?.pairAddress;
 };
 
 export const useSetDrawerOpen = () => {

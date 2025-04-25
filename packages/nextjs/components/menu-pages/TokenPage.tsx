@@ -25,6 +25,7 @@ import {
   useSetDrawerOpen,
 } from "~~/services/store/drawerStore";
 import { useEncryptDecryptSetIsEncrypt, useSelectEncryptDecryptToken } from "~~/services/store/encryptDecrypt";
+import { useSelectSendToken } from "~~/services/store/sendStore";
 import {
   ConfidentialTokenPair,
   ConfidentialTokenPairBalances,
@@ -225,6 +226,7 @@ const TokenClaimRow = ({ pair }: { pair: ConfidentialTokenPair }) => {
 
 const TokenSendReceiveRow = ({ pair }: { pair: ConfidentialTokenPair }) => {
   const pushPage = useDrawerPushPage();
+  const selectSendToken = useSelectSendToken();
 
   return (
     <div className="flex gap-4 w-full">
@@ -234,7 +236,9 @@ const TokenSendReceiveRow = ({ pair }: { pair: ConfidentialTokenPair }) => {
         size="lg"
         iconSize="lg"
         icon={MoveUpRight}
-        onClick={() => pushPage({ page: DrawerPageName.Send, pairAddress: pair.publicToken.address })}
+        onClick={() => {
+          pushPage({ page: DrawerPageName.Send, pairAddress: pair.publicToken.address });
+        }}
       >
         SEND
       </Button>

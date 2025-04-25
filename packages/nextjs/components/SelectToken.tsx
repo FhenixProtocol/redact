@@ -74,7 +74,7 @@ export function SelectToken({ onSelectTokenPair, onClose }: SelectTokenProps) {
         value={searchQuery}
         onChange={handleSearchChange}
         className="w-full"
-        fadeEnd={true}
+        fades={true}
       />
 
       {/* Token list */}
