@@ -147,7 +147,7 @@ export const PublicTokenDetails = ({
           transition={{ duration: 0.2 }}
           className="flex flex-row border-1 border-primary-accent rounded-lg p-2 items-center gap-4 min-h-20"
         >
-          <TokenIconSymbol publicToken={tokenDetails} className="text-primary-accent bg-button-hover" />
+          <TokenIconSymbol publicToken={tokenDetails} className="text-primary-accent bg-button-hover p-1.5 pr-3" />
           <div className="flex flex-col flex-1 gap-2">
             <span className="text-primary font-semibold font-reddit-mono">{name}</span>
             <div className="flex flex-row justify-between gap-4 text-sm text-gray-500">
@@ -198,7 +198,7 @@ export const ConfidentialTokenDetails = ({
             publicToken={publicTokenDetails}
             confidentialToken={confidentialTokenDetails}
             isConfidential={true}
-            className="text-primary-accent bg-button-hover"
+            className="text-primary-accent bg-button-hover p-1.5 pr-3"
           />
           {requiresDeployment && (
             <div className="flex flex-col flex-1 gap-2 text-sm text-primary">
