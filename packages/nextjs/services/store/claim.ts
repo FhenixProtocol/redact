@@ -176,6 +176,31 @@ export const removeClaimedClaim = async (claim: ClaimWithAddresses) => {
   });
 };
 
+export const removePairClaimableClaims = async (pairAddress: Address) => {
+  const chain = await getChainId();
+  const { address: account } = await getAccount(wagmiConfig);
+
+  if (chain == null) return;
+  if (account == null) return;
+
+  useClaimStore.setState(state => {
+    console.log("Removing pair claimable claims", { pairAddress, chain, chainClaims: state.claims[chain] });
+    if (state.claims[chain]?.[pairAddress] == null) return;
+
+    Object.keys(state.claims[chain][pairAddress]).forEach(ctHash => {
+      const claim = state.claims[chain][pairAddress][ctHash];
+
+      // Dont remove claims that are pending
+      if (!claim.decrypted) return;
+
+      console.log("Actually removing claim", { ctHash, claim });
+
+      // Delete the claim
+      delete state.claims[chain][pairAddress][ctHash];
+    });
+  });
+};
+
 // HOOKS
 
 export const useClaimFetcher = () => {
