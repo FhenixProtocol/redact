@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
+import { CleartextBalance } from "./ui/CleartextBalance";
 import { EncryptedBalance } from "./ui/EncryptedValue";
-import { PublicBalance } from "./ui/PublicBalance";
 import { TokenIcon } from "./ui/TokenIcon";
 import { PlusIcon } from "lucide-react";
 import { useChainId } from "wagmi";
@@ -125,7 +125,7 @@ function TokenListItem({ tokenPair, onSelect }: { tokenPair: ConfidentialTokenPa
           </div>
         </div>
         <div className="flex flex-col items-end">
-          <PublicBalance balance={balances?.publicBalance} decimals={publicToken.decimals} />
+          <CleartextBalance balance={balances?.publicBalance} decimals={publicToken.decimals} />
           {confidentialToken && (
             <EncryptedBalance ctHash={balances?.confidentialBalance} decimals={confidentialToken.decimals} />
           )}
