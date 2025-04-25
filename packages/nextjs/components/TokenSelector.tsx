@@ -1,18 +1,11 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { TokenIcon } from "./ui/TokenIcon";
-import { PlusIcon } from "lucide-react";
-import { useChainId } from "wagmi";
+import React from "react";
+import { TokenIconSymbol } from "./ui/TokenIconSymbol";
 import { Button } from "~~/components/ui/Button";
 import { cn } from "~~/lib/utils";
 import { useGlobalState } from "~~/services/store/store";
-import {
-  ConfidentialTokenPair,
-  useConfidentialTokenPair,
-  useDefaultConfidentialTokenPair,
-  useTokenStore,
-} from "~~/services/store/tokenStore";
+import { ConfidentialTokenPair, useConfidentialTokenPair } from "~~/services/store/tokenStore";
 
 interface TokenSelectorProps {
   value?: string; // Token address
@@ -22,9 +15,8 @@ interface TokenSelectorProps {
 }
 
 export function TokenSelector({ value, isEncrypt, onChange, className }: TokenSelectorProps) {
-  const { setSelectTokenModalOpen, setAddTokenModalOpen } = useGlobalState();
+  const { setSelectTokenModalOpen } = useGlobalState();
   const valuePair = useConfidentialTokenPair(value);
-  // const firstPair = useDefaultConfidentialTokenPair();
 
   const displayPair = valuePair;
 
@@ -39,22 +31,23 @@ export function TokenSelector({ value, isEncrypt, onChange, className }: TokenSe
   return (
     <Button
       variant="surface"
-      className={cn("rounded-[20px] border-none bg-gray-200 text-primary-accent px-4 py-2 h-auto", className)}
+      className={cn("rounded-[20px] border-none bg-gray-200 text-primary-accent p-1.5 pr-3 h-auto", className)}
       onClick={handleOpenModal}
     >
       {displayPair ? (
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 flex items-center justify-center overflow-hidden -ml-2">
-            <TokenIcon token={displayPair.publicToken} />
-          </div>
-          <span className="font-medium">
-            {isEncrypt
-              ? displayPair.publicToken?.symbol
-              : (displayPair.confidentialToken?.symbol ?? `e${displayPair.publicToken?.symbol}`)}
-          </span>
+          <TokenIconSymbol
+            publicToken={displayPair.publicToken}
+            confidentialToken={displayPair.confidentialToken}
+            isConfidential={!isEncrypt}
+            className="text-primary-accent"
+          />
         </div>
       ) : (
-        <span>Select</span>
+        <>
+          <div className="w-7 h-7 bg-primary-accent rounded-full" />
+          <span>SELECT</span>
+        </>
       )}
     </Button>
   );

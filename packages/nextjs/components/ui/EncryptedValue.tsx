@@ -25,17 +25,22 @@ export function EncryptedValue<T extends FheTypes>({
     return transform(decryptedValue);
   }, [ctHash, transform, decryptedValue]);
 
+  console.log({ decryptedValue });
+
   return (
     <DisplayValue
       value={display}
       icon={<EyeOff className="w-5 h-5" />}
-      padding={10}
       className={cn(
-        "border-primary bg-primary text-primary-foreground",
-        decryptedValue != null && "bg-transparent text-primary",
+        "border-primary text-primary min-w-32",
+        decryptedValue == null && "text-primary-foreground",
         className,
       )}
-    />
+    >
+      <div
+        className={cn("absolute right-0 h-full bg-primary transition-all", decryptedValue == null ? "w-full" : "w-0")}
+      />
+    </DisplayValue>
   );
 }
 

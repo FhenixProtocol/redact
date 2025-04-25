@@ -11,7 +11,7 @@ interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function Spinner({ size = 24, color = "currentColor", className = "", ...props }: SpinnerProps) {
   // Calculate stroke width based on size
-  const strokeWidth = Math.max(2, Math.round(size / 8));
+  const strokeWidth = 2; // Math.max(2, Math.round(size / 8));
 
   // Calculate appropriate radius
   const radius = Math.max(5, size / 2 - strokeWidth * 2);

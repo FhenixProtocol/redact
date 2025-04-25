@@ -630,6 +630,13 @@ const confidentialErc20Abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "claimAllDecrypted",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "uint256",

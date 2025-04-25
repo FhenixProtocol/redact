@@ -1,7 +1,8 @@
-import { BalanceDisplay } from "./BalanceDisplay";
+import { DisplayBalance } from "./DisplayBalance";
 import { Eye } from "lucide-react";
+import { cn } from "~~/lib/utils";
 
-export function PublicBalance({
+export function CleartextBalance({
   balance,
   decimals = 18,
   className,
@@ -13,10 +14,10 @@ export function PublicBalance({
   left?: boolean;
 }) {
   return (
-    <BalanceDisplay
+    <DisplayBalance
       balance={balance}
       decimals={decimals}
-      className={className}
+      className={cn("min-w-32", className)}
       icon={<Eye className="w-5 h-5" />}
       left={left}
     />

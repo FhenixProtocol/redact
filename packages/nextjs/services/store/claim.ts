@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { wagmiConfig } from "../web3/wagmiConfig";
 import { superjsonStorage } from "./superjsonStorage";
-import { useConfidentialAddressPairs, useConfidentialTokenPairAddresses, useTokenStore } from "./tokenStore";
+import { useConfidentialAddressPairs, useDeepEqual } from "./tokenStore";
 import { WritableDraft } from "immer";
 import { Address } from "viem";
-import { deepEqual, useAccount, useChainId, usePublicClient } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { getAccount, getPublicClient } from "wagmi/actions";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -112,6 +112,7 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
 };
 
 const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
+  console.log("REFETCHING PENDING CLAIMS", { pendingClaims });
   const publicClient = getPublicClient(wagmiConfig);
 
   const results = await publicClient?.multicall({
@@ -175,6 +176,31 @@ export const removeClaimedClaim = async (claim: ClaimWithAddresses) => {
   });
 };
 
+export const removePairClaimableClaims = async (pairAddress: Address) => {
+  const chain = await getChainId();
+  const { address: account } = await getAccount(wagmiConfig);
+
+  if (chain == null) return;
+  if (account == null) return;
+
+  useClaimStore.setState(state => {
+    console.log("Removing pair claimable claims", { pairAddress, chain, chainClaims: state.claims[chain] });
+    if (state.claims[chain]?.[pairAddress] == null) return;
+
+    Object.keys(state.claims[chain][pairAddress]).forEach(ctHash => {
+      const claim = state.claims[chain][pairAddress][ctHash];
+
+      // Dont remove claims that are pending
+      if (!claim.decrypted) return;
+
+      console.log("Actually removing claim", { ctHash, claim });
+
+      // Delete the claim
+      delete state.claims[chain][pairAddress][ctHash];
+    });
+  });
+};
+
 // HOOKS
 
 export const useClaimFetcher = () => {
@@ -203,14 +229,45 @@ const usePendingClaims = () => {
 
   return useMemo(() => {
     return Object.values(claims ?? {}).flatMap(claims => Object.values(claims).filter(claim => !claim.decrypted));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claims, account]);
+};
+
+export const usePairClaims = (pairAddress?: Address) => {
+  const chain = useChainId();
+  const { address: account } = useAccount();
+
+  return useClaimStore(
+    useDeepEqual(state => {
+      if (account == null || pairAddress == null) return null;
+      const claims = state.claims[chain]?.[pairAddress];
+
+      // Collect the total requested amount, decrypted amount, and pending amount for the pair
+      return Object.values(claims ?? {}).reduce(
+        (acc, claim) => {
+          if (claim.claimed) return acc;
+
+          const totalRequestedAmount = acc.totalRequestedAmount + claim.requestedAmount;
+          const totalDecryptedAmount = acc.totalDecryptedAmount + (claim.decrypted ? claim.decryptedAmount : 0n);
+          const totalPendingAmount = acc.totalPendingAmount + (claim.decrypted ? 0n : claim.requestedAmount);
+
+          return {
+            totalRequestedAmount,
+            totalDecryptedAmount,
+            totalPendingAmount,
+          };
+        },
+        { totalRequestedAmount: 0n, totalDecryptedAmount: 0n, totalPendingAmount: 0n },
+      );
+    }),
+  );
 };
 
 export const useRefetchPendingClaims = () => {
   const chain = useChainId();
   const { address: account } = useAccount();
   const pendingClaims = usePendingClaims();
-  const { refresh } = useRefresh(5000);
+  const { refresh } = useRefresh(10000);
 
   useEffect(() => {
     if (pendingClaims.length === 0) return;
@@ -224,7 +281,7 @@ export const useRefetchPendingClaims = () => {
     };
 
     fetchAndStoreClaims();
-  }, [pendingClaims, refresh]);
+  }, [account, chain, pendingClaims, refresh]);
 };
 
 export const useAllClaims = () => {

@@ -51,8 +51,9 @@ export const TransactionGuide: React.FC<TxGuideProps> = ({ title, steps }) => {
           </React.Fragment>
         ))}
       </div>
-      <div className="flex flex-row justify-start items-center">
+      <div className="flex flex-row gap-2 justify-between items-center">
         <ActionButton step={steps[activeStepIndex]} />
+        <ActiveStepHintOrError step={steps[activeStepIndex]} />
       </div>
     </div>
   );
@@ -141,8 +142,35 @@ const ActionButton = ({ step }: { step?: TxGuideStep }) => {
   const disabled = step == null || step.action == null || step.disabled;
   const text = step?.cta ?? step?.title ?? "";
   return (
-    <Button variant={disabled ? "ghost" : "default"} size="md" disabled={disabled} onClick={step?.action}>
+    <Button
+      className="text-nowrap"
+      variant={disabled ? "ghost" : "default"}
+      size="md"
+      disabled={disabled}
+      onClick={step?.action}
+    >
       {text}
     </Button>
+  );
+};
+
+const breakOnNewlines = (text?: string) => {
+  if (text == null) return null;
+  return text.split("\n").map((line, index) => (
+    <React.Fragment key={index}>
+      {line}
+      <br />
+    </React.Fragment>
+  ));
+};
+
+const ActiveStepHintOrError = ({ step }: { step?: TxGuideStep }) => {
+  return (
+    <div className="flex flex-col items-end justify-center min-h-10 text-right text-sm font-reddit-mono italic">
+      {step?.errorMessage && <span className="text-destructive">{breakOnNewlines(step?.errorMessage)}</span>}
+      {step?.errorMessage == null && step?.hint && (
+        <span className="text-primary-accent">{breakOnNewlines(step?.hint)}</span>
+      )}
+    </div>
   );
 };

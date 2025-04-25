@@ -1,24 +1,37 @@
 import React, { useMemo } from "react";
 import { HashLink } from "../HashLink";
 import { TransactionHistory } from "../TransactionHistory";
-import { BalanceDisplay } from "../ui/BalanceDisplay";
 import { Button } from "../ui/Button";
+import { CleartextBalance } from "../ui/CleartextBalance";
+import { DisplayBalance } from "../ui/DisplayBalance";
 import { DisplayValue } from "../ui/DisplayValue";
 import { EncryptedBalance } from "../ui/EncryptedValue";
-import { PublicBalance } from "../ui/PublicBalance";
 import { Separator } from "../ui/Separator";
+import { Spinner } from "../ui/Spinner";
 import { TokenIcon } from "../ui/TokenIcon";
+import { TokenIconSymbol } from "../ui/TokenIconSymbol";
+import { ArrowBack } from "@mui/icons-material";
 import { FheTypes } from "cofhejs/web";
-import { MoveDownLeft, MoveUpRight } from "lucide-react";
+import { MoveDownLeft, MoveUpRight, X } from "lucide-react";
+import toast from "react-hot-toast";
+import { useClaimAllAction } from "~~/hooks/useDecryptActions";
 import { getConfidentialSymbol } from "~~/lib/common";
+import { usePairClaims } from "~~/services/store/claim";
 import { useDecryptValue } from "~~/services/store/decrypted";
-import { DrawerPageName, useDrawerPushPage, useSetDrawerOpen } from "~~/services/store/drawerStore";
+import {
+  DrawerPageName,
+  useDrawerBackButtonAction,
+  useDrawerPushPage,
+  useSetDrawerOpen,
+} from "~~/services/store/drawerStore";
 import { useEncryptDecryptSetIsEncrypt, useSelectEncryptDecryptToken } from "~~/services/store/encryptDecrypt";
 import {
   ConfidentialTokenPair,
   ConfidentialTokenPairBalances,
   useConfidentialTokenPair,
   useConfidentialTokenPairBalances,
+  useIsArbitraryToken,
+  useRemoveArbitraryToken,
 } from "~~/services/store/tokenStore";
 
 export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) {
@@ -35,9 +48,10 @@ export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) 
   return (
     <div className="flex flex-col gap-6 h-full">
       <TokenHeader pair={pair} />
-      <TokenTotalBalance pair={pair} balances={balances} />
-      <TokenBalances pair={pair} balances={balances} />
-      <TokenSendReceive pair={pair} />
+      <TokenTotalBalanceRow pair={pair} balances={balances} />
+      <TokenBalancesRow pair={pair} balances={balances} />
+      <TokenClaimRow pair={pair} />
+      <TokenSendReceiveRow pair={pair} />
       <TokenHistory pair={pair} />
     </div>
   );
@@ -46,7 +60,7 @@ export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) 
 const TokenHeader = ({ pair }: { pair: ConfidentialTokenPair }) => {
   return (
     <div className="flex flex-row items-center gap-4">
-      <TokenIcon token={pair.publicToken} size={36} />
+      <TokenIcon publicToken={pair.publicToken} size={36} />
       <div className="flex flex-col flex-1">
         <div className="flex flex-row gap-2 items-center justify-between">
           <div className="text-lg text-primary">{pair?.publicToken.symbol}</div>
@@ -65,7 +79,7 @@ const TokenHeader = ({ pair }: { pair: ConfidentialTokenPair }) => {
   );
 };
 
-const TokenTotalBalance = ({
+const TokenTotalBalanceRow = ({
   pair,
   balances,
 }: {
@@ -81,12 +95,12 @@ const TokenTotalBalance = ({
   return (
     <div className="flex flex-col items-start">
       <div className="text-sm text-primary font-semibold ml-1">Total amount:</div>
-      <BalanceDisplay balance={totalBalance} decimals={pair.publicToken.decimals} className="text-xl" left />
+      <DisplayBalance balance={totalBalance} decimals={pair.publicToken.decimals} className="text-xl" left />
     </div>
   );
 };
 
-const TokenBalances = ({
+const TokenBalancesRow = ({
   pair,
   balances,
 }: {
@@ -98,20 +112,17 @@ const TokenBalances = ({
   const setDrawerOpen = useSetDrawerOpen();
   const handleEncryptDecrypt = (isEncrypt: boolean) => {
     setIsEncrypt(isEncrypt);
-    setToken(pair.confidentialToken?.address ?? null);
+    setToken(pair.publicToken.address);
     setDrawerOpen(false);
   };
 
   return (
     <div className="flex flex-row items-center w-full bg-primary-foreground rounded-4xl p-4 gap-4">
       <div className="flex flex-col flex-1 gap-2">
-        <div className="flex flex-row gap-1">
-          <TokenIcon token={pair.publicToken} size={24} />
-          <DisplayValue value={pair.publicToken.symbol} left />
-        </div>
+        <TokenIconSymbol publicToken={pair.publicToken} />
 
         <div className="flex flex-row justify-between text-primary items-center">
-          <PublicBalance balance={balances.publicBalance} decimals={pair.publicToken.decimals} className="w-full" />
+          <CleartextBalance balance={balances.publicBalance} decimals={pair.publicToken.decimals} className="w-full" />
         </div>
 
         <Button variant="outline" size="sm" className="w-min" onClick={() => handleEncryptDecrypt(true)}>
@@ -120,10 +131,7 @@ const TokenBalances = ({
       </div>
       <Separator orientation="vertical" />
       <div className="flex flex-col flex-1 gap-2">
-        <div className="flex flex-row gap-1">
-          <TokenIcon token={pair.confidentialToken} size={24} confidential />
-          <DisplayValue value={getConfidentialSymbol(pair)} left />
-        </div>
+        <TokenIconSymbol publicToken={pair.publicToken} confidentialToken={pair.confidentialToken} isConfidential />
 
         <div className="flex flex-row justify-end">
           <EncryptedBalance
@@ -147,7 +155,75 @@ const TokenBalances = ({
   );
 };
 
-const TokenSendReceive = ({ pair }: { pair: ConfidentialTokenPair }) => {
+const TokenClaimRow = ({ pair }: { pair: ConfidentialTokenPair }) => {
+  const pairClaims = usePairClaims(pair.publicToken.address);
+  const { onClaimAll, isClaiming } = useClaimAllAction();
+
+  if (pairClaims == null) return null;
+  if (pairClaims.totalRequestedAmount === 0n) return null;
+
+  const isPending = pairClaims.totalPendingAmount > 0n;
+  const isClaimable = pairClaims.totalDecryptedAmount > 0n;
+
+  const handleClaim = () => {
+    if (isClaiming) return;
+    if (!isClaimable) return;
+
+    if (pair == null) {
+      toast.error("No token selected");
+      return;
+    }
+    if (pair.confidentialToken == null) {
+      toast.error("No confidential token deployed");
+      return;
+    }
+
+    onClaimAll({
+      publicTokenSymbol: pair.publicToken.symbol,
+      publicTokenAddress: pair.publicToken.address,
+      confidentialTokenAddress: pair.confidentialToken.address,
+      claimAmount: pairClaims.totalDecryptedAmount,
+    });
+  };
+
+  return (
+    <div className="flex flex-row items-center w-full bg-primary-foreground rounded-4xl p-4 gap-4">
+      <div className="flex flex-col flex-1 gap-2">
+        <div className="flex flex-row gap-2 items-center">
+          <MoveDownLeft className="w-6 h-6 text-primary" />
+          <div className="text-primary text-lg font-semibold">Claim {isClaimable ? "Available" : "Pending"}</div>
+        </div>
+
+        <div className="flex flex-row gap-2 justify-between items-center">
+          <TokenIconSymbol publicToken={pair.publicToken} />
+
+          <div className="flex flex-row gap-2 items-center justify-center">
+            {isPending && (
+              <div className="flex flex-row items-center text-warning-500 italic font-reddit-mono">
+                <span>(+</span>
+                <DisplayBalance
+                  balance={pairClaims.totalPendingAmount}
+                  decimals={pair.publicToken.decimals}
+                  className="font-normal"
+                />
+                <Spinner className="w-4 h-4" size={20} />
+                <span>)</span>
+              </div>
+            )}
+            {isClaimable && (
+              <DisplayBalance balance={pairClaims.totalDecryptedAmount} decimals={pair.publicToken.decimals} left />
+            )}
+            <Button variant="default" size="md" className="w-min" disabled={!isClaimable} onClick={handleClaim}>
+              CLAIM
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TokenSendReceiveRow = ({ pair }: { pair: ConfidentialTokenPair }) => {
   const pushPage = useDrawerPushPage();
 
   return (
@@ -183,6 +259,32 @@ const TokenHistory = ({ pair }: { pair: ConfidentialTokenPair }) => {
       <div className="text-lg text-primary font-semibold">{pair.publicToken.symbol} history:</div>
       <Separator />
       <TransactionHistory pair={pair} />
+    </div>
+  );
+};
+
+export const TokenPageButtonFooter = ({ pairAddress }: { pairAddress: string | undefined }) => {
+  const pair = useConfidentialTokenPair(pairAddress);
+  const isArbitraryToken = useIsArbitraryToken(pairAddress);
+  const backAction = useDrawerBackButtonAction();
+  const removeArbitraryToken = useRemoveArbitraryToken(pairAddress);
+
+  const handleRemove = () => {
+    if (pair == null) return;
+    backAction();
+    removeArbitraryToken();
+  };
+
+  return (
+    <div className="flex flex-row gap-4">
+      <Button size="md" iconSize="lg" variant="surface" className="flex-1" icon={ArrowBack} onClick={backAction}>
+        Back
+      </Button>
+      {isArbitraryToken && (
+        <Button size="md" iconSize="lg" variant="destructive" className="flex-1" icon={X} onClick={handleRemove}>
+          Remove
+        </Button>
+      )}
     </div>
   );
 };

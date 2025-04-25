@@ -1,39 +1,39 @@
-import { useMemo } from "react";
+import React from "react";
 import { cn } from "~~/lib/utils";
+
+export type DisplayValueProps = {
+  prefix?: string;
+  suffix?: string;
+  icon?: React.ReactNode;
+  className?: string;
+  left?: boolean;
+};
 
 export function DisplayValue({
   value,
   prefix = "",
+  suffix = "",
   icon,
   className,
-  padding = 0,
   left,
-}: {
-  value: string;
-  prefix?: string;
-  icon?: React.ReactNode;
-  className?: string;
-  padding?: number;
-  left?: boolean;
-}) {
-  const displayWithPrefix = useMemo(() => {
-    // Pad left to 10 characters with spaces
-    // Prefix with <>
-    // const paddedValue = left ? value.padEnd(padding, " ") : value.padStart(padding, " ");
-    return prefix.concat(value);
-  }, [value, prefix, left, padding]);
-
+  children,
+}: DisplayValueProps & { value: string; children?: React.ReactNode }) {
   return (
     <div
       className={cn(
-        "flex flex-row items-center justify-between gap-1 border-2 border-transparent px-1 py-0",
+        "flex flex-row items-center justify-between gap-1 border-2 border-transparent px-1 py-0 font-semibold text-primary relative",
         className,
       )}
     >
-      {icon}
-      <span className={cn("min-w-24 text-right font-reddit-mono whitespace-pre", left && "text-left")}>
-        {displayWithPrefix}
-      </span>
+      {children}
+      <div className="flex flex-row gap-2 items-center justify-between w-full z-0">
+        {icon}
+        <span className={cn("text-right font-reddit-mono whitespace-pre self-end", left && "text-left self-start")}>
+          {prefix}
+          {value}
+          {suffix}
+        </span>
+      </div>
     </div>
   );
 }

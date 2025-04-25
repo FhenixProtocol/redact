@@ -1,11 +1,16 @@
 import { useCallback } from "react";
+import { useTxLifecycle } from "./useTxLifecycle";
 import toast from "react-hot-toast";
 import { Address } from "viem";
 import { useAccount, useChainId, useWriteContract } from "wagmi";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
-import { ClaimWithAddresses, fetchPairClaims, removeClaimedClaim } from "~~/services/store/claim";
+import {
+  ClaimWithAddresses,
+  fetchPairClaims,
+  removeClaimedClaim,
+  removePairClaimableClaims,
+} from "~~/services/store/claim";
 import { refetchSingleTokenPairBalances } from "~~/services/store/tokenStore";
-import { useTxLifecycle } from "./useTxLifecycle";
 import { TransactionActionType } from "~~/services/store/transactionStore";
 
 export const useDecryptFherc20Action = () => {
@@ -123,4 +128,67 @@ export const useClaimFherc20Action = () => {
   );
 
   return { onClaimFherc20, isClaiming: isPending };
+};
+
+export const useClaimAllAction = () => {
+  const { writeContractAsync, isPending } = useWriteContract();
+  const chainId = useChainId();
+  const { address: account } = useAccount();
+  const trackTx = useTxLifecycle();
+  const onClaimAll = useCallback(
+    async ({
+      publicTokenAddress,
+      publicTokenSymbol,
+      confidentialTokenAddress,
+      claimAmount,
+    }: {
+      publicTokenAddress: Address;
+      publicTokenSymbol: string;
+      confidentialTokenAddress: Address;
+      claimAmount: bigint;
+    }) => {
+      if (account == null) {
+        toast.error("No account found");
+        return;
+      }
+
+      if (!writeContractAsync) {
+        toast.error("Could not initialize contract write");
+        return;
+      }
+
+      try {
+        const tx = await writeContractAsync({
+          address: confidentialTokenAddress,
+          abi: confidentialErc20Abi,
+          functionName: "claimAllDecrypted",
+        });
+
+        const success = await trackTx(tx, {
+          tokenSymbol: publicTokenSymbol,
+          tokenAddress: confidentialTokenAddress,
+          tokenAmount: claimAmount,
+          actionType: TransactionActionType.Claim,
+        });
+
+        if (success) {
+          toast.success(`Claimed ${publicTokenSymbol}`);
+          removePairClaimableClaims(publicTokenAddress);
+          fetchPairClaims({ erc20Address: publicTokenAddress, fherc20Address: confidentialTokenAddress });
+          refetchSingleTokenPairBalances(publicTokenAddress);
+        } else {
+          toast.error(`Failed to claim ${publicTokenSymbol}`);
+        }
+
+        return tx;
+      } catch (error) {
+        console.error("Failed to claim token:", error);
+        toast.error("Failed to claim token");
+        throw error;
+      }
+    },
+    [account, writeContractAsync, chainId, trackTx],
+  );
+
+  return { onClaimAll, isClaiming: isPending };
 };

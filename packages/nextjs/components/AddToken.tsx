@@ -1,14 +1,14 @@
-import React, { useMemo, useState } from "react";
-import Image from "next/image";
+import React, { useState } from "react";
+import { EncryptedBalance } from "./ui/EncryptedValue";
+import { TokenIconSymbol } from "./ui/TokenIconSymbol";
 import { ClearOutlined } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, TriangleAlert } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { isAddress } from "viem";
+import { formatUnits, isAddress } from "viem";
 import { Button } from "~~/components/ui/Button";
 import { FnxInput } from "~~/components/ui/FnxInput";
 import { Spinner } from "~~/components/ui/Spinner";
-import { getTokenLogo } from "~~/lib/tokenUtils";
 import {
   ConfidentialTokenPairWithBalances,
   TokenItemData,
@@ -26,20 +26,6 @@ export function AddToken({ onClose }: AddTokenProps) {
   const [isValidInput, setIsValidInput] = useState(false);
   const [tokenDetails, setTokenDetails] = useState<ConfidentialTokenPairWithBalances | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setTokenAddress(value);
-    setLoadingTokenDetails(true);
-    setTokenDetails(null);
-
-    if (value !== "" && isAddress(value)) {
-      setIsValidInput(true);
-      arbitraryTokenSearch(value);
-    } else {
-      resetData();
-    }
-  };
-
   const arbitraryTokenSearch = async (address: string) => {
     const result = await searchArbitraryToken(address);
     if (result) {
@@ -51,6 +37,22 @@ export function AddToken({ onClose }: AddTokenProps) {
     setLoadingTokenDetails(false);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setTokenAddress(value);
+    setTokenDetails(null);
+
+    const isValid = value !== "" && isAddress(value);
+    if (!isValid) {
+      setIsValidInput(false);
+      return;
+    }
+    setIsValidInput(true);
+
+    setLoadingTokenDetails(true);
+    arbitraryTokenSearch(value);
+  };
+
   const handleSearch = async () => {
     setTokenDetails(null);
     setLoadingTokenDetails(true);
@@ -60,16 +62,19 @@ export function AddToken({ onClose }: AddTokenProps) {
   const resetData = () => {
     setTokenAddress("");
     setTokenDetails(null);
+    setLoadingTokenDetails(false);
   };
 
   const handleAdd = () => {
     if (tokenDetails == null) return;
     addArbitraryToken(tokenDetails);
+    if (onClose) onClose();
   };
+
   const SpinnerIcon = () => <Spinner size={16} />;
 
   return (
-    <div className="w-full flex flex-col gap-2">
+    <div className="w-full flex flex-col gap-6">
       <div className="text-[18px] text-primary font-semibold">Token contract address:</div>
       <FnxInput
         variant="md"
@@ -82,12 +87,17 @@ export function AddToken({ onClose }: AddTokenProps) {
         fadeEnd={true}
       />
       <AnimatePresence>
-        <PublicTokenDetails tokenDetails={tokenDetails?.pair.publicToken} />
+        <PublicTokenDetails
+          tokenDetails={tokenDetails?.pair.publicToken}
+          balance={tokenDetails?.balances.publicBalance}
+        />
         <ConfidentialTokenDetails
           publicTokenDetails={tokenDetails?.pair.publicToken}
           confidentialTokenDetails={tokenDetails?.pair.confidentialToken}
           requiresDeployment={!tokenDetails?.pair.confidentialTokenDeployed}
+          confidentialBalance={tokenDetails?.balances.confidentialBalance}
         />
+        <WarningRow />
       </AnimatePresence>
 
       <div className="flex gap-2">
@@ -118,13 +128,14 @@ export function AddToken({ onClose }: AddTokenProps) {
   );
 }
 
-export const PublicTokenDetails = ({ tokenDetails }: { tokenDetails: TokenItemData | undefined }) => {
+export const PublicTokenDetails = ({
+  tokenDetails,
+  balance,
+}: {
+  tokenDetails: TokenItemData | undefined;
+  balance: bigint | undefined;
+}) => {
   const { name, symbol, decimals } = tokenDetails || {};
-
-  const icon = useMemo(() => {
-    if (symbol) return getTokenLogo(symbol);
-    return "/token-icons/default-token.webp";
-  }, [symbol]);
 
   return (
     <>
@@ -134,26 +145,21 @@ export const PublicTokenDetails = ({ tokenDetails }: { tokenDetails: TokenItemDa
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.2 }}
+          className="flex flex-row border-1 border-primary-accent rounded-lg p-2 items-center gap-4 min-h-20"
         >
-          <div className="text-primary font-semibold">ERC20 Token:</div>
-          <div className="mt-2 mb-2 border-1 border-primary-accent rounded-lg p-2">
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 flex items-center justify-center overflow-hidden">
-                <Image
-                  src={icon}
-                  alt={symbol ?? "Token Icon"}
-                  width={24}
-                  height={24}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-primary font-semibold">{name}</span>
-                <div className="flex gap-4 text-sm text-gray-500">
-                  <span>Symbol: {symbol}</span>
-                  <span>Decimals: {decimals}</span>
-                </div>
-              </div>
+          <TokenIconSymbol publicToken={tokenDetails} className="text-primary-accent bg-button-hover p-1.5 pr-3" />
+          <div className="flex flex-col flex-1 gap-2">
+            <span className="text-primary font-semibold font-reddit-mono">{name}</span>
+            <div className="flex flex-row justify-between gap-4 text-sm text-gray-500">
+              <span>
+                Decimals: <span className="font-semibold font-reddit-mono">{decimals}</span>
+              </span>
+              <span>
+                Balance:{" "}
+                <span className="font-semibold font-reddit-mono">
+                  {balance ? formatUnits(balance, decimals ?? 18) : "0"}
+                </span>
+              </span>
             </div>
           </div>
         </motion.div>
@@ -166,18 +172,15 @@ export const ConfidentialTokenDetails = ({
   publicTokenDetails,
   confidentialTokenDetails,
   requiresDeployment,
+  confidentialBalance,
 }: {
   publicTokenDetails: TokenItemData | undefined;
   confidentialTokenDetails: TokenItemData | undefined;
   requiresDeployment: boolean;
+  confidentialBalance: bigint | undefined;
 }) => {
   const { symbol: publicSymbol } = publicTokenDetails || {};
-  const { name, symbol, decimals } = confidentialTokenDetails || {};
-
-  const icon = useMemo(() => {
-    if (symbol) return getTokenLogo(symbol);
-    return "/token-icons/default-token.webp";
-  }, [symbol]);
+  const { name, decimals } = confidentialTokenDetails || {};
 
   return (
     <>
@@ -187,40 +190,49 @@ export const ConfidentialTokenDetails = ({
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.2 }}
+          className="flex flex-row border-1 border-primary-accent rounded-lg p-2 items-center gap-4 min-h-20"
         >
-          <div className="text-primary font-semibold">FHERC20 Token:</div>
-          <div className="mt-2 mb-2 border-1 border-primary-accent rounded-lg p-2">
-            {requiresDeployment && (
-              <div className="text-xs text-primary">
-                <b>e{publicSymbol} does not exist.</b>
-                <br />
-                <br />
+          <TokenIconSymbol
+            publicToken={publicTokenDetails}
+            confidentialToken={confidentialTokenDetails}
+            isConfidential={true}
+            className="text-primary-accent bg-button-hover p-1.5 pr-3"
+          />
+          {requiresDeployment && (
+            <div className="flex flex-col flex-1 gap-2 text-sm text-primary">
+              <b>Does not exist.</b>
+              <span>
                 You will need to deploy <b>e{publicSymbol}</b> before encrypting your <b>{publicSymbol}</b> balance.
+              </span>
+            </div>
+          )}
+          {!requiresDeployment && (
+            <div className="flex flex-col flex-1 gap-2">
+              <span className="text-primary font-semibold font-reddit-mono">{name}</span>
+              <div className="flex flex-row justify-between gap-4 text-sm text-gray-500">
+                <span>
+                  Decimals: <span className="font-semibold font-reddit-mono">{decimals}</span>
+                </span>
+                <EncryptedBalance ctHash={confidentialBalance} decimals={decimals} />
               </div>
-            )}
-            {!requiresDeployment && (
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 flex items-center justify-center overflow-hidden">
-                  <Image
-                    src={icon}
-                    alt={symbol ?? "Token Icon"}
-                    width={24}
-                    height={24}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-primary font-semibold">{name}</span>
-                  <div className="flex gap-4 text-sm text-gray-500">
-                    <span>Symbol: {symbol}</span>
-                    <span>Decimals: {decimals}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </motion.div>
       )}
     </>
+  );
+};
+
+export const WarningRow = () => {
+  return (
+    <div className="flex flex-row gap-4 items-center">
+      <TriangleAlert className="w-6 h-6 text-warning-500" />
+      <div className="flex flex-col gap-1">
+        <div className="text-primary text-xs font-bold">Always do your research.</div>
+        <div className="text-primary text-xs font-bold">
+          This token isn’t traded on leading U.S. centralized exchanges.
+        </div>
+      </div>
+    </div>
   );
 };
