@@ -193,4 +193,8 @@ task("deploy").setAction(async (args, hre, runSuper) => {
   await generateTsAbis(hre);
 });
 
+task("generate-abis").setAction(async (args, hre, runSuper) => {
+  await generateTsAbis(hre);
+});
+
 export default config;

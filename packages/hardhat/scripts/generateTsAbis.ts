@@ -9,6 +9,7 @@
 import * as fs from "fs";
 import prettier from "prettier";
 import { DeployFunction } from "hardhat-deploy/types";
+import * as path from "path";
 
 const generatedContractComment = `
 /**
@@ -19,6 +20,7 @@ const generatedContractComment = `
 
 const DEPLOYMENTS_DIR = "./deployments";
 const ARTIFACTS_DIR = "./artifacts";
+const TARGET_DIR = "../nextjs/contracts/";
 
 function getDirectories(path: string) {
   return fs
@@ -95,21 +97,77 @@ function getContractDataFromDeployments() {
   return output;
 }
 
+function getExistingDeployedContracts() {
+  const filePath = path.resolve(`${TARGET_DIR}deployedContracts.ts`);
+  if (!fs.existsSync(filePath)) {
+    return {};
+  }
+
+  try {
+    // Create a temporary directory for our approach
+    const tempDir = path.join(process.cwd(), "temp");
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir);
+    }
+
+    // Create a temporary JS file that exports the content of deployedContracts.ts
+    const tempFile = path.join(tempDir, "temp.js");
+    const targetContent = fs.readFileSync(filePath, "utf8");
+
+    // Transform the TypeScript file into a JavaScript module
+    const jsContent = targetContent
+      .replace(/import[^;]*;/, "")
+      .replace(/export default[^;]*;/, "module.exports = deployedContracts;")
+      .replace(/as const/, "")
+      .replace(/satisfies GenericContractsDeclaration/, "");
+
+    fs.writeFileSync(tempFile, jsContent);
+
+    // Now we can require this file
+    try {
+      // Clear require cache to ensure fresh load
+      delete require.cache[require.resolve(tempFile)];
+      const contracts = require(tempFile);
+
+      // Clean up
+      fs.unlinkSync(tempFile);
+
+      return contracts;
+    } catch (importError) {
+      console.error("Error requiring the temporary contracts file:", importError);
+
+      // Fallback: try a simpler approach with less features
+      console.log("Falling back to simpler approach...");
+      return {};
+    }
+  } catch (error) {
+    console.error("Error reading existing deployedContracts.ts file:", error);
+    return {};
+  }
+}
+
 /**
  * Generates the TypeScript contract definition file based on the json output of the contract deployment scripts
  * This script should be run last.
  */
 const generateTsAbis: DeployFunction = async function () {
-  const TARGET_DIR = "../nextjs/contracts/";
-  const allContractsData = getContractDataFromDeployments();
+  // Get locally deployed contracts
+  const localContractsData = getContractDataFromDeployments();
 
-  const fileContent = Object.entries(allContractsData).reduce((content, [chainId, chainConfig]) => {
+  // Get existing deployed contracts from the file
+  const existingContractsData = getExistingDeployedContracts();
+
+  // Merge local deployments with existing data (local deployments take precedence)
+  const mergedContractsData = { ...existingContractsData, ...localContractsData };
+
+  const fileContent = Object.entries(mergedContractsData).reduce((content, [chainId, chainConfig]) => {
     return `${content}${parseInt(chainId).toFixed(0)}:${JSON.stringify(chainConfig, null, 2)},`;
   }, "");
 
   if (!fs.existsSync(TARGET_DIR)) {
     fs.mkdirSync(TARGET_DIR);
   }
+
   fs.writeFileSync(
     `${TARGET_DIR}deployedContracts.ts`,
     await prettier.format(
