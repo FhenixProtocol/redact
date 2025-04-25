@@ -24,7 +24,7 @@ export function Modal({ isOpen, onClose, title, children, duration = "normal" }:
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-40 flex items-center justify-center"
       style={{
         animation: `overlayShow ${animationDuration} cubic-bezier(0.16, 1, 0.3, 1)`,
       }}

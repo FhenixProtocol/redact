@@ -1,10 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
+import { SelectToken } from "../SelectToken";
+import { Button } from "../ui/Button";
+import { Modal } from "../ui/Modal";
+import { TokenIconSymbol } from "../ui/TokenIconSymbol";
+import { getConfidentialSymbol } from "~~/lib/common";
+import { useGlobalState } from "~~/services/store/store";
+import { ConfidentialTokenPair, useConfidentialTokenPair } from "~~/services/store/tokenStore";
+import { useConfidentialTokenPairBalances } from "~~/services/store/tokenStore";
 
 export function SendPage({ pairAddress }: { pairAddress: string | undefined }) {
+  const providedPair = useConfidentialTokenPair(pairAddress);
+
+  const { isSelectTokenModalOpen, setSelectTokenModalOpen } = useGlobalState();
+  const [isConfidentialSend, setIsConfidentialSend] = useState(false);
+  const [selectedPair, setSelectedPair] = useState<ConfidentialTokenPair | null>(null);
+  const pair = selectedPair ?? providedPair;
+
+  const balances = useConfidentialTokenPairBalances(pair?.publicToken.address);
+
   return (
-    <div>
-      <h1>Send Page</h1>
-      <span>{pairAddress}</span>
+    <div className="p-4 pb-0 flex flex-col gap-4 h-full items-center">
+      <div className="flex flex-col items-start justify-start w-full">
+        <div className="text-3xl text-primary font-semibold mb-12">
+          Send {pair != null ? (isConfidentialSend ? getConfidentialSymbol(pair) : pair.publicToken.symbol) : ""}
+        </div>
+      </div>
+
+      <Button onClick={() => setSelectTokenModalOpen(true, setSelectedPair)}>Select Token</Button>
+
+      <TokenIconSymbol
+        publicToken={pair?.publicToken}
+        confidentialToken={pair?.confidentialToken}
+        isConfidential={isConfidentialSend}
+      />
     </div>
   );
   // const [switcherValue, setSwitcherValue] = useState(0);
