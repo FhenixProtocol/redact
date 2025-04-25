@@ -8,17 +8,25 @@ import { EncryptedBalance } from "../ui/EncryptedValue";
 import { PublicBalance } from "../ui/PublicBalance";
 import { Separator } from "../ui/Separator";
 import { TokenIcon } from "../ui/TokenIcon";
+import { ArrowBack } from "@mui/icons-material";
 import { FheTypes } from "cofhejs/web";
-import { MoveDownLeft, MoveUpRight } from "lucide-react";
+import { MoveDownLeft, MoveUpRight, X } from "lucide-react";
 import { getConfidentialSymbol } from "~~/lib/common";
 import { useDecryptValue } from "~~/services/store/decrypted";
-import { DrawerPageName, useDrawerPushPage, useSetDrawerOpen } from "~~/services/store/drawerStore";
+import {
+  DrawerPageName,
+  useDrawerBackButtonAction,
+  useDrawerPushPage,
+  useSetDrawerOpen,
+} from "~~/services/store/drawerStore";
 import { useEncryptDecryptSetIsEncrypt, useSelectEncryptDecryptToken } from "~~/services/store/encryptDecrypt";
 import {
   ConfidentialTokenPair,
   ConfidentialTokenPairBalances,
   useConfidentialTokenPair,
   useConfidentialTokenPairBalances,
+  useIsArbitraryToken,
+  useRemoveArbitraryToken,
 } from "~~/services/store/tokenStore";
 
 export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) {
@@ -183,6 +191,32 @@ const TokenHistory = ({ pair }: { pair: ConfidentialTokenPair }) => {
       <div className="text-lg text-primary font-semibold">{pair.publicToken.symbol} history:</div>
       <Separator />
       <TransactionHistory pair={pair} />
+    </div>
+  );
+};
+
+export const TokenPageButtonFooter = ({ pairAddress }: { pairAddress: string | undefined }) => {
+  const pair = useConfidentialTokenPair(pairAddress);
+  const isArbitraryToken = useIsArbitraryToken(pairAddress);
+  const backAction = useDrawerBackButtonAction();
+  const removeArbitraryToken = useRemoveArbitraryToken(pairAddress);
+
+  const handleRemove = () => {
+    if (pair == null) return;
+    backAction();
+    removeArbitraryToken();
+  };
+
+  return (
+    <div className="flex flex-row gap-4">
+      <Button size="md" iconSize="lg" variant="surface" className="flex-1" icon={ArrowBack} onClick={backAction}>
+        Back
+      </Button>
+      {isArbitraryToken && (
+        <Button size="md" iconSize="lg" variant="destructive" className="flex-1" icon={X} onClick={handleRemove}>
+          Remove
+        </Button>
+      )}
     </div>
   );
 };

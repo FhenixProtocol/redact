@@ -6,12 +6,12 @@ import { ConnectPage } from "./menu-pages/ConnectPage";
 import { WalletMainPanel } from "./menu-pages/MainPage";
 import { ReceivePage } from "./menu-pages/ReceivePage";
 import { SendPage } from "./menu-pages/SendPage";
-import { TokenPage } from "./menu-pages/TokenPage";
+import { TokenPage, TokenPageButtonFooter } from "./menu-pages/TokenPage";
 import { Button } from "./ui/Button";
 import { Separator } from "./ui/Separator";
 import { ArrowBack, Logout } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronsLeft, Settings, WalletIcon, X } from "lucide-react";
+import { ChevronLeft, Settings, WalletIcon, X } from "lucide-react";
 import { zeroAddress } from "viem";
 import { useAccount, useDisconnect } from "wagmi";
 import { SettingsPage } from "~~/components/menu-pages/SettingsPage";
@@ -140,18 +140,35 @@ const DrawerContentBody = () => {
 };
 
 const DrawerContentFooter = () => {
+  const { page, pairAddress } = useDrawerPage();
   const backAction = useDrawerBackButtonAction();
   const pagesCount = useDrawerPagesCount();
 
   return (
-    <AnimatePresence>
-      {pagesCount > 1 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4 pb-0 w-full">
+    <AnimatePresence mode="wait">
+      {page === DrawerPageName.Token && pairAddress != null ? (
+        <motion.div
+          key="token-footer"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="p-4 pb-0 w-full"
+        >
+          <TokenPageButtonFooter pairAddress={pairAddress} />
+        </motion.div>
+      ) : pagesCount > 1 ? (
+        <motion.div
+          key="back-button"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="p-4 pb-0 w-full"
+        >
           <Button size="md" iconSize="lg" variant="surface" className="w-full" icon={ArrowBack} onClick={backAction}>
             Back
           </Button>
         </motion.div>
-      )}
+      ) : null}
     </AnimatePresence>
   );
 };
