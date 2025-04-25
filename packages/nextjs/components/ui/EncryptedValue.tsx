@@ -32,16 +32,13 @@ export function EncryptedValue<T extends FheTypes>({
       value={display}
       icon={<EyeOff className="w-5 h-5" />}
       className={cn(
-        "border-primary text-primary min-w-24",
+        "border-primary text-primary min-w-32",
         decryptedValue == null && "text-primary-foreground",
         className,
       )}
     >
       <div
-        className={cn(
-          "absolute right-0 h-full bg-primary transition-all",
-          decryptedValue == null ? "w-full" : "w-0",
-        )}
+        className={cn("absolute right-0 h-full bg-primary transition-all", decryptedValue == null ? "w-full" : "w-0")}
       />
     </DisplayValue>
   );

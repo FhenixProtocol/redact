@@ -17,7 +17,7 @@ export function CleartextBalance({
     <DisplayBalance
       balance={balance}
       decimals={decimals}
-      className={cn("min-w-24", className)}
+      className={cn("min-w-32", className)}
       icon={<Eye className="w-5 h-5" />}
       left={left}
     />
