@@ -17,6 +17,7 @@ import { useApproveFherc20Action, useDeployFherc20Action, useEncryptErc20Action 
 import { getConfidentialSymbol } from "~~/lib/common";
 import {
   useEncryptDecryptBalances,
+  useEncryptDecryptFormattedAllowance,
   useEncryptDecryptInputValue,
   useEncryptDecryptIsEncrypt,
   useEncryptDecryptPair,
@@ -54,7 +55,6 @@ export function MainTokenSwapping() {
 
               <AmountInputRow />
               <AmountSliderRow />
-              <AmountErrorRow />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 justify-center items-start">
@@ -180,21 +180,13 @@ const AmountSliderRow = () => {
   );
 };
 
-const AmountErrorRow = () => {
-  const valueError = useEncryptDecryptValueError();
-
-  return (
-    <div className="w-full flex flex-row gap-2 items-start justify-end mt-6 min-h-6">
-      <div className="text-sm text-destructive italic ml-4">{valueError}</div>
-    </div>
-  );
-};
-
 const EncryptTransactionGuide = () => {
   const pair = useEncryptDecryptPair();
   const valueError = useEncryptDecryptValueError();
 
   // Deploy
+
+  const isStablecoin = pair?.isStablecoin;
 
   const { onDeployFherc20, isDeploying } = useDeployFherc20Action();
 
@@ -213,7 +205,10 @@ const EncryptTransactionGuide = () => {
   // Approve
 
   const rawInputValue = useEncryptDecryptRawInputValue();
+  const displayAmount = formatUnits(rawInputValue, pair?.publicToken.decimals ?? 18);
+
   const requiresApproval = useEncryptDecryptRequiresApproval();
+  const displayAllowance = useEncryptDecryptFormattedAllowance();
   const { onApproveFherc20, isApproving } = useApproveFherc20Action();
 
   const handleApprove = () => {
@@ -266,32 +261,45 @@ const EncryptTransactionGuide = () => {
     return TxGuideStepState.Ready;
   }, [isEncrypting]);
 
+  // ERRS
+
+  const missingPairErrMessage = pair == null ? `Select a token to encrypt` : undefined;
+  const stablecoinErrMessage = isStablecoin
+    ? "Stablecoin encryption disabled until FHED (FHE Dollar) release"
+    : undefined;
+  const valueErrMessage = valueError != null ? `Invalid amount:\n${valueError}` : undefined;
+
+  const sharedErrMessage = missingPairErrMessage ?? valueErrMessage;
+
   // Steps
 
   const steps = [
     {
       title: "Deploy",
-      cta: pair == null ? "Select a token" : `DEPLOY e${pair?.publicToken.symbol}`,
-      hint: "Deploy the confidential token",
+      cta: pair == null ? "ENCRYPT" : `DEPLOY`,
+      hint: `e${pair?.publicToken.symbol} has not been deployed yet (1 time tx)`,
       state: deployState,
       action: handleDeploy,
-      disabled: pair == null || isDeploying,
+      disabled: pair == null || isDeploying || isStablecoin,
+      errorMessage: sharedErrMessage ?? stablecoinErrMessage,
     },
     {
       title: "Approve",
-      cta: pair == null ? "Select a token" : `APPROVE ${pair?.publicToken.symbol}`,
-      hint: "Approve the confidential token",
+      cta: pair == null ? "ENCRYPT" : `APPROVE`,
+      hint: `Approve ${displayAmount} ${pair?.publicToken.symbol}\nAllowance: ${displayAllowance}`,
       state: approveState,
       action: handleApprove,
       disabled: pair == null || valueError != null || isApproving,
+      errorMessage: sharedErrMessage,
     },
     {
       title: "Encrypt",
-      cta: pair == null ? "Select a token" : `ENCRYPT ${pair?.publicToken.symbol}`,
-      hint: "Encrypt the token",
+      cta: `ENCRYPT`,
+      hint: `Encrypt ${displayAmount}\n${pair?.publicToken.symbol} into ${getConfidentialSymbol(pair)}`,
       state: encryptState,
       action: handleEncrypt,
       disabled: pair == null || valueError != null || requiresApproval || isEncrypting,
+      errorMessage: sharedErrMessage,
     },
   ];
   return <TransactionGuide title="Encryption steps:" steps={steps} />;

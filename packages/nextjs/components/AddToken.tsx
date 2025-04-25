@@ -180,9 +180,7 @@ export const ConfidentialTokenDetails = ({
   confidentialBalance: bigint | undefined;
 }) => {
   const { symbol: publicSymbol } = publicTokenDetails || {};
-  const { name, symbol, decimals } = confidentialTokenDetails || {};
-
-  const confidentialSymbol = symbol ?? `e${publicSymbol}`;
+  const { name, decimals } = confidentialTokenDetails || {};
 
   return (
     <>
