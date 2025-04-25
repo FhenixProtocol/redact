@@ -1,24 +1,25 @@
 "use client";
 
 import React, { useState } from "react";
+import { TransactionHistory } from "../TransactionHistory";
 import { DisplayValue } from "../ui/DisplayValue";
 import { EncryptedBalance } from "../ui/EncryptedValue";
 import { PublicBalance } from "../ui/PublicBalance";
 import { TokenIcon } from "../ui/TokenIcon";
-import { Luggage, MoveDownLeft, MoveUpRight } from "lucide-react";
+import { Luggage, MoveDownLeft, MoveUpRight, Plus, PlusIcon } from "lucide-react";
 import { formatUnits } from "viem";
 import { Button } from "~~/components/ui/Button";
 import { Separator } from "~~/components/ui/Separator";
 import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
 import { cn } from "~~/lib/utils";
 import { ClaimWithAddresses, useAllClaims } from "~~/services/store/claim";
-import { DrawerPageName, useDrawerPushPage } from "~~/services/store/drawerStore";
+import { DrawerPageName, useDrawerPushPage, useSetDrawerOpen } from "~~/services/store/drawerStore";
+import { useGlobalState } from "~~/services/store/store";
 import {
   useConfidentialTokenPair,
   useConfidentialTokenPairAddresses,
   useConfidentialTokenPairBalances,
 } from "~~/services/store/tokenStore";
-import { TransactionHistory } from "../TransactionHistory";
 
 /**
  * Main panel that shows the user's balance and has buttons for "Send" or "Receive."
@@ -28,16 +29,17 @@ export function WalletMainPanel() {
   const [selectedTab, setSelectedTab] = useState<"tokens" | "history">("tokens");
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col h-full gap-2">
       <EthBalanceRow />
       <SendReceiveButtonsRow />
       <TabRow selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
       <Separator />
-      <div>
-        <Tokens />
+      <div className="flex flex-col gap-4 flex-grow overflow-hidden">
+        {selectedTab === "tokens" && <Tokens />}
         {selectedTab === "history" && <TransactionHistory />}
         {/* <ClaimsList /> */}
       </div>
+      {selectedTab === "tokens" && <AddTokenRow />}
     </div>
   );
 }
@@ -207,6 +209,31 @@ const ClaimItem = ({ claim }: { claim: ClaimWithAddresses }) => {
         disabled={isClaiming || !claim.decrypted}
       >
         {claim.decrypted ? "CLAIM" : "PENDING"}
+      </Button>
+    </div>
+  );
+};
+
+const AddTokenRow = () => {
+  const { setAddTokenModalOpen } = useGlobalState();
+  const setDrawerOpen = useSetDrawerOpen();
+
+  const handleAddToken = () => {
+    setAddTokenModalOpen(true);
+    setDrawerOpen(false);
+  };
+
+  return (
+    <div className="flex flex-row w-full -mb-4">
+      <Button
+        variant="ghost"
+        noOutline
+        icon={PlusIcon}
+        size="md"
+        onClick={handleAddToken}
+        className="w-full text-left font-semibold text-md text-primary-accent mt-2"
+      >
+        Add Token
       </Button>
     </div>
   );
