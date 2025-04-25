@@ -84,7 +84,7 @@ export function AddToken({ onClose }: AddTokenProps) {
         onChange={handleInputChange}
         className={`w-full  ${!isValidInput ? "border-red-500" : ""}`}
         error={!isValidInput ? "Invalid address format" : undefined}
-        fadeEnd={true}
+        fades={true}
       />
       <AnimatePresence>
         <PublicTokenDetails

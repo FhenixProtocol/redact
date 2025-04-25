@@ -3,7 +3,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 
-
 type ChainRecord<T> = Record<number, T>;
 type HashRecord<T> = Record<string, T>;
 
@@ -16,19 +15,20 @@ export type TransactionStatusString = "Pending" | "Failed" | "Confirmed";
 
 export enum TransactionActionType {
   Send = 0,
-  Claim,
-  Encrypt,
-  Decrypt,
-  Deploy,
-  Approve,
+  EncSend = 1,
+  Claim = 2,
+  Encrypt = 3,
+  Decrypt = 4,
+  Deploy = 5,
+  Approve = 6,
 }
-export type TransactionActionString = "Send" | "Claim" | "Encrypt" | "Decrypt" | "Deploy" | "Approve";
+export type TransactionActionString = "Send" | "EncSend" | "Claim" | "Encrypt" | "Decrypt" | "Deploy" | "Approve";
 
 export interface RedactTransaction {
   hash: string;
   status: TransactionStatus;
   tokenSymbol: string;
-  tokenAmount: bigint; 
+  tokenAmount: bigint;
   tokenAddress: string;
   chainId: number;
   actionType: TransactionActionType;
@@ -46,6 +46,7 @@ export interface TransactionStore {
 
 const actionToStringMap: Record<TransactionActionType, TransactionActionString> = {
   [TransactionActionType.Send]: "Send",
+  [TransactionActionType.EncSend]: "EncSend",
   [TransactionActionType.Claim]: "Claim",
   [TransactionActionType.Encrypt]: "Encrypt",
   [TransactionActionType.Decrypt]: "Decrypt",
@@ -59,7 +60,6 @@ const stringToActionMap = Object.entries(actionToStringMap).reduce<
   acc[v] = Number(k) as TransactionActionType;
   return acc;
 }, {} as any);
-
 
 export const actionToString = (a: TransactionActionType): TransactionActionString => actionToStringMap[a];
 
@@ -80,7 +80,7 @@ export const useTransactionStore = create<TransactionStore>()(
       transactions: {},
 
       addTransaction: (transaction: Omit<RedactTransaction, "status" | "timestamp">) => {
-        set((state) => {
+        set(state => {
           if (!state.transactions[transaction.chainId]) {
             state.transactions[transaction.chainId] = {};
           }
@@ -93,7 +93,7 @@ export const useTransactionStore = create<TransactionStore>()(
       },
 
       updateTransactionStatus: (chainId: number, hash: string, status: TransactionStatus) => {
-        set((state) => {
+        set(state => {
           const transaction = state.transactions[chainId]?.[hash];
           console.log("updateTransactionStatus", chainId, hash, status, transaction);
           if (transaction) {

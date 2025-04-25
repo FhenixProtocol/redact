@@ -147,8 +147,6 @@ const AmountInputRow = () => {
             noOutline={true}
             className="py-[1px] ml-1"
             size="xs"
-            // TODO: Re-enable
-            // disabled={isEncrypt && isLoadingPrivateBalance}
           >
             Max
           </Button>
@@ -174,8 +172,6 @@ const AmountSliderRow = () => {
       step={1}
       showMarkers={true}
       showMaxButton={false}
-      // TODO: Re-enable
-      // disabled={isProcessing || (selectedAction === "Decrypt" && isLoadingPrivateBalance)}
     />
   );
 };

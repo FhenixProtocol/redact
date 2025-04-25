@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { InputWithFades } from "./InputWithFades";
 import { cn } from "~~/lib/utils";
 
 interface FnxInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -8,9 +9,11 @@ interface FnxInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   noBorder?: boolean;
   noOutline?: boolean;
   height?: string;
+  leftElement?: React.ReactNode;
   rightElement?: React.ReactNode;
   variant?: "xs" | "sm" | "md" | "lg";
-  fadeEnd?: boolean;
+  fades?: boolean;
+  bgColor?: string;
 }
 
 const sizeVariants = {
@@ -29,53 +32,30 @@ export const FnxInput = React.forwardRef<HTMLInputElement, FnxInputProps>(
       noBorder,
       noOutline = true,
       height,
+      leftElement,
       rightElement,
       variant = "md",
-      fadeEnd,
+      fades,
+      bgColor = "theme-white",
       ...props
     },
     ref,
   ) => {
     const inputRef = useRef<HTMLInputElement>(null);
-    const [showLeftFade, setShowLeftFade] = useState(false);
-    const [showRightFade, setShowRightFade] = useState(false);
-
-    useEffect(() => {
-      const checkScroll = () => {
-        const input = inputRef.current;
-        if (input) {
-          setShowLeftFade(input.scrollLeft > 0);
-          setShowRightFade(
-            input.scrollWidth > input.clientWidth && input.scrollLeft < input.scrollWidth - input.clientWidth,
-          );
-        }
-      };
-
-      const input = inputRef.current;
-      if (input) {
-        input.addEventListener("scroll", checkScroll);
-        // Also check on content changes
-        const observer = new ResizeObserver(checkScroll);
-        observer.observe(input);
-        checkScroll(); // Initial check
-      }
-
-      return () => {
-        if (input) {
-          input.removeEventListener("scroll", checkScroll);
-        }
-      };
-    }, []);
 
     return (
-      <div className="relative w-full overflow-hidden drop-shadow-sm">
+      <div className="relative w-full overflow-hidden">
         <div
           className={cn(
-            "flex justify-between rounded-full border-1 border-primary-accent p-0 m-0 bg-theme-white relative",
+            "flex items-center justify-between rounded-2xl border-1 border-primary-accent p-0 m-0 relative",
+            `bg-${bgColor}`,
             error && "border-red-500",
           )}
         >
-          <input
+          {leftElement}
+          <InputWithFades
+            fades={fades}
+            bgColor={bgColor}
             ref={node => {
               // Handle both refs
               inputRef.current = node;
@@ -86,8 +66,9 @@ export const FnxInput = React.forwardRef<HTMLInputElement, FnxInputProps>(
               }
             }}
             className={cn(
-              "flex-1 rounded-l-full",
+              "flex-1 rounded-l-full font-reddit-mono text-primary",
               sizeVariants[variant],
+              leftElement ? "pl-0" : "",
               rightElement ? "pr-0" : "",
               noBorder && "border-none",
               noOutline && "no-outline",
@@ -97,12 +78,6 @@ export const FnxInput = React.forwardRef<HTMLInputElement, FnxInputProps>(
             )}
             {...props}
           />
-          {fadeEnd && showLeftFade && (
-            <div className="absolute left-3 top-0 bottom-0 w-20 pointer-events-none rounded-l-full bg-gradient-to-r to-transparent from-theme-white" />
-          )}
-          {fadeEnd && showRightFade && (
-            <div className="absolute right-3 top-0 bottom-0 w-20 pointer-events-none rounded-r-full bg-gradient-to-r from-transparent to-theme-white" />
-          )}
           {rightElement}
         </div>
         {error && <span className="absolute -bottom-5 left-4 text-xs text-red-500">{error}</span>}

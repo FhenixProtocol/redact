@@ -14,6 +14,7 @@ import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
 import { cn } from "~~/lib/utils";
 import { ClaimWithAddresses, useAllClaims } from "~~/services/store/claim";
 import { DrawerPageName, useDrawerPushPage, useSetDrawerOpen } from "~~/services/store/drawerStore";
+import { useSelectSendToken } from "~~/services/store/sendStore";
 import { useGlobalState } from "~~/services/store/store";
 import {
   useConfidentialTokenPair,
@@ -59,7 +60,9 @@ const SendReceiveButtonsRow = () => {
         size="lg"
         iconSize="lg"
         icon={MoveUpRight}
-        onClick={() => pushPage({ page: DrawerPageName.Send, pairAddress: undefined })}
+        onClick={() => {
+          pushPage({ page: DrawerPageName.Send, pairAddress: undefined });
+        }}
       >
         SEND
       </Button>

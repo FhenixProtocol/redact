@@ -1,15 +1,13 @@
 import React from "react";
 import { CopyIcon } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-// import { Switcher } from "~~/components/ui/switcher";
-// import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useAccount } from "wagmi";
 import { Button } from "~~/components/ui/Button";
 
-export function ReceivePage({ pairAddress }: { pairAddress: string | undefined }) {
+export function ReceivePage() {
   const { address } = useAccount();
-  //   const [addressType, setAddressType] = useState<"public" | "confidential">("public");
+
   const copyToClipboard = async () => {
     if (address) {
       await navigator.clipboard.writeText(address);
@@ -18,17 +16,10 @@ export function ReceivePage({ pairAddress }: { pairAddress: string | undefined }
   };
 
   return (
-    <div className="p-4 flex flex-col items-center gap-4">
-      {/* <Switcher
-          label="Address Type"
-          options={[
-            { description: "Public", icon: Eye }, 
-            { description: "Confidential", icon: EyeOff }
-          ]}
-          value={addressType === 'public' ? 0 : 1}
-          onValueChange={(value: number) => setAddressType(value === 0 ? 'public' : 'confidential')}
-          className="bg-white dark:bg-gray-800"
-        /> */}
+    <div className="p-4 pb-0 flex flex-col gap-4 h-full items-center">
+      <div className="flex flex-col items-start justify-start w-full">
+        <div className="text-3xl text-primary font-semibold mb-12">Receive</div>
+      </div>
 
       {address && (
         <>
