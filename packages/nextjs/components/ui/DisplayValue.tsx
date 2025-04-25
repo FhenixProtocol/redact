@@ -26,7 +26,7 @@ export function DisplayValue({
       )}
     >
       {children}
-      <div className="flex flex-row items-center justify-between w-full z-0">
+      <div className="flex flex-row gap-2 items-center justify-between w-full z-0">
         {icon}
         <span className={cn("text-right font-reddit-mono whitespace-pre self-end", left && "text-left self-start")}>
           {prefix}
