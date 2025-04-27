@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { TransactionGuide } from "./TransactionGuide";
 import { TxGuideStepState } from "./TransactionGuide";
@@ -12,9 +12,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~~/compone
 import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { useCofhe } from "~~/hooks/useCofhe";
-import { useClaimFherc20Action, useDecryptFherc20Action } from "~~/hooks/useDecryptActions";
+import { useClaimAllAction, useDecryptFherc20Action } from "~~/hooks/useDecryptActions";
 import { useApproveFherc20Action, useDeployFherc20Action, useEncryptErc20Action } from "~~/hooks/useEncryptActions";
 import { getConfidentialSymbol } from "~~/lib/common";
+import { usePairClaims } from "~~/services/store/claim";
 import {
   useEncryptDecryptBalances,
   useEncryptDecryptFormattedAllowance,
@@ -33,6 +34,7 @@ import {
 
 export function MainTokenSwapping() {
   const isEncrypt = useEncryptDecryptIsEncrypt();
+  const [isControlsDisabled, setIsControlsDisabled] = useState(false);
 
   return (
     <div className="text-center inline-block">
@@ -53,13 +55,13 @@ export function MainTokenSwapping() {
 
               <hr className="border-t border-gray-300 my-4" />
 
-              <AmountInputRow />
-              <AmountSliderRow />
+              <AmountInputRow disabled={isControlsDisabled} />
+              <AmountSliderRow disabled={isControlsDisabled} />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 justify-center items-start">
-            {isEncrypt && <EncryptTransactionGuide />}
-            {!isEncrypt && <DecryptTransactionGuide />}
+            {isEncrypt && <EncryptTransactionGuide setIsControlsDisabled={setIsControlsDisabled} />}
+            {!isEncrypt && <DecryptTransactionGuide setIsControlsDisabled={setIsControlsDisabled} />}
           </CardFooter>
         </Card>
       </div>
@@ -108,7 +110,7 @@ const EncryptDecryptActionSelectionRow = () => {
   );
 };
 
-const AmountInputRow = () => {
+const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
   const isEncrypt = useEncryptDecryptIsEncrypt();
   const inputValue = useEncryptDecryptInputValue();
   const setInputValue = useUpdateEncryptDecryptValue();
@@ -122,6 +124,7 @@ const AmountInputRow = () => {
       <div className="flex flex-col items-start flex-1">
         <div className="text-sm text-[#336699] font-semibold">{isEncrypt ? "You Deposit" : "You Withdraw"}</div>
         <input
+          disabled={disabled}
           type="number"
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
@@ -131,6 +134,7 @@ const AmountInputRow = () => {
       </div>
       <div className="flex flex-col items-end flex-none justify-between">
         <TokenSelector
+          disabled={disabled}
           value={pair?.publicToken.address}
           isEncrypt={isEncrypt}
           onChange={(val: string) => setToken(val)}
@@ -142,6 +146,7 @@ const AmountInputRow = () => {
             {!isEncrypt && formatUnits(balances?.confidentialBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
           </div>
           <Button
+            disabled={disabled}
             onClick={() => setSliderValue(100)}
             uppercase={true}
             noOutline={true}
@@ -156,12 +161,13 @@ const AmountInputRow = () => {
   );
 };
 
-const AmountSliderRow = () => {
+const AmountSliderRow = ({ disabled }: { disabled: boolean }) => {
   const sliderValue = useEncryptDecryptPercentValue();
   const setSliderValue = useUpdateEncryptDecryptValueByPercent();
 
   return (
     <Slider
+      disabled={disabled}
       value={[sliderValue]}
       onValueChange={val => {
         if (val[0] !== undefined) {
@@ -176,7 +182,7 @@ const AmountSliderRow = () => {
   );
 };
 
-const EncryptTransactionGuide = () => {
+const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisabled: (disabled: boolean) => void }) => {
   const pair = useEncryptDecryptPair();
   const valueError = useEncryptDecryptValueError();
 
@@ -198,42 +204,9 @@ const EncryptTransactionGuide = () => {
     return TxGuideStepState.Ready;
   }, [pair, isDeploying]);
 
-  // Approve
-
-  const rawInputValue = useEncryptDecryptRawInputValue();
-  const displayAmount = formatUnits(rawInputValue, pair?.publicToken.decimals ?? 18);
-
-  const requiresApproval = useEncryptDecryptRequiresApproval();
-  const displayAllowance = useEncryptDecryptFormattedAllowance();
-  const { onApproveFherc20, isApproving } = useApproveFherc20Action();
-
-  const handleApprove = () => {
-    if (pair == null) {
-      toast.error("No token selected");
-      return;
-    }
-    if (pair.confidentialToken == null) {
-      toast.error("No confidential token deployed");
-      return;
-    }
-    onApproveFherc20({
-      publicTokenSymbol: pair.publicToken.symbol,
-      publicTokenAddress: pair.publicToken.address,
-      confidentialTokenAddress: pair.confidentialToken.address,
-      amount: rawInputValue,
-    });
-  };
-
-  const approveState = useMemo(() => {
-    if (pair == null) return TxGuideStepState.Ready;
-    if (!requiresApproval) return TxGuideStepState.Success;
-    if (isApproving) return TxGuideStepState.Loading;
-    return TxGuideStepState.Ready;
-  }, [pair, isApproving, requiresApproval]);
-
   // Encrypt
 
-  const { onEncryptErc20, isEncrypting } = useEncryptErc20Action();
+  const { onEncryptErc20, isEncrypting, isEncryptError } = useEncryptErc20Action();
 
   const handleEncrypt = () => {
     if (pair == null) {
@@ -252,10 +225,74 @@ const EncryptTransactionGuide = () => {
     });
   };
 
-  const encryptState = useMemo(() => {
-    if (isEncrypting) return TxGuideStepState.Loading;
+  const [encryptState, setEncryptState] = useState<TxGuideStepState>(TxGuideStepState.Ready);
+  const prevEncrypting = useRef(isEncrypting);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    if (isEncrypting) {
+      // went to "true" → immediately show Loading
+      setEncryptState(TxGuideStepState.Loading);
+      setIsControlsDisabled(true);
+    } else if (prevEncrypting.current) {
+      // transition **true → false** → show Success, then Ready after 5 s
+      isEncryptError ? setEncryptState(TxGuideStepState.Error) : setEncryptState(TxGuideStepState.Success);
+      timer = setTimeout(() => {
+        setEncryptState(TxGuideStepState.Ready);
+        setIsControlsDisabled(false);
+      }, 5_000);
+    }
+    // update ref for next run
+    prevEncrypting.current = isEncrypting;
+
+    // cleanup if the component unmounts or `isEncrypting` flips again
+    return () => timer && clearTimeout(timer);
+  }, [isEncrypting, isEncryptError, setIsControlsDisabled]);
+
+  // Approve
+
+  const rawInputValue = useEncryptDecryptRawInputValue();
+  const displayAmount = formatUnits(rawInputValue, pair?.publicToken.decimals ?? 18);
+
+  const requiresApproval = useEncryptDecryptRequiresApproval();
+  const displayAllowance = useEncryptDecryptFormattedAllowance();
+  const { onApproveFherc20, isApproving } = useApproveFherc20Action();
+
+  const handleApprove = () => {
+    if (pair == null) {
+      toast.error("No token selected");
+      return;
+    }
+    if (pair.confidentialToken == null) {
+      toast.error("No confidential token deployed");
+      return;
+    }
+    setIsControlsDisabled(true);
+    onApproveFherc20({
+      publicTokenSymbol: pair.publicToken.symbol,
+      publicTokenAddress: pair.publicToken.address,
+      confidentialTokenAddress: pair.confidentialToken.address,
+      amount: rawInputValue,
+    });
+  };
+
+  useEffect(() => {
+    if (!isApproving) {
+      setIsControlsDisabled(false);
+    }
+  }, [isApproving, setIsControlsDisabled]);
+
+  const approveState = useMemo(() => {
+    if (pair == null) return TxGuideStepState.Ready;
+    if (encryptState === TxGuideStepState.Success || encryptState === TxGuideStepState.Loading)
+      return TxGuideStepState.Success;
+
+    if (isApproving) return TxGuideStepState.Loading;
+    if (!requiresApproval) return TxGuideStepState.Success;
+
     return TxGuideStepState.Ready;
-  }, [isEncrypting]);
+  }, [pair, isApproving, requiresApproval, encryptState]);
 
   // ERRS
 
@@ -264,8 +301,8 @@ const EncryptTransactionGuide = () => {
     ? "Stablecoin encryption disabled until FHED (FHE Dollar) release"
     : undefined;
   const valueErrMessage = valueError != null ? `Invalid amount:\n${valueError}` : undefined;
-
-  const sharedErrMessage = missingPairErrMessage ?? valueErrMessage;
+  const encryptErrMessage = isEncryptError ? `Encryption failed` : undefined;
+  const sharedErrMessage = missingPairErrMessage ?? valueErrMessage ?? encryptErrMessage;
 
   // Steps
 
@@ -301,19 +338,36 @@ const EncryptTransactionGuide = () => {
   return <TransactionGuide title="Encryption steps:" steps={steps} />;
 };
 
-const DecryptTransactionGuide = () => {
+const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisabled: (disabled: boolean) => void }) => {
   const pair = useEncryptDecryptPair();
   const valueError = useEncryptDecryptValueError();
   const rawInputValue = useEncryptDecryptRawInputValue();
+  const pairClaims = usePairClaims(pair?.publicToken.address);
 
-  // Decrypt
+  const { onDecryptFherc20, isDecrypting, isDecryptError } = useDecryptFherc20Action();
+  const prevDecrypting = useRef(isDecrypting);
+  const [decryptState, setDecryptState] = useState<TxGuideStepState>(TxGuideStepState.Ready);
 
-  const { onDecryptFherc20, isDecrypting } = useDecryptFherc20Action();
-  const decryptState = useMemo(() => {
-    // TODO: Add more states
-    if (isDecrypting) return TxGuideStepState.Loading;
-    return TxGuideStepState.Ready;
-  }, [isDecrypting]);
+  const valueErrMessage = valueError != null ? `Invalid amount:\n${valueError}` : undefined;
+  const decryptErrMessage = isDecryptError ? `Decryption failed` : undefined;
+  const sharedErrMessage = valueErrMessage ?? decryptErrMessage;
+
+  useEffect(() => {
+    if (isDecryptError) {
+      setDecryptState(TxGuideStepState.Error);
+      setIsControlsDisabled(false);
+    } else if (isDecrypting) {
+      // went to "true" → immediately show Loading
+      setDecryptState(TxGuideStepState.Loading);
+      setIsControlsDisabled(true);
+    } else if (prevDecrypting.current) {
+      // transition **true → false** → show Success
+      setDecryptState(TxGuideStepState.Success);
+      setIsControlsDisabled(false);
+    }
+    // update ref for next run
+    prevDecrypting.current = isDecrypting;
+  }, [isDecrypting, isDecryptError, setIsControlsDisabled]);
 
   const handleDecrypt = () => {
     if (pair == null) {
@@ -336,19 +390,72 @@ const DecryptTransactionGuide = () => {
 
   // TODO: state = loading if any claim pending, state = success if all claims ready
   // TODO: state = ready if no claims in list
-  const waitForDecryptState = TxGuideStepState.Ready;
+  const [waitForDecryptState, setWaitForDecryptState] = useState<TxGuideStepState>(TxGuideStepState.Ready);
 
+  useEffect(() => {
+    const isPending = pairClaims ? pairClaims.totalPendingAmount > 0n : false;
+    const isClaimable = pairClaims ? pairClaims.totalDecryptedAmount > 0n : false;
+
+    if (isDecrypting) {
+      setWaitForDecryptState(TxGuideStepState.Ready);
+    } else if (decryptState === TxGuideStepState.Success) {
+      if (isPending) {
+        setWaitForDecryptState(TxGuideStepState.Loading);
+      } else if (isClaimable) {
+        setWaitForDecryptState(TxGuideStepState.Success);
+      }
+    } else {
+      setWaitForDecryptState(TxGuideStepState.Ready);
+    }
+  }, [isDecrypting, decryptState, pairClaims]);
   // Claim
 
-  const { onClaimFherc20, isClaiming } = useClaimFherc20Action();
-  const claimState = useMemo(() => {
-    // TODO: Add more states
-    if (isClaiming) return TxGuideStepState.Loading;
-    return TxGuideStepState.Ready;
-  }, [isClaiming]);
+  const { onClaimAll, isClaiming, isClaimError } = useClaimAllAction();
+  const prevClaiming = useRef(isClaiming);
+  const [claimState, setClaimState] = useState<TxGuideStepState>(TxGuideStepState.Ready);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    if (isClaimError) {
+      setClaimState(TxGuideStepState.Error);
+      setIsControlsDisabled(false);
+    } else if (isClaiming) {
+      // went to "true" → immediately show Loading
+      setClaimState(TxGuideStepState.Loading);
+      setIsControlsDisabled(true);
+    } else if (prevClaiming.current) {
+      // transition **true → false** → show Success, then Ready after 5 s
+      setClaimState(TxGuideStepState.Success);
+      setIsControlsDisabled(false);
+      timer = setTimeout(() => {
+        setClaimState(TxGuideStepState.Ready);
+        setDecryptState(TxGuideStepState.Ready);
+      }, 10_00);
+    }
+    // update ref for next run
+    prevClaiming.current = isClaiming;
+
+    // cleanup if the component unmounts or `isEncrypting` flips again
+    return () => timer && clearTimeout(timer);
+  }, [isClaiming, isClaimError, setIsControlsDisabled]);
 
   const handleClaim = () => {
-    console.log("Claim");
+    if (pair == null || pairClaims == null) {
+      toast.error("No token selected");
+      return;
+    }
+    if (pair.confidentialToken == null) {
+      toast.error("No confidential token deployed");
+      return;
+    }
+
+    onClaimAll({
+      publicTokenSymbol: pair.publicToken.symbol,
+      publicTokenAddress: pair.publicToken.address,
+      confidentialTokenAddress: pair.confidentialToken.address,
+      claimAmount: pairClaims.totalDecryptedAmount,
+    });
   };
 
   // Steps
@@ -360,13 +467,15 @@ const DecryptTransactionGuide = () => {
       hint: "Decrypt the token",
       state: decryptState,
       action: handleDecrypt,
-      disabled: pair == null || isDecrypting,
+      disabled: pair == null || valueError != null || isDecrypting,
+      errorMessage: sharedErrMessage,
     },
     {
       title: "Wait for Decryption",
       cta: pair == null ? "Select a token" : `WAIT FOR DECRYPTION`,
       hint: "Wait for the token to be decrypted",
       state: waitForDecryptState,
+      errorMessage: sharedErrMessage,
     },
     {
       title: "Claim",
@@ -375,6 +484,7 @@ const DecryptTransactionGuide = () => {
       state: claimState,
       action: handleClaim,
       disabled: pair == null || valueError != null || isClaiming,
+      errorMessage: sharedErrMessage,
     },
   ];
   return <TransactionGuide title="Decryption steps:" steps={steps} />;

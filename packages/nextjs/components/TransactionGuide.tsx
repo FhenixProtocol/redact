@@ -31,7 +31,7 @@ export const TransactionGuide: React.FC<TxGuideProps> = ({ title, steps }) => {
   }, [steps]);
 
   return (
-    <div className="flex flex-col gap-2 bg-primary-foreground rounded-4xl p-4 w-full">
+    <div className="flex flex-col gap-2 bg-primary-foreground rounded-2xl p-4 w-full">
       <div className="flex flex-row justify-start items-center gap-2 text-primary">
         <CircleAlert />
         <span className="font-semibold">{title}</span>
@@ -116,7 +116,11 @@ const TxGuideStepTitle = ({
   const isActive = stepIndex === activeStepIndex;
   const color = getStepColor(state, isActive);
 
-  return <div className={cn("text-sm absolute -top-6", color, isActive ? "font-bold" : "font-normal")}>{title}</div>;
+  return (
+    <div className={cn("whitespace-nowrap text-sm absolute -top-6", color, isActive ? "font-bold" : "font-normal")}>
+      {title}
+    </div>
+  );
 };
 
 const TxGuideStepCircleIcon = ({

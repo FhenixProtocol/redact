@@ -51,7 +51,10 @@ const Slider = React.forwardRef<React.ComponentRef<typeof SliderPrimitive.Root>,
           {/* Slider Track */}
           <SliderPrimitive.Root
             ref={ref}
-            className={cn("relative flex w-full touch-none select-none items-center border-none")}
+            className={cn(
+              "relative flex w-full touch-none select-none items-center border-none",
+              props.disabled && "opacity-50 cursor-not-allowed"
+            )}
             max={max}
             value={internalValue.filter((v): v is number => v !== undefined)}
             onValueChange={(val: number[]) => {
@@ -62,12 +65,12 @@ const Slider = React.forwardRef<React.ComponentRef<typeof SliderPrimitive.Root>,
             }}
             {...props}
           >
-            <SliderPrimitive.Track className="relative h-3 w-full rounded-full bg-[#005bb5] shadow-inner">
-              <SliderPrimitive.Range className="absolute h-full rounded-full border-2 border-[#005bb5] bg-[#0073E6]" />
+            <SliderPrimitive.Track className="relative h-3 w-full rounded-full bg-[#005bb5] shadow-inner data-[disabled]:bg-gray-300">
+              <SliderPrimitive.Range className="absolute h-full rounded-full border-2 border-[#005bb5] bg-[#0073E6] data-[disabled]:bg-gray-400 data-[disabled]:border-gray-400" />
             </SliderPrimitive.Track>
 
             {/* Thumb */}
-            <SliderPrimitive.Thumb className="block h-6 w-6 rounded-full bg-[#0057FF] border-2 border-[#0057FF] shadow-md focus:outline-hidden focus:ring-2 focus:ring-blue-400" />
+            <SliderPrimitive.Thumb className="block h-6 w-6 rounded-full bg-[#0057FF] border-2 border-[#0057FF] shadow-md focus:outline-hidden focus:ring-2 focus:ring-blue-400 data-[disabled]:bg-gray-400 data-[disabled]:border-gray-400" />
           </SliderPrimitive.Root>
 
           {/* Max Button - Adjusted position */}
