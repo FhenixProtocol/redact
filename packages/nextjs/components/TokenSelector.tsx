@@ -12,9 +12,10 @@ interface TokenSelectorProps {
   isEncrypt?: boolean;
   onChange?: (value: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export function TokenSelector({ value, isEncrypt, onChange, className }: TokenSelectorProps) {
+export function TokenSelector({ value, isEncrypt, onChange, className, disabled }: TokenSelectorProps) {
   const { setSelectTokenModalOpen } = useGlobalState();
   const valuePair = useConfidentialTokenPair(value);
 
@@ -33,6 +34,7 @@ export function TokenSelector({ value, isEncrypt, onChange, className }: TokenSe
       variant="surface"
       className={cn("rounded-[20px] border-none bg-gray-200 text-primary-accent p-1.5 pr-3 h-auto", className)}
       onClick={handleOpenModal}
+      disabled={disabled}
     >
       {displayPair ? (
         <div className="flex items-center gap-2">

@@ -116,7 +116,11 @@ const TxGuideStepTitle = ({
   const isActive = stepIndex === activeStepIndex;
   const color = getStepColor(state, isActive);
 
-  return <div className={cn("text-sm absolute -top-6", color, isActive ? "font-bold" : "font-normal")}>{title}</div>;
+  return (
+    <div className={cn("whitespace-nowrap text-sm absolute -top-6", color, isActive ? "font-bold" : "font-normal")}>
+      {title}
+    </div>
+  );
 };
 
 const TxGuideStepCircleIcon = ({

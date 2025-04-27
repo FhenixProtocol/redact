@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { wagmiConfig } from "../web3/wagmiConfig";
 import { superjsonStorage } from "./superjsonStorage";
 import { useConfidentialAddressPairs, useDeepEqual } from "./tokenStore";

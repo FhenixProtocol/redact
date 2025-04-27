@@ -14,8 +14,7 @@ import { refetchSingleTokenPairBalances } from "~~/services/store/tokenStore";
 import { TransactionActionType } from "~~/services/store/transactionStore";
 
 export const useDecryptFherc20Action = () => {
-  const { writeContractAsync } = useWriteContract();
-  const chainId = useChainId();
+  const { writeContractAsync, isError } = useWriteContract();
   const { address: account } = useAccount();
   const trackTx = useTxLifecycle();
   const [isPending, setIsPending] = useState(false);
@@ -73,15 +72,14 @@ export const useDecryptFherc20Action = () => {
         throw error;
       }
     },
-    [writeContractAsync, chainId, account, trackTx],
+    [writeContractAsync, account, trackTx],
   );
 
-  return { onDecryptFherc20, isDecrypting: isPending };
+  return { onDecryptFherc20, isDecrypting: isPending, isDecryptError: isError };
 };
 
 export const useClaimFherc20Action = () => {
   const { writeContractAsync } = useWriteContract();
-  const chainId = useChainId();
   const { address: account } = useAccount();
   const trackTx = useTxLifecycle();
   const [isPending, setIsPending] = useState(false);
@@ -131,17 +129,18 @@ export const useClaimFherc20Action = () => {
         throw error;
       }
     },
-    [account, writeContractAsync, chainId, trackTx],
+    [account, writeContractAsync, trackTx],
   );
 
   return { onClaimFherc20, isClaiming: isPending };
 };
 
 export const useClaimAllAction = () => {
-  const { writeContractAsync, isPending } = useWriteContract();
-  const chainId = useChainId();
+  const { writeContractAsync, isError } = useWriteContract();
   const { address: account } = useAccount();
   const trackTx = useTxLifecycle();
+  const [isPending, setIsPending] = useState(false);
+
   const onClaimAll = useCallback(
     async ({
       publicTokenAddress,
@@ -165,6 +164,7 @@ export const useClaimAllAction = () => {
       }
 
       try {
+        setIsPending(true);
         const tx = await writeContractAsync({
           address: confidentialTokenAddress,
           abi: confidentialErc20Abi,
@@ -173,10 +173,11 @@ export const useClaimAllAction = () => {
 
         const success = await trackTx(tx, {
           tokenSymbol: publicTokenSymbol,
-          tokenAddress: confidentialTokenAddress,
+          tokenAddress: publicTokenAddress,
           tokenAmount: claimAmount,
           actionType: TransactionActionType.Claim,
         });
+        setIsPending(false);
 
         if (success) {
           toast.success(`Claimed ${publicTokenSymbol}`);
@@ -189,13 +190,14 @@ export const useClaimAllAction = () => {
 
         return tx;
       } catch (error) {
+        setIsPending(false);
         console.error("Failed to claim token:", error);
         toast.error("Failed to claim token");
         throw error;
       }
     },
-    [account, writeContractAsync, chainId, trackTx],
+    [account, writeContractAsync, trackTx],
   );
 
-  return { onClaimAll, isClaiming: isPending };
+  return { onClaimAll, isClaiming: isPending, isClaimError: isError };
 };

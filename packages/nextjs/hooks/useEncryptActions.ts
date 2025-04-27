@@ -126,7 +126,7 @@ export const useApproveFherc20Action = () => {
 };
 
 export const useEncryptErc20Action = () => {
-  const { writeContractAsync } = useWriteContract();
+  const { writeContractAsync, isError } = useWriteContract();
   const [isPending, setIsPending] = useState(false);
   const { address: account } = useAccount();
   const trackTx = useTxLifecycle();
@@ -186,5 +186,5 @@ export const useEncryptErc20Action = () => {
     [account, writeContractAsync, trackTx],
   );
 
-  return { onEncryptErc20, isEncrypting: isPending };
+  return { onEncryptErc20, isEncrypting: isPending, isEncryptError: isError };
 };
