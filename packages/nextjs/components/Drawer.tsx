@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { CopyButton } from "./HashLink";
 import { ConnectPage } from "./menu-pages/ConnectPage";
 import { WalletMainPanel } from "./menu-pages/MainPage";
@@ -13,7 +14,7 @@ import { ArrowBack, Logout } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, Settings, WalletIcon, X } from "lucide-react";
 import { zeroAddress } from "viem";
-import { useAccount, useDisconnect } from "wagmi";
+import { useAccount, useChainId, useDisconnect } from "wagmi";
 import { SettingsPage } from "~~/components/menu-pages/SettingsPage";
 import { IconButton } from "~~/components/ui/IconButton";
 import { truncateAddress } from "~~/lib/common";
@@ -40,6 +41,21 @@ export interface DrawerPage {
   header?: React.ReactElement;
   component: React.ReactElement<DrawerChildProps>;
 }
+
+const NETWORK_ICONS: Record<number, string> = {
+  1: "/icons/networks/ethereum.svg",
+  42161: "/icons/networks/arbitrum.svg",
+  421614: "/icons/networks/arbitrum.svg",
+  11155111: "/icons/networks/ethereum.svg",
+  // Add more networks as needed
+};
+
+const NetworkIcon = () => {
+  const chainId = useChainId();
+  const iconPath = NETWORK_ICONS[chainId] || "/icons/networks/default.svg";
+
+  return <Image src={iconPath} alt={`Network ${chainId}`} width={16} height={16} className="w-5 h-5" />;
+};
 
 const Drawer: React.FC = () => {
   const open = useDrawerOpen();
@@ -179,11 +195,11 @@ const DrawerConnectedHeader = () => {
     <div className="flex flex-1 items-center justify-between h-full">
       <div className="flex h-full items-center justify-center">
         <div className="flex w-12 items-center justify-center">
-          <WalletIcon className="w-4 h-4 text-primary" />
+          <NetworkIcon />
         </div>
         <Separator orientation="vertical" />
       </div>
-      <div className="flex gap-4 items-center justify-center">
+      <div className="flex gap-4 flex-grow items-center justify-center">
         <WalletIcon className="w-4 h-4 text-primary" />
         <div className="text-sm text-primary">{truncateAddress(address ?? zeroAddress, 10, 10)}</div>
         <CopyButton address={address ?? zeroAddress} className="w-4 h-4" />
