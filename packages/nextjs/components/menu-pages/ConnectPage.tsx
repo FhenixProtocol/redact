@@ -30,6 +30,8 @@ export const ConnectPage = () => {
             return null;
           }
 
+          const iconSize = 4;
+
           return (
             <Button
               key={`${connector.id}-${index}`}
@@ -38,7 +40,13 @@ export const ConnectPage = () => {
               className="flex items-center gap-2 w-full mr-1 px-1 py-0.5"
             >
               {connector.id.toLowerCase().includes("metamask") && (
-                <Image src="/wallet-icons/metamask.svg" alt="MetaMask" width={24} height={24} className="w-6 h-6" />
+                <Image
+                  src="/wallet-icons/metamask.svg"
+                  alt="MetaMask"
+                  width={24}
+                  height={24}
+                  className={`w-${iconSize} h-${iconSize}`}
+                />
               )}
               {connector.id.toLowerCase().includes("walletconnect") && (
                 <Image
@@ -46,14 +54,26 @@ export const ConnectPage = () => {
                   alt="WalletConnect"
                   width={24}
                   height={24}
-                  className="w-6 h-6"
+                  className={`w-${iconSize} h-${iconSize}`}
                 />
               )}
               {connector.id.toLowerCase().includes("coinbase") && (
-                <Image src="/wallet-icons/coinbase.svg" alt="Coinbase" width={24} height={24} className="w-6 h-6" />
+                <Image
+                  src="/wallet-icons/coinbase.svg"
+                  alt="Coinbase"
+                  width={24}
+                  height={24}
+                  className={`w-${iconSize} h-${iconSize}`}
+                />
               )}
               {connector.id.toLowerCase().includes("safe") && (
-                <Image src="/wallet-icons/safe.svg" alt="Safe" width={24} height={24} className="w-6 h-6" />
+                <Image
+                  src="/wallet-icons/safe.svg"
+                  alt="Safe"
+                  width={24}
+                  height={24}
+                  className={`w-${iconSize} h-${iconSize}`}
+                />
               )}
               {!connector.id.toLowerCase().includes("metamask") &&
                 !connector.id.toLowerCase().includes("walletconnect") &&
@@ -64,7 +84,7 @@ export const ConnectPage = () => {
                     alt={connector.name}
                     width={24}
                     height={24}
-                    className="w-6 h-6"
+                    className={`w-${iconSize} h-${iconSize}`}
                   />
                 )}
               {connector.name}
