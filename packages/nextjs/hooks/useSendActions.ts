@@ -1,18 +1,18 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useTxLifecycle } from "./useTxLifecycle";
 import { CoFheInUint128, Encryptable } from "cofhejs/web";
 import { cofhejs } from "cofhejs/web";
 import toast from "react-hot-toast";
 import { Address, erc20Abi } from "viem";
-import { useAccount, useChainId, useWriteContract } from "wagmi";
+import { useAccount, useWriteContract } from "wagmi";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import { refetchSingleTokenPairBalances } from "~~/services/store/tokenStore";
 import { TransactionActionType } from "~~/services/store/transactionStore";
 
 export const useSendPublicTokenAction = () => {
-  const { writeContractAsync, isPending } = useWriteContract();
-  const chainId = useChainId();
+  const { writeContractAsync } = useWriteContract();
   const { address: account } = useAccount();
+  const [isPending, setIsPending] = useState(false);
   const trackTx = useTxLifecycle();
 
   const onSend = useCallback(
@@ -38,6 +38,7 @@ export const useSendPublicTokenAction = () => {
       }
 
       try {
+        setIsPending(true);
         const tx = await writeContractAsync({
           address: publicTokenAddress,
           abi: erc20Abi,
@@ -52,6 +53,7 @@ export const useSendPublicTokenAction = () => {
           actionType: TransactionActionType.Send,
         });
 
+        setIsPending(false);
         if (success) {
           toast.success(`Sent ${publicTokenSymbol}`);
           refetchSingleTokenPairBalances(publicTokenAddress);
@@ -60,20 +62,21 @@ export const useSendPublicTokenAction = () => {
         }
         return tx;
       } catch (error) {
+        setIsPending(false);
         console.error("Failed to send token:", error);
         toast.error("Failed to send token");
         throw error;
       }
     },
-    [writeContractAsync, chainId, account, trackTx],
+    [writeContractAsync, account, trackTx],
   );
 
   return { onSend, isSending: isPending };
 };
 
 export const useSendConfidentialTokenAction = () => {
-  const { writeContractAsync, isPending } = useWriteContract();
-  const chainId = useChainId();
+  const { writeContractAsync } = useWriteContract();
+  const [isPending, setIsPending] = useState(false);
   const { address: account } = useAccount();
   const trackTx = useTxLifecycle();
 
@@ -103,6 +106,8 @@ export const useSendConfidentialTokenAction = () => {
         return;
       }
 
+      setIsPending(true);
+
       let encryptedAmount: CoFheInUint128;
       try {
         const encryptedAmountResult = await cofhejs.encrypt([Encryptable.uint128(amount)]);
@@ -130,6 +135,7 @@ export const useSendConfidentialTokenAction = () => {
           tokenAmount: amount,
           actionType: TransactionActionType.EncSend,
         });
+        setIsPending(false);
 
         if (success) {
           toast.success(`Sent ${confidentialTokenSymbol}`);
@@ -140,12 +146,13 @@ export const useSendConfidentialTokenAction = () => {
 
         return tx;
       } catch (error) {
+        setIsPending(false);
         console.error("Failed to send token:", error);
         toast.error("Failed to send token");
         throw error;
       }
     },
-    [account, writeContractAsync, chainId, trackTx],
+    [account, writeContractAsync, trackTx],
   );
 
   return { onSend, isSending: isPending };

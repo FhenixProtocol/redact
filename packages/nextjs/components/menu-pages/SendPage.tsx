@@ -5,6 +5,7 @@ import { Button } from "../ui/Button";
 import { FnxInput } from "../ui/FnxInput";
 import { Slider } from "../ui/FnxSlider";
 import { Modal } from "../ui/Modal";
+import { Switcher } from "../ui/Switcher";
 import { TokenIconSymbol } from "../ui/TokenIconSymbol";
 import { Eye, EyeClosed, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
@@ -64,32 +65,18 @@ const PublicConfidentialSelectRow = () => {
   const setIsPublic = useSendSetIsPublic();
 
   return (
-    <Button
-      variant="ghost"
-      noOutline={true}
-      className="px-4 py-1 flex flex-row w-full justify-between items-center rounded-2xl border border-[#3399FF]"
-      onClick={() => setIsPublic(!isPublic)}
-    >
-      <span className="text-primary text-sm">
-        <span className="font-normal">Mode:</span> {isPublic ? "Public" : "Confidential"}
-      </span>
-      <div className="flex flex-row items-center justify-center rounded-2xl p-1 bg-gray-200">
-        <Button
-          variant={isPublic ? "default" : "ghost"}
-          size="md"
-          noOutline={true}
-          className="p-1 pointer-events-none"
-          icon={Eye}
-        />
-        <Button
-          variant={isPublic ? "ghost" : "default"}
-          size="md"
-          noOutline={true}
-          className="p-1 pointer-events-none"
-          icon={EyeOff}
-        />
-      </div>
-    </Button>
+    <div className="w-full">
+      <Switcher
+        label="Mode"
+        options={[
+          { description: "Public", icon: Eye },
+          { description: "Confidential", icon: EyeOff },
+        ]}
+        value={isPublic ? 0 : 1}
+        onValueChange={val => setIsPublic(val === 0)}
+        className="flex flex-row w-full justify-between items-center rounded-full border border-[#3399FF]"
+      />
+    </div>
   );
 };
 
@@ -170,13 +157,13 @@ const RecipientInputRow = () => {
 
   return (
     <FnxInput
-      bgColor="background"
+      bgColor="theme-white"
       variant="md"
       noOutline={true}
       placeholder="0x..."
       value={recipient ?? ""}
       onChange={e => setRecipient(e.target.value)}
-      className={`w-full  ${!isValidInput ? "border-red-500" : ""}`}
+      className={`w-full   ${!isValidInput ? "border-red-500" : ""}`}
       error={!isValidInput ? "Invalid address format" : undefined}
       fades={true}
       leftElement={<span className="px-4 text-primary text-sm font-normal">To:</span>}

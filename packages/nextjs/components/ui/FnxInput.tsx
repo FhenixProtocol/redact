@@ -47,7 +47,7 @@ export const FnxInput = React.forwardRef<HTMLInputElement, FnxInputProps>(
       <div className="relative w-full overflow-hidden">
         <div
           className={cn(
-            "flex items-center justify-between rounded-2xl border-1 border-primary-accent p-0 m-0 relative",
+            "flex items-center justify-between rounded-full border-1 border-primary-accent p-0 m-0 relative",
             `bg-${bgColor}`,
             error && "border-red-500",
           )}
