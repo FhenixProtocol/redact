@@ -109,7 +109,7 @@ export const getDeployedContract = <TContractName extends ContractName>(
     throw new Error(`Contract ${contractName} not found on chain ${chain}`);
   }
 
-  return deployedContract;
+  return deployedContract as Contract<TContractName>;
 };
 
 export const getConfidentialSymbol = (pair?: ConfidentialTokenPair) => {

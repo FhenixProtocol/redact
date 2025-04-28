@@ -61,7 +61,7 @@ export function useCofhe(config?: Partial<CofheConfig>) {
           setPermit(result.data);
           setError(null);
         } else {
-          setError(new Error(result.error));
+          setError(new Error(result.error.message || String(result.error)));
         }
       } catch (err) {
         console.error("Failed to initialize Cofhe:", err);

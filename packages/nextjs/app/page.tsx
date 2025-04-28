@@ -1,21 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import type { NextPage } from "next";
-import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { AddToken } from "~~/components/AddToken";
 import { MainTokenSwapping } from "~~/components/MainTokenSwapping";
-import { Address } from "~~/components/scaffold-eth";
-import { Modal } from "~~/components/ui/Modal";
-import { useCofhe } from "~~/hooks/useCofhe";
 
 const Home: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  //useCofhe(); // initialize the cofhejs instance
-
   return (
     <>
       <div className="flex gap-20">
@@ -38,7 +26,7 @@ const Home: NextPage = () => {
           </div>
         </div>
         <div className="">
-          <MainTokenSwapping setIsModalOpen={setIsModalOpen} />
+          <MainTokenSwapping />
         </div>
       </div>
     </>

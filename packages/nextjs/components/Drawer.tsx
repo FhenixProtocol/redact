@@ -131,7 +131,7 @@ const DrawerContentBody = () => {
         {page === DrawerPageName.Main && <WalletMainPanel />}
         {page === DrawerPageName.Settings && <SettingsPage />}
         {page === DrawerPageName.Token && <TokenPage pairAddress={pairAddress} />}
-        {page === DrawerPageName.Send && <SendPage pairAddress={pairAddress} />}
+        {page === DrawerPageName.Send && <SendPage /*pairAddress={pairAddress}*/ />}
         {page === DrawerPageName.Receive && <ReceivePage />}
         {page === DrawerPageName.Connect && <ConnectPage />}
       </motion.div>
