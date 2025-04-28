@@ -37,15 +37,36 @@ export const ConnectPage = () => {
               variant="outline"
               className="flex items-center gap-2 w-full mr-1 px-1 py-0.5"
             >
-              {connector.id === "metaMask" && (
-                <img src="/metamask-icon.png" alt="MetaMask" className="w-6 h-6" width={24} height={24} />
+              {connector.id.toLowerCase().includes("metamask") && (
+                <Image src="/wallet-icons/metamask.svg" alt="MetaMask" width={24} height={24} className="w-6 h-6" />
               )}
-              {connector.id === "walletConnect" && (
-                <img src="/walletconnect-icon.png" alt="WalletConnect" className="w-6 h-6" width={24} height={24} />
+              {connector.id.toLowerCase().includes("walletconnect") && (
+                <Image
+                  src="/wallet-icons/walletconnect.svg"
+                  alt="WalletConnect"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
               )}
-              {connector.id !== "metaMask" && connector.id !== "walletConnect" && (
-                <img src="/default-wallet-icon.png" alt={connector.name} className="w-6 h-6" width={24} height={24} />
+              {connector.id.toLowerCase().includes("coinbase") && (
+                <Image src="/wallet-icons/coinbase.svg" alt="Coinbase" width={24} height={24} className="w-6 h-6" />
               )}
+              {connector.id.toLowerCase().includes("safe") && (
+                <Image src="/wallet-icons/safe.svg" alt="Safe" width={24} height={24} className="w-6 h-6" />
+              )}
+              {!connector.id.toLowerCase().includes("metamask") &&
+                !connector.id.toLowerCase().includes("walletconnect") &&
+                !connector.id.toLowerCase().includes("coinbase") &&
+                !connector.id.toLowerCase().includes("safe") && (
+                  <Image
+                    src="/default-wallet-icon.png"
+                    alt={connector.name}
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
+                )}
               {connector.name}
             </Button>
           );
