@@ -3,6 +3,7 @@ import { HashLink } from "../HashLink";
 import { TransactionHistory } from "../TransactionHistory";
 import { Button } from "../ui/Button";
 import { CleartextBalance } from "../ui/CleartextBalance";
+import { ConfirmButton } from "../ui/ConfirmButton";
 import { DisplayBalance } from "../ui/DisplayBalance";
 import { DisplayValue } from "../ui/DisplayValue";
 import { EncryptedBalance } from "../ui/EncryptedValue";
@@ -285,9 +286,18 @@ export const TokenPageButtonFooter = ({ pairAddress }: { pairAddress: string | u
         Back
       </Button>
       {isArbitraryToken && (
-        <Button size="md" iconSize="lg" variant="destructive" className="flex-1" icon={X} onClick={handleRemove}>
+        <ConfirmButton
+          size="md"
+          iconSize="lg"
+          variant="destructive"
+          className="flex-1"
+          icon={X}
+          onConfirm={handleRemove}
+          confirmText="Remove"
+          cancelText="Cancel"
+        >
           Remove
-        </Button>
+        </ConfirmButton>
       )}
     </div>
   );
