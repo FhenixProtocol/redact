@@ -477,6 +477,13 @@ export const _fetchTokenPairsData = async (
 
 export const fetchTokenPairsData = async () => {
   const chain = await getChainId();
+
+  try {
+    await loadPredefinedValues("https://redact-resources.s3.eu-west-1.amazonaws.com/predefined-token-list.json");
+  } catch (error) {
+    console.error("Error loading predefined values:", error);
+  }
+
   const erc20Addresses = Object.keys(useTokenStore.getState().arbitraryTokens?.[chain] ?? {});
   const pairs = await _fetchTokenPairsData(chain, erc20Addresses);
   useTokenStore.setState(state => {
@@ -643,4 +650,33 @@ export const useRemoveArbitraryToken = (address?: string) => {
     if (address == null) return;
     _removeArbitraryToken(chain, address);
   }, [address, chain]);
+};
+
+// Add this new function to load predefined values
+export const loadPredefinedValues = async (url: string) => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch predefined values: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    useTokenStore.setState(state => {
+      // Merge the predefined values with existing state
+      state.pairs = {
+        ...state.pairs,
+        ...data.pairs,
+      };
+      state.confidentialToPublicMap = {
+        ...state.confidentialToPublicMap,
+        ...data.confidentialToPublicMap,
+      };
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error loading predefined values:", error);
+    return false;
+  }
 };
