@@ -15,9 +15,9 @@ export function SettingsPage() {
   return (
     <div className="p-4 pb-0 flex flex-col gap-4 h-full">
       <div className="text-3xl text-primary font-semibold mb-12">Settings</div>
-      <Button size="md" iconSize="lg" variant="surface" icon={AddModeratorOutlined}>
+      {/* <Button size="md" iconSize="lg" variant="surface" icon={AddModeratorOutlined}>
         Create or Share Permits
-      </Button>
+      </Button> */}
       <Button size="md" iconSize="lg" variant="surface" icon={DescriptionOutlined}>
         Documentation
       </Button>
