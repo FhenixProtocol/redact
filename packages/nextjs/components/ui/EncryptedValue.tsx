@@ -25,7 +25,7 @@ export function EncryptedValue<T extends FheTypes>({
     return transform(decryptedValue);
   }, [ctHash, transform, decryptedValue]);
 
-  console.log({ decryptedValue });
+  //console.log({ decryptedValue });
 
   return (
     <DisplayValue
