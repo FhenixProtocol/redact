@@ -9,7 +9,9 @@ let isInitializedGlobally = false;
 
 interface CofheConfig {
   environment: Environment;
+  coFheUrl?: string;
   verifierUrl?: string;
+  thresholdNetworkUrl?: string;
   ignoreErrors?: boolean;
   generatePermit?: boolean;
 }
@@ -38,6 +40,8 @@ export function useCofhe(config?: Partial<CofheConfig>) {
         const defaultConfig = {
           environment: "TESTNET" as Environment,
           verifierUrl: undefined,
+          coFheUrl: undefined,
+          thresholdNetworkUrl: undefined,
           ignoreErrors: false,
           generatePermit: true,
         };
@@ -50,6 +54,8 @@ export function useCofhe(config?: Partial<CofheConfig>) {
           viemWalletClient: walletClient,
           environment: mergedConfig.environment,
           verifierUrl: mergedConfig.verifierUrl,
+          coFheUrl: mergedConfig.coFheUrl,
+          thresholdNetworkUrl: mergedConfig.thresholdNetworkUrl,
           ignoreErrors: mergedConfig.ignoreErrors,
           generatePermit: mergedConfig.generatePermit,
         });

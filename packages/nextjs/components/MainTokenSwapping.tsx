@@ -82,7 +82,11 @@ const ConnectOverlay = () => {
 
 const CofhejsInitializedOverlay = () => {
   const { isConnected } = useAccount();
-  const { isInitialized } = useCofhe();
+  const { isInitialized } = useCofhe({
+    coFheUrl: "https://testnet-cofhe.fhenix.zone",
+    verifierUrl: "https://testnet-cofhe-vrf.fhenix.zone",
+    thresholdNetworkUrl: "https://testnet-cofhe-tn.fhenix.zone",
+  });
   if (!isConnected) return null;
   if (isInitialized) return null;
 
