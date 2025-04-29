@@ -29,7 +29,7 @@ export function SettingsPage() {
         ]}
         value={theme === "light" ? 0 : 1}
         onValueChange={handleThemeChange}
-        className=""
+        className="w-full"
       />
       <div className="flex justify-between flex-1"></div>
     </div>

@@ -1,0 +1,48 @@
+{
+    "pairs": {
+      "11155111": {
+        "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238": {
+          "publicToken": {
+            "address": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+            "name": "USD Coin",
+            "symbol": "USDC",
+            "decimals": 6,
+            "image": ""
+          },
+          "confidentialToken": {
+            "address": "0x12acE372d1cc6754641F153230173401c18A97cf",
+            "name": "Confidential USD Coin",
+            "symbol": "eUSDC",
+            "decimals": 6
+          },
+          "confidentialTokenDeployed": true,
+          "isStablecoin": false,
+          "isWETH": false
+        },
+        "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4": {
+            "publicToken": {
+              "address": "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4",
+              "name": "EUR Coin",
+              "symbol": "EURC",
+              "decimals": 6,
+              "image": ""
+            },
+            "confidentialToken": {
+              "address": "0x1e1E10d7C78181dCCd502745CADC3Af1FA4e7ed1",
+              "name": "Confidential EUR Coin",
+              "symbol": "eEURC",
+              "decimals": 6
+            },
+            "confidentialTokenDeployed": true,
+            "isStablecoin": false,
+            "isWETH": false
+          }        
+      }
+    },
+    "confidentialToPublicMap": {
+      "11155111": {
+        "0x12acE372d1cc6754641F153230173401c18A97cf": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+        "0x1e1E10d7C78181dCCd502745CADC3Af1FA4e7ed1": "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4"
+      }
+    }
+  }

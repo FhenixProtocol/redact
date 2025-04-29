@@ -41,7 +41,7 @@ export const ConnectPage = () => {
             >
               {connector.id.toLowerCase().includes("metamask") && (
                 <Image
-                  src="/wallet-icons/metamask.svg"
+                  src="/icons/wallets/metamask.svg"
                   alt="MetaMask"
                   width={24}
                   height={24}
@@ -50,7 +50,7 @@ export const ConnectPage = () => {
               )}
               {connector.id.toLowerCase().includes("walletconnect") && (
                 <Image
-                  src="/wallet-icons/walletconnect.svg"
+                  src="/icons/wallets/walletconnect.svg"
                   alt="WalletConnect"
                   width={24}
                   height={24}
@@ -59,7 +59,7 @@ export const ConnectPage = () => {
               )}
               {connector.id.toLowerCase().includes("coinbase") && (
                 <Image
-                  src="/wallet-icons/coinbase.svg"
+                  src="/icons/wallets/coinbase.svg"
                   alt="Coinbase"
                   width={24}
                   height={24}
@@ -68,7 +68,7 @@ export const ConnectPage = () => {
               )}
               {connector.id.toLowerCase().includes("safe") && (
                 <Image
-                  src="/wallet-icons/safe.svg"
+                  src="/icons/wallets/safe.svg"
                   alt="Safe"
                   width={24}
                   height={24}
