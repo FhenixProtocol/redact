@@ -5,7 +5,8 @@ import { TxGuideStepState } from "./TransactionGuide";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatUnits } from "viem";
-import { useAccount } from "wagmi";
+import { arbitrum, arbitrumSepolia, mainnet, sepolia } from "viem/chains";
+import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { TokenSelector } from "~~/components/TokenSelector";
 import { Button } from "~~/components/ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~~/components/ui/FnxCard";
@@ -41,6 +42,7 @@ export function MainTokenSwapping() {
       <div className=" flex gap-8 items-center justify-center w-[450px] rounded-3xl drop-shadow-xl">
         <Card className="rounded-[inherit] w-[450px] bg-background/60 border-component-stroke backdrop-blur-xs">
           <ConnectOverlay />
+          <NetworkOverlay />
           <CofhejsInitializedOverlay />
 
           <CardHeader>
@@ -80,12 +82,54 @@ const ConnectOverlay = () => {
   );
 };
 
+const NetworkOverlay = () => {
+  const { switchChain } = useSwitchChain();
+  const { isConnected } = useAccount();
+  const chainId = useChainId();
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [targetChain, setTargetChain] = useState<typeof sepolia | typeof arbitrumSepolia | null>(null);
+
+  useEffect(() => {
+    if (isConnected) {
+      if (chainId === mainnet.id) {
+        setShowOverlay(true);
+        setTargetChain(sepolia);
+      } else if (chainId === arbitrum.id) {
+        setShowOverlay(true);
+        setTargetChain(arbitrumSepolia);
+      } else {
+        setShowOverlay(false);
+        setTargetChain(null);
+      }
+    } else {
+      setShowOverlay(false);
+      setTargetChain(null);
+    }
+  }, [chainId, isConnected]);
+
+  if (!showOverlay || !targetChain) return null;
+
+  return (
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
+      <div className="flex flex-col gap-4 items-center">
+        <div className="text-lg font-semibold text-theme-black">Please switch to {targetChain.name} network</div>
+        <Button
+          onClick={() => switchChain({ chainId: targetChain.id })}
+          className="bg-primary-accent text-white hover:bg-primary-accent/90"
+        >
+          Switch to {targetChain.name}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const CofhejsInitializedOverlay = () => {
   const { isConnected } = useAccount();
   const { isInitialized } = useCofhe({
-    coFheUrl: "https://testnet-cofhe.fhenix.zone",
-    verifierUrl: "https://testnet-cofhe-vrf.fhenix.zone",
-    thresholdNetworkUrl: "https://testnet-cofhe-tn.fhenix.zone",
+    // coFheUrl: "https://testnet-cofhe.fhenix.zone",
+    // verifierUrl: "https://testnet-cofhe-vrf.fhenix.zone",
+    // thresholdNetworkUrl: "https://testnet-cofhe-tn.fhenix.zone",
   });
   if (!isConnected) return null;
   if (isInitialized) return null;
