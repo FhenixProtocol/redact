@@ -43,7 +43,6 @@ const Notification = ({
   icon,
   position = DEFAULT_POSITION,
 }: NotificationProps) => {
-  console.log("status", status);
   return toast.custom(
     (t: any) => (
       <div
@@ -63,7 +62,7 @@ const Notification = ({
       >
         <div className="leading-[0] self-center">{icon ? icon : ENUM_STATUSES[status]}</div>
         <div className="flex flex-col">
-          <div className={`break-words whitespace-pre-line text-primary`}>{content}</div>
+          <div className={`break-words whitespace-pre-line text-primary text-sm`}>{content}</div>
           {txHash && <HashLink type="tx" hash={txHash} />}
         </div>
         <div className={`cursor-pointer text-lg`} onClick={() => toast.dismiss(t.id)}>

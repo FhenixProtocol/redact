@@ -433,6 +433,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       publicTokenAddress: pair.publicToken.address,
       confidentialTokenAddress: pair.confidentialToken.address,
       amount: rawInputValue,
+      tokenDecimals: pair.confidentialToken.decimals,
     });
   };
 
@@ -505,6 +506,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       publicTokenAddress: pair.publicToken.address,
       confidentialTokenAddress: pair.confidentialToken.address,
       claimAmount: pairClaims.totalDecryptedAmount,
+      tokenDecimals: pair.confidentialToken.decimals,
     });
   };
 
