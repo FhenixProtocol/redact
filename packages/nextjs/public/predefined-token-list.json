@@ -10,7 +10,7 @@
             "image": ""
           },
           "confidentialToken": {
-            "address": "0x12acE372d1cc6754641F153230173401c18A97cf",
+            "address": "0xA0E9EA8E48a4c401B365CEA36050bDB948A1bc14",
             "name": "Confidential USD Coin",
             "symbol": "eUSDC",
             "decimals": 6
@@ -28,7 +28,7 @@
               "image": ""
             },
             "confidentialToken": {
-              "address": "0x1e1E10d7C78181dCCd502745CADC3Af1FA4e7ed1",
+              "address": "0x4bFF5d451c64F7F6C0CAD59291f66641CfBd49B7",
               "name": "Confidential EUR Coin",
               "symbol": "eEURC",
               "decimals": 6
@@ -41,8 +41,8 @@
     },
     "confidentialToPublicMap": {
       "11155111": {
-        "0x12acE372d1cc6754641F153230173401c18A97cf": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-        "0x1e1E10d7C78181dCCd502745CADC3Af1FA4e7ed1": "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4"
+        "0xA0E9EA8E48a4c401B365CEA36050bDB948A1bc14": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+        "0x4bFF5d451c64F7F6C0CAD59291f66641CfBd49B7": "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4"
       }
     }
   }
