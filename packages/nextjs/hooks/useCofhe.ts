@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Encryptable, Environment, FheTypes, Permit, cofhejs } from "cofhejs/web";
+import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia } from "viem/chains";
 import { usePublicClient, useWalletClient } from "wagmi";
 
 // Track initialization state globally
@@ -15,6 +16,19 @@ interface CofheConfig {
   ignoreErrors?: boolean;
   generatePermit?: boolean;
 }
+
+const ChainEnvironments = {
+  // Ethereum
+  [mainnet.id]: "MAINNET",
+  // Arbitrum
+  [arbitrum.id]: "MAINNET",
+  // Ethereum Sepolia
+  [sepolia.id]: "TESTNET",
+  // Arbitrum Sepolia
+  [arbitrumSepolia.id]: "TESTNET",
+  // Hardhat
+  [hardhat.id]: "MOCK",
+} as const;
 
 export function useCofhe(config?: Partial<CofheConfig>) {
   const publicClient = usePublicClient();
@@ -37,8 +51,11 @@ export function useCofhe(config?: Partial<CofheConfig>) {
       try {
         setIsInitializing(true);
 
+        const chainId = await publicClient.getChainId();
+        const environment = ChainEnvironments[chainId as keyof typeof ChainEnvironments] ?? "TESTNET";
+
         const defaultConfig = {
-          environment: "TESTNET" as Environment,
+          environment,
           verifierUrl: undefined,
           coFheUrl: undefined,
           thresholdNetworkUrl: undefined,
@@ -78,7 +95,7 @@ export function useCofhe(config?: Partial<CofheConfig>) {
     };
 
     initialize();
-  }, [walletClient]);
+  }, [walletClient, publicClient]);
 
   return {
     isInitialized,
