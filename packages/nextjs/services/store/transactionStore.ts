@@ -1,4 +1,5 @@
 import { superjsonStorage } from "./superjsonStorage";
+import { formatUnits } from "viem";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
@@ -22,13 +23,21 @@ export enum TransactionActionType {
   Deploy = 5,
   Approve = 6,
 }
-export type TransactionActionString = "Send" | "EncSend" | "Claim" | "Encrypt" | "Decrypt" | "Deploy" | "Approve";
+export type TransactionActionString =
+  | "Transfer"
+  | "Encrypted Transfer"
+  | "Claim"
+  | "Encrypt"
+  | "Decrypt"
+  | "Deploy"
+  | "Approve";
 
 export interface RedactTransaction {
   hash: string;
   status: TransactionStatus;
   tokenSymbol: string;
   tokenAmount: bigint;
+  tokenDecimals: number;
   tokenAddress: string;
   chainId: number;
   actionType: TransactionActionType;
@@ -45,8 +54,8 @@ export interface TransactionStore {
 }
 
 const actionToStringMap: Record<TransactionActionType, TransactionActionString> = {
-  [TransactionActionType.Send]: "Send",
-  [TransactionActionType.EncSend]: "EncSend",
+  [TransactionActionType.Send]: "Transfer",
+  [TransactionActionType.EncSend]: "Encrypted Transfer",
   [TransactionActionType.Claim]: "Claim",
   [TransactionActionType.Encrypt]: "Encrypt",
   [TransactionActionType.Decrypt]: "Decrypt",
@@ -65,6 +74,13 @@ export const actionToString = (a: TransactionActionType): TransactionActionStrin
 
 export const stringToAction = (s: string): TransactionActionType | undefined =>
   stringToActionMap[s as TransactionActionString];
+
+export const transactionToString = (tx: Omit<RedactTransaction, "status" | "timestamp">): string => {
+  if (tx.actionType === TransactionActionType.Deploy) {
+    return `${actionToString(tx.actionType)} ${tx.tokenSymbol}`;
+  }
+  return `${actionToString(tx.actionType)} ${formatUnits(tx.tokenAmount, tx.tokenDecimals)} ${tx.tokenSymbol}`;
+};
 
 const statusToStringMap: Record<TransactionStatus, TransactionStatusString> = {
   [TransactionStatus.Pending]: "Pending",

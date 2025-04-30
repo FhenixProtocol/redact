@@ -1,19 +1,22 @@
 import { useCallback, useState } from "react";
-import { useTxLifecycle } from "./useTxLifecycle";
+import { useTransactor } from "./scaffold-eth";
 import { CoFheInUint128, Encryptable } from "cofhejs/web";
 import { cofhejs } from "cofhejs/web";
 import toast from "react-hot-toast";
-import { Address, erc20Abi } from "viem";
-import { useAccount, useWriteContract } from "wagmi";
+import { Abi, Address, erc20Abi } from "viem";
+import { Config, useAccount, useWriteContract } from "wagmi";
+import { WriteContractVariables } from "wagmi/query";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import { refetchSingleTokenPairBalances } from "~~/services/store/tokenStore";
 import { TransactionActionType } from "~~/services/store/transactionStore";
+import { wagmiConfig } from "~~/services/web3/wagmiConfig";
+import { simulateContractWriteAndNotifyError } from "~~/utils/scaffold-eth/contract";
 
 export const useSendPublicTokenAction = () => {
   const { writeContractAsync } = useWriteContract();
   const { address: account } = useAccount();
   const [isPending, setIsPending] = useState(false);
-  const trackTx = useTxLifecycle();
+  const writeTx = useTransactor();
 
   const onSend = useCallback(
     async ({
@@ -21,11 +24,13 @@ export const useSendPublicTokenAction = () => {
       publicTokenAddress,
       amount,
       recipient,
+      tokenDecimals,
     }: {
       publicTokenSymbol: string;
       publicTokenAddress: Address;
       amount: bigint;
       recipient: Address;
+      tokenDecimals: number;
     }) => {
       if (!account) {
         toast.error("No account found");
@@ -39,36 +44,41 @@ export const useSendPublicTokenAction = () => {
 
       try {
         setIsPending(true);
-        const tx = await writeContractAsync({
-          address: publicTokenAddress,
+
+        const writeContractObject = {
           abi: erc20Abi,
+          address: publicTokenAddress,
           functionName: "transfer",
           args: [recipient, amount],
-        });
+        } as WriteContractVariables<Abi, string, any[], Config, number>;
 
-        const success = await trackTx(tx, {
-          tokenSymbol: publicTokenSymbol,
-          tokenAddress: publicTokenAddress,
-          tokenAmount: amount,
-          actionType: TransactionActionType.Send,
-        });
+        await simulateContractWriteAndNotifyError({ wagmiConfig, writeContractParams: writeContractObject });
+        const makeWriteWithParams = () => writeContractAsync(writeContractObject);
 
-        setIsPending(false);
-        if (success) {
-          toast.success(`Sent ${publicTokenSymbol}`);
-          refetchSingleTokenPairBalances(publicTokenAddress);
-        } else {
-          toast.error(`Failed to send ${publicTokenSymbol}`);
-        }
-        return tx;
+        const writeTxResult = await writeTx(
+          makeWriteWithParams,
+          {
+            tokenSymbol: publicTokenSymbol,
+            tokenAddress: publicTokenAddress,
+            tokenDecimals,
+            tokenAmount: amount,
+            actionType: TransactionActionType.Send,
+          },
+          {
+            onBlockConfirmation: () => {
+              refetchSingleTokenPairBalances(publicTokenAddress);
+            },
+          },
+        );
+
+        return writeTxResult;
       } catch (error) {
-        setIsPending(false);
-        console.error("Failed to send token:", error);
-        toast.error("Failed to send token");
         throw error;
+      } finally {
+        setIsPending(false);
       }
     },
-    [writeContractAsync, account, trackTx],
+    [writeContractAsync, account, writeTx],
   );
 
   return { onSend, isSending: isPending };
@@ -78,8 +88,7 @@ export const useSendConfidentialTokenAction = () => {
   const { writeContractAsync } = useWriteContract();
   const [isPending, setIsPending] = useState(false);
   const { address: account } = useAccount();
-  const trackTx = useTxLifecycle();
-
+  const writeTx = useTransactor();
   const onSend = useCallback(
     async ({
       publicTokenSymbol,
@@ -88,6 +97,7 @@ export const useSendConfidentialTokenAction = () => {
       confidentialTokenAddress,
       amount,
       recipient,
+      tokenDecimals,
     }: {
       publicTokenSymbol: string;
       confidentialTokenSymbol: string;
@@ -95,6 +105,7 @@ export const useSendConfidentialTokenAction = () => {
       confidentialTokenAddress: Address;
       amount: bigint;
       recipient: Address;
+      tokenDecimals: number;
     }) => {
       if (account == null) {
         toast.error("No account found");
@@ -122,29 +133,33 @@ export const useSendConfidentialTokenAction = () => {
       }
 
       try {
-        const tx = await writeContractAsync({
-          address: confidentialTokenAddress,
+        const writeContractObject = {
           abi: confidentialErc20Abi,
+          address: confidentialTokenAddress,
           functionName: "encTransfer",
           args: [recipient, encryptedAmount],
-        });
+        } as WriteContractVariables<Abi, string, any[], Config, number>;
 
-        const success = await trackTx(tx, {
-          tokenSymbol: publicTokenSymbol,
-          tokenAddress: publicTokenAddress,
-          tokenAmount: amount,
-          actionType: TransactionActionType.EncSend,
-        });
-        setIsPending(false);
+        await simulateContractWriteAndNotifyError({ wagmiConfig, writeContractParams: writeContractObject });
+        const makeWriteWithParams = () => writeContractAsync(writeContractObject);
 
-        if (success) {
-          toast.success(`Sent ${confidentialTokenSymbol}`);
-          refetchSingleTokenPairBalances(publicTokenAddress);
-        } else {
-          toast.error(`Failed to send ${confidentialTokenSymbol}`);
-        }
+        const writeTxResult = await writeTx(
+          makeWriteWithParams,
+          {
+            tokenSymbol: publicTokenSymbol,
+            tokenAddress: publicTokenAddress,
+            tokenDecimals,
+            tokenAmount: amount,
+            actionType: TransactionActionType.EncSend,
+          },
+          {
+            onBlockConfirmation: () => {
+              refetchSingleTokenPairBalances(publicTokenAddress);
+            },
+          },
+        );
 
-        return tx;
+        return writeTxResult;
       } catch (error) {
         setIsPending(false);
         console.error("Failed to send token:", error);
@@ -152,7 +167,7 @@ export const useSendConfidentialTokenAction = () => {
         throw error;
       }
     },
-    [account, writeContractAsync, trackTx],
+    [account, writeContractAsync, writeTx],
   );
 
   return { onSend, isSending: isPending };

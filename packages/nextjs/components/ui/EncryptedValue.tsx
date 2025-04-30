@@ -17,15 +17,14 @@ export function EncryptedValue<T extends FheTypes>({
   className?: string;
   transform: (value: UnsealedItem<T>) => string;
 }) {
-  const { value: decryptedValue } = useDecryptValue(fheType, ctHash);
+  const decRes = useDecryptValue(fheType, ctHash);
+  const decryptedValue = decRes.value;
 
   const display = useMemo(() => {
     if (ctHash == null) return "...";
     if (decryptedValue == null) return "XXXXXX";
     return transform(decryptedValue);
   }, [ctHash, transform, decryptedValue]);
-
-  //console.log({ decryptedValue });
 
   return (
     <DisplayValue

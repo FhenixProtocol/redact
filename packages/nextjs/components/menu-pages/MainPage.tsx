@@ -34,7 +34,6 @@ export function WalletMainPanel() {
       <EthBalanceRow />
       <SendReceiveButtonsRow />
       <TabRow selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
-      <Separator />
       <div className="flex flex-col gap-4 flex-grow overflow-hidden">
         {selectedTab === "tokens" && <Tokens />}
         {selectedTab === "history" && <TransactionHistory />}
@@ -89,10 +88,13 @@ const TabRow = ({
   setSelectedTab: (tab: "tokens" | "history") => void;
 }) => {
   return (
-    <div className="flex justify-around">
+    <div className="flex flex-row w-full my-4">
       <Button
-        variant="text"
-        className={selectedTab === "tokens" ? "font-semibold underline" : ""}
+        variant="ghost"
+        className={cn(
+          "flex-1 justify-center rounded-none text-primary border-b-2 border-transparent font-normal",
+          selectedTab === "tokens" && "border-primary-accent font-bold",
+        )}
         size="md"
         noOutline
         onClick={() => setSelectedTab("tokens")}
@@ -100,8 +102,11 @@ const TabRow = ({
         Tokens
       </Button>
       <Button
-        variant="text"
-        className={selectedTab === "history" ? "font-semibold underline" : ""}
+        variant="ghost"
+        className={cn(
+          "flex-1 justify-center rounded-none text-primary border-b-2 border-transparent font-normal",
+          selectedTab === "history" && "border-primary-accent font-bold",
+        )}
         size="md"
         noOutline
         onClick={() => setSelectedTab("history")}

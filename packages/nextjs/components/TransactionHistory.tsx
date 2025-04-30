@@ -3,7 +3,7 @@ import { HashLink } from "./HashLink";
 import { formatDistanceToNow } from "date-fns";
 import { formatUnits } from "viem";
 import { useChainId } from "wagmi";
-import { ConfidentialTokenPair, useConfidentialTokenPair } from "~~/services/store/tokenStore";
+import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
 import {
   RedactTransaction,
   TransactionStatus,
@@ -17,9 +17,6 @@ interface TransactionHistoryProps {
 }
 
 const TransactionItem = ({ tx }: { tx: RedactTransaction }) => {
-  const tokenPair = useConfidentialTokenPair(tx.tokenAddress);
-  const decimals = tokenPair?.publicToken.decimals ?? 18; // fallback to 18 if not found
-
   return (
     <div key={tx.hash} className="bg-base-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
       <div className="flex h-13 gap-4">
@@ -52,13 +49,13 @@ const TransactionItem = ({ tx }: { tx: RedactTransaction }) => {
 
         <div className="flex flex-col justify-between items-stretch">
           <div className="text-md font-semibold text-primary self-end">
-            {formatUnits(tx.tokenAmount, decimals)} {tx.tokenSymbol}
+            {formatUnits(tx.tokenAmount, tx.tokenDecimals)} {tx.tokenSymbol}
           </div>
           <HashLink
             className="text-xs text-gray-500"
             buttonSize={3}
             copyStrokeWidth={1.0}
-            type="token"
+            type="tx"
             hash={tx.hash}
             copyable
           />

@@ -1,18 +1,14 @@
-import React, { useState } from "react";
-import { SelectToken } from "../SelectToken";
+import React from "react";
 import { TokenSelector } from "../TokenSelector";
 import { Button } from "../ui/Button";
 import { FnxInput } from "../ui/FnxInput";
 import { Slider } from "../ui/FnxSlider";
-import { Modal } from "../ui/Modal";
 import { Switcher } from "../ui/Switcher";
-import { TokenIconSymbol } from "../ui/TokenIconSymbol";
-import { Eye, EyeClosed, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatUnits } from "viem";
 import { useSendConfidentialTokenAction, useSendPublicTokenAction } from "~~/hooks/useSendActions";
 import { getConfidentialSymbol, truncateAddress } from "~~/lib/common";
-import { cn } from "~~/lib/utils";
 import {
   useSelectSendToken,
   useSendBalances,
@@ -220,6 +216,7 @@ const PublicSendButton = () => {
       publicTokenAddress: pair.publicToken.address,
       amount: rawAmount,
       recipient: recipient,
+      tokenDecimals: pair.publicToken.decimals,
     });
   };
 
@@ -262,6 +259,7 @@ const ConfidentialSendButton = () => {
       confidentialTokenAddress: pair.confidentialToken?.address ?? "",
       amount: rawAmount,
       recipient: recipient,
+      tokenDecimals: pair.confidentialToken?.decimals ?? 18,
     });
   };
 

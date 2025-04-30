@@ -1,28 +1,46 @@
+import React from "react";
 import { getPublicClient } from "@wagmi/core";
 import { Hash, SendTransactionParameters, TransactionReceipt, WalletClient } from "viem";
 import { Config, useWalletClient } from "wagmi";
 import { SendTransactionMutate } from "wagmi/query";
+import { HashLink } from "~~/components/HashLink";
+import {
+  TransactionActionType,
+  TransactionStatus,
+  transactionToString,
+  useTransactionStore,
+} from "~~/services/store/transactionStore";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
-import { getBlockExplorerTxLink, getParsedError, notification } from "~~/utils/scaffold-eth";
+import { getParsedError, notification } from "~~/utils/scaffold-eth";
 import { TransactorFuncOptions } from "~~/utils/scaffold-eth/contract";
 
 type TransactionFunc = (
   tx: (() => Promise<Hash>) | Parameters<SendTransactionMutate<Config, undefined>>[0],
+  storeTxOptions?: {
+    tokenSymbol: string;
+    tokenAddress: string;
+    tokenDecimals: number;
+    tokenAmount: bigint;
+    actionType: TransactionActionType;
+  },
   options?: TransactorFuncOptions,
 ) => Promise<Hash | undefined>;
 
 /**
  * Custom notification content for TXs.
  */
-const TxnNotification = ({ message, blockExplorerLink }: { message: string; blockExplorerLink?: string }) => {
+const TxnNotification = ({ message, txHash }: { message: React.ReactNode; txHash?: string }) => {
   return (
-    <div className={`flex flex-col ml-1 cursor-default`}>
+    <div className={`flex flex-col cursor-default gap-1 text-primary`}>
       <p className="my-0">{message}</p>
-      {blockExplorerLink && blockExplorerLink.length > 0 ? (
-        <a href={blockExplorerLink} target="_blank" rel="noreferrer" className="block link text-md">
-          check out transaction
-        </a>
-      ) : null}
+      <div className="flex flex-row gap-1">
+        {txHash && (
+          <>
+            <p className="text-sm text-muted-foreground font-reddit-mono">Tx link:</p>
+            <HashLink type="tx" hash={txHash} />
+          </>
+        )}
+      </div>
     </div>
   );
 };
@@ -35,11 +53,13 @@ const TxnNotification = ({ message, blockExplorerLink }: { message: string; bloc
 export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => {
   let walletClient = _walletClient;
   const { data } = useWalletClient();
+  const addTx = useTransactionStore(state => state.addTransaction);
+  const updateTx = useTransactionStore(state => state.updateTransactionStatus);
   if (walletClient === undefined && data) {
     walletClient = data;
   }
 
-  const result: TransactionFunc = async (tx, options) => {
+  const result: TransactionFunc = async (tx, storeTxOptions, options) => {
     if (!walletClient) {
       notification.error("Cannot access account");
       console.error("⚡️ ~ file: useTransactor.tsx ~ error");
@@ -49,13 +69,15 @@ export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => 
     let notificationId = null;
     let transactionHash: Hash | undefined = undefined;
     let transactionReceipt: TransactionReceipt | undefined;
-    let blockExplorerTxURL = "";
+    let txHash: string | undefined = undefined;
+    let txString = "Transaction";
     try {
       const network = await walletClient.getChainId();
       // Get full transaction from public client
       const publicClient = getPublicClient(wagmiConfig);
 
-      notificationId = notification.loading(<TxnNotification message="Awaiting for user confirmation" />);
+      notificationId = notification.loading(<TxnNotification message="Waiting for wallet confirmation" />);
+
       if (typeof tx === "function") {
         // Tx is already prepared by the caller
         const result = await tx();
@@ -67,10 +89,28 @@ export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => 
       }
       notification.remove(notificationId);
 
-      blockExplorerTxURL = network ? getBlockExplorerTxLink(network, transactionHash) : "";
+      // Add tx to store
+      const redactTx = storeTxOptions
+        ? {
+            hash: transactionHash,
+            chainId: network,
+            ...storeTxOptions,
+          }
+        : undefined;
+      txString = redactTx ? transactionToString(redactTx) : "Transaction";
+      if (redactTx) addTx(redactTx);
+
+      txHash = transactionHash ? transactionHash : undefined;
 
       notificationId = notification.loading(
-        <TxnNotification message="Waiting for transaction to complete." blockExplorerLink={blockExplorerTxURL} />,
+        <TxnNotification
+          message={
+            <>
+              <b>{txString}</b> pending...
+            </>
+          }
+          txHash={txHash}
+        />,
       );
 
       transactionReceipt = await publicClient.waitForTransactionReceipt({
@@ -79,13 +119,22 @@ export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => 
       });
       notification.remove(notificationId);
 
-      if (transactionReceipt.status === "reverted") throw new Error("Transaction reverted");
+      if (transactionReceipt.status === "reverted") {
+        updateTx(network, transactionHash, TransactionStatus.Failed);
+        throw new Error(`${txString} reverted`);
+      }
+
+      updateTx(network, transactionHash, TransactionStatus.Confirmed);
 
       notification.success(
-        <TxnNotification message="Transaction completed successfully!" blockExplorerLink={blockExplorerTxURL} />,
-        {
-          icon: "🎉",
-        },
+        <TxnNotification
+          message={
+            <>
+              <b>{txString}</b> complete!
+            </>
+          }
+          txHash={txHash}
+        />,
       );
 
       if (options?.onBlockConfirmation) options.onBlockConfirmation(transactionReceipt);
@@ -98,7 +147,7 @@ export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => 
 
       // if receipt was reverted, show notification with block explorer link and return error
       if (transactionReceipt?.status === "reverted") {
-        notification.error(<TxnNotification message={message} blockExplorerLink={blockExplorerTxURL} />);
+        notification.error(<TxnNotification message={message} txHash={txHash} />);
         throw error;
       }
 

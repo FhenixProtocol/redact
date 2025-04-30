@@ -204,7 +204,6 @@ const _fetchUnderlyingERC20 = async (chain: number, address: string) => {
     abi: confidentialErc20Abi,
     functionName: "erc20",
   });
-  console.log("underlyingERC20", underlyingERC20);
   return underlyingERC20;
 };
 
@@ -412,8 +411,6 @@ const _fetchConfidentialPairBalances = async (
     contracts,
   });
 
-  console.log("fetchConfidentialPairBalances results", results);
-
   const balances: ConfidentialTokenPairBalances[] = [];
   let resultIndex = 0;
 
@@ -471,7 +468,6 @@ export const _fetchTokenPairsData = async (
     };
   });
 
-  console.log("fetchTokenData2 pairs", pairs);
   return pairs;
 };
 
@@ -494,7 +490,6 @@ export const fetchTokenPairsData = async () => {
 export const refetchSingleTokenPairData = async (address: Address) => {
   const chain = await getChainId();
   const pairs = await _fetchTokenPairsData(chain, [address]);
-  console.log("refetchSingleTokenPairData pairs", pairs);
   useTokenStore.setState(state => {
     _addPairsToStore(state, chain, pairs);
   });
@@ -513,7 +508,6 @@ export const fetchTokenPairBalances = async () => {
   );
 
   const pairBalances = await _fetchConfidentialPairBalances(chain, account, addressPairs);
-  console.log("fetchTokenPairBalances pairBalances", pairBalances);
 
   useTokenStore.setState(state => {
     const pairPublicAddresses = addressPairs.map(({ erc20Address }) => erc20Address);

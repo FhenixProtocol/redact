@@ -18,12 +18,6 @@ export const InputWithFades = React.forwardRef<HTMLInputElement, FnxInputProps>(
         const input = inputRef.current;
         if (input) {
           setShowLeftFade(input.scrollLeft > 0);
-          console.log("right fade?", {
-            scrollWidth: input.scrollWidth,
-            clientWidth: input.clientWidth,
-            scrollLeft: input.scrollLeft,
-            scrollWidthMinusClientWidth: input.scrollWidth - input.clientWidth,
-          });
           setShowRightFade(
             input.scrollWidth > input.clientWidth && input.scrollLeft < input.scrollWidth - input.clientWidth - 1,
           );

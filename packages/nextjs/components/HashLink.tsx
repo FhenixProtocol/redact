@@ -26,7 +26,12 @@ export const HashLink = ({
     <div className="flex flex-row gap-2">
       <Link
         href={href}
-        className={cn("whitespace-pre font-reddit-mono hover:underline text-sm flex flex-row gap-1", className)}
+        className={cn(
+          "whitespace-pre text-primary-accent font-reddit-mono hover:underline text-sm flex flex-row gap-1",
+          className,
+        )}
+        target="_blank"
+        rel="noreferrer"
       >
         {ellipsed}
         <ExternalLinkIcon className={`w-${buttonSize} h-${buttonSize}`} />
