@@ -58,7 +58,7 @@ const TransactionItem = ({ tx }: { tx: RedactTransaction }) => {
             className="text-xs text-gray-500"
             buttonSize={3}
             copyStrokeWidth={1.0}
-            type="token"
+            type="tx"
             hash={tx.hash}
             copyable
           />
