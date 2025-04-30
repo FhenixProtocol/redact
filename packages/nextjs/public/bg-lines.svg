@@ -61,7 +61,6 @@
 <filter id="filter0_f_1514_46049" x="-830.24" y="-243.003" width="3073.24" height="1140" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-<!-- <feGaussianBlur stdDeviation="3" result="effect1_foregroundBlur_1514_46049"/> -->
 </filter>
 </defs>
 </svg>
