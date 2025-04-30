@@ -1,66 +1,74 @@
 import { useCallback, useState } from "react";
-import { useTxLifecycle } from "./useTxLifecycle";
-import toast from "react-hot-toast";
+import { useTransactor } from "./scaffold-eth";
+import { Abi } from "abitype";
 import { Address, erc20Abi } from "viem";
-import { useAccount, useChainId, useWriteContract } from "wagmi";
+import { Config, useAccount, useChainId, useWriteContract } from "wagmi";
+import { WriteContractVariables } from "wagmi/query";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { refetchSingleTokenPairBalances, refetchSingleTokenPairData } from "~~/services/store/tokenStore";
 import { TransactionActionType } from "~~/services/store/transactionStore";
+import { wagmiConfig } from "~~/services/web3/wagmiConfig";
+import { notification } from "~~/utils/scaffold-eth";
+import { simulateContractWriteAndNotifyError } from "~~/utils/scaffold-eth/contract";
 
 export const useDeployFherc20Action = () => {
   const { writeContractAsync } = useWriteContract();
   const chainId = useChainId();
-  const trackTx = useTxLifecycle();
   const [isPending, setIsPending] = useState(false);
+  const writeTx = useTransactor();
 
   const onDeployFherc20 = useCallback(
     async ({ tokenAddress, publicTokenSymbol }: { tokenAddress: Address; publicTokenSymbol: string }) => {
       if (!writeContractAsync) {
-        toast.error("Could not initialize contract write");
+        notification.error("Could not initialize contract write");
         return;
       }
 
       const redactCoreContract = deployedContracts[chainId as keyof typeof deployedContracts]?.["RedactCore"];
       if (!redactCoreContract) {
-        toast.error("RedactCore contract not found on current network");
+        notification.error("RedactCore contract not found on current network");
         return;
       }
 
       try {
         setIsPending(true);
-        const txHash = await writeContractAsync({
-          address: redactCoreContract.address as Address,
+
+        const writeContractObject = {
           abi: redactCoreContract.abi,
+          address: redactCoreContract.address as Address,
           functionName: "deployFherc20",
           args: [tokenAddress],
-        });
+        } as WriteContractVariables<Abi, string, any[], Config, number>;
 
-        const success = await trackTx(txHash, {
-          tokenSymbol: publicTokenSymbol,
-          tokenAddress,
-          tokenAmount: BigInt(0),
-          actionType: TransactionActionType.Deploy,
-        });
+        await simulateContractWriteAndNotifyError({ wagmiConfig, writeContractParams: writeContractObject });
+        const makeWriteWithParams = () => writeContractAsync(writeContractObject);
 
-        setIsPending(false);
+        const writeTxResult = await writeTx(
+          makeWriteWithParams,
+          {
+            tokenSymbol: publicTokenSymbol,
+            tokenAddress: tokenAddress,
+            tokenDecimals: 18,
+            tokenAmount: BigInt(0),
+            actionType: TransactionActionType.Deploy,
+          },
+          {
+            onBlockConfirmation: () => {
+              refetchSingleTokenPairData(tokenAddress);
+              refetchSingleTokenPairBalances(tokenAddress);
+            },
+          },
+        );
 
-        if (success) {
-          toast.success(`e${publicTokenSymbol} deployed`);
-          refetchSingleTokenPairData(tokenAddress);
-          refetchSingleTokenPairBalances(tokenAddress);
-        } else {
-          toast.error(`Failed to deploy e${publicTokenSymbol}`);
-        }
-
-        return txHash;
+        return writeTxResult;
       } catch (error) {
-        setIsPending(false);
-        toast.error("Failed to deploy confidential token");
         throw error;
+      } finally {
+        setIsPending(false);
       }
     },
-    [writeContractAsync, chainId, trackTx],
+    [chainId, writeContractAsync, writeTx],
   );
 
   return { onDeployFherc20, isDeploying: isPending };
@@ -68,8 +76,8 @@ export const useDeployFherc20Action = () => {
 
 export const useApproveFherc20Action = () => {
   const { writeContractAsync } = useWriteContract();
-  const trackTx = useTxLifecycle();
   const [isPending, setIsPending] = useState(false);
+  const writeTx = useTransactor();
 
   const onApproveFherc20 = useCallback(
     async ({
@@ -77,49 +85,56 @@ export const useApproveFherc20Action = () => {
       publicTokenAddress,
       confidentialTokenAddress,
       amount,
+      tokenDecimals,
     }: {
       publicTokenSymbol: string;
       publicTokenAddress: Address;
       confidentialTokenAddress: Address;
       amount: bigint;
+      tokenDecimals: number;
     }) => {
       if (!writeContractAsync) {
-        toast.error("Could not initialize contract write");
+        notification.error("Could not initialize contract write");
         return;
       }
 
       try {
         setIsPending(true);
-        const txHash = await writeContractAsync({
-          address: publicTokenAddress,
+
+        const writeContractObject = {
           abi: erc20Abi,
+          address: publicTokenAddress,
           functionName: "approve",
           args: [confidentialTokenAddress, amount],
-        });
+        } as WriteContractVariables<Abi, string, any[], Config, number>;
 
-        const success = await trackTx(txHash, {
-          tokenSymbol: publicTokenSymbol,
-          tokenAddress: publicTokenAddress,
-          tokenAmount: amount,
-          actionType: TransactionActionType.Approve,
-        });
-        setIsPending(false);
+        await simulateContractWriteAndNotifyError({ wagmiConfig, writeContractParams: writeContractObject });
+        const makeWriteWithParams = () => writeContractAsync(writeContractObject);
 
-        if (success) {
-          toast.success(`${publicTokenSymbol} approved`);
-          refetchSingleTokenPairBalances(publicTokenAddress);
-        } else {
-          toast.error(`Failed to approve ${publicTokenSymbol}`);
-        }
+        const writeTxResult = await writeTx(
+          makeWriteWithParams,
+          {
+            tokenSymbol: publicTokenSymbol,
+            tokenAddress: publicTokenAddress,
+            tokenDecimals,
+            tokenAmount: amount,
+            actionType: TransactionActionType.Approve,
+          },
+          {
+            onBlockConfirmation: () => {
+              refetchSingleTokenPairBalances(publicTokenAddress);
+            },
+          },
+        );
 
-        return txHash;
+        return writeTxResult;
       } catch (error) {
-        setIsPending(false);
-        toast.error("Failed to approve confidential token");
         throw error;
+      } finally {
+        setIsPending(false);
       }
     },
-    [writeContractAsync, trackTx],
+    [writeContractAsync, writeTx],
   );
 
   return { onApproveFherc20, isApproving: isPending };
@@ -129,7 +144,7 @@ export const useEncryptErc20Action = () => {
   const { writeContractAsync, isError } = useWriteContract();
   const [isPending, setIsPending] = useState(false);
   const { address: account } = useAccount();
-  const trackTx = useTxLifecycle();
+  const writeTx = useTransactor();
 
   const onEncryptErc20 = useCallback(
     async ({
@@ -137,53 +152,61 @@ export const useEncryptErc20Action = () => {
       publicTokenAddress,
       confidentialTokenAddress,
       amount,
+      tokenDecimals,
     }: {
       publicTokenSymbol: string;
       publicTokenAddress: Address;
       confidentialTokenAddress: Address;
       amount: bigint;
+      tokenDecimals: number;
     }) => {
       if (!account) {
-        toast.error("No account found");
+        notification.error("No account found");
         return;
       }
 
       if (!writeContractAsync) {
-        toast.error("Could not initialize contract write");
+        notification.error("Could not initialize contract write");
         return;
       }
 
       try {
         setIsPending(true);
-        const txHash = await writeContractAsync({
-          address: confidentialTokenAddress,
+
+        const writeContractObject = {
           abi: confidentialErc20Abi,
+          address: confidentialTokenAddress,
           functionName: "encrypt",
           args: [account, amount],
-        });
+        } as WriteContractVariables<Abi, string, any[], Config, number>;
 
-        const success = await trackTx(txHash, {
-          tokenSymbol: publicTokenSymbol,
-          tokenAddress: publicTokenAddress,
-          tokenAmount: amount,
-          actionType: TransactionActionType.Encrypt,
-        });
-        setIsPending(false);
-        if (success) {
-          toast.success(`Encrypted ${publicTokenSymbol}`);
-          refetchSingleTokenPairBalances(publicTokenAddress);
-        } else {
-          toast.error(`Failed to encrypt ${publicTokenSymbol}`);
-        }
+        await simulateContractWriteAndNotifyError({ wagmiConfig, writeContractParams: writeContractObject });
+        const makeWriteWithParams = () => writeContractAsync(writeContractObject);
 
-        return txHash;
+        const writeTxResult = await writeTx(
+          makeWriteWithParams,
+          {
+            tokenSymbol: publicTokenSymbol,
+            tokenAddress: publicTokenAddress,
+            tokenDecimals,
+            tokenAmount: amount,
+            actionType: TransactionActionType.Encrypt,
+          },
+          {
+            onBlockConfirmation: () => {
+              refetchSingleTokenPairBalances(publicTokenAddress);
+            },
+          },
+        );
+
+        return writeTxResult;
       } catch (error) {
-        setIsPending(false);
-        toast.error("Failed to encrypt token");
         throw error;
+      } finally {
+        setIsPending(false);
       }
     },
-    [account, writeContractAsync, trackTx],
+    [account, writeContractAsync, writeTx],
   );
 
   return { onEncryptErc20, isEncrypting: isPending, isEncryptError: isError };

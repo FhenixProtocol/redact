@@ -270,6 +270,7 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       publicTokenAddress: pair.publicToken.address,
       confidentialTokenAddress: pair.confidentialToken.address,
       amount: rawInputValue,
+      tokenDecimals: pair.publicToken.decimals,
     });
   };
 
@@ -322,6 +323,7 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       publicTokenAddress: pair.publicToken.address,
       confidentialTokenAddress: pair.confidentialToken.address,
       amount: rawInputValue,
+      tokenDecimals: pair.publicToken.decimals,
     });
   };
 
