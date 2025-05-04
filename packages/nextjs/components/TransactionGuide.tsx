@@ -1,6 +1,15 @@
 import React, { useMemo } from "react";
 import { Button } from "./ui/Button";
-import { Circle, CircleAlert, CircleCheck, CircleDot, CircleX, LoaderCircle } from "lucide-react";
+import {
+  Circle,
+  CircleAlert,
+  CircleCheck,
+  CircleDashed,
+  CircleDot,
+  CircleDotDashed,
+  CircleX,
+  LoaderCircle,
+} from "lucide-react";
 import { cn } from "~~/lib/utils";
 
 export enum TxGuideStepState {
@@ -18,6 +27,7 @@ type TxGuideStep = {
   state: TxGuideStepState;
   errorMessage?: string;
   disabled?: boolean;
+  userInteraction?: boolean;
 };
 
 type TxGuideProps = {
@@ -68,10 +78,16 @@ const TxGuideStep = ({
   stepIndex: number;
   activeStepIndex: number;
 }) => {
+  const userInteraction = step?.userInteraction ?? true;
   return (
     <div className="flex flex-col gap-2 items-center justify-center relative">
       <TxGuideStepTitle title={step.title} state={step.state} stepIndex={stepIndex} activeStepIndex={activeStepIndex} />
-      <TxGuideStepCircleIcon state={step.state} stepIndex={stepIndex} activeStepIndex={activeStepIndex} />
+      <TxGuideStepCircleIcon
+        state={step.state}
+        stepIndex={stepIndex}
+        activeStepIndex={activeStepIndex}
+        userInteraction={userInteraction}
+      />
     </div>
   );
 };
@@ -89,7 +105,7 @@ const getStepColor = (state: TxGuideStepState, isActive: boolean) => {
   }
 };
 
-const getStepIcon = (state: TxGuideStepState, isActive: boolean) => {
+const getStepIcon = (state: TxGuideStepState, isActive: boolean, userInteraction: boolean) => {
   switch (state) {
     case TxGuideStepState.Success:
       return CircleCheck;
@@ -98,7 +114,7 @@ const getStepIcon = (state: TxGuideStepState, isActive: boolean) => {
     case TxGuideStepState.Loading:
       return LoaderCircle;
     case TxGuideStepState.Ready:
-      return isActive ? CircleDot : Circle;
+      return isActive ? (userInteraction ? CircleDot : CircleDotDashed) : userInteraction ? Circle : CircleDashed;
   }
 };
 
@@ -127,14 +143,16 @@ const TxGuideStepCircleIcon = ({
   state,
   stepIndex,
   activeStepIndex,
+  userInteraction,
 }: {
   state: TxGuideStepState;
   stepIndex: number;
   activeStepIndex: number;
+  userInteraction: boolean;
 }) => {
   const isActive = stepIndex === activeStepIndex;
 
-  const Icon = getStepIcon(state, isActive);
+  const Icon = getStepIcon(state, isActive, userInteraction);
   const color = getStepColor(state, isActive);
 
   const loading = state === TxGuideStepState.Loading;

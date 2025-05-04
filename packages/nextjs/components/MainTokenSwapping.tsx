@@ -523,11 +523,12 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       errorMessage: sharedErrMessage,
     },
     {
-      title: "Wait for Decryption",
+      title: "Processing Decryption",
       cta: pair == null ? "Select a token" : `WAIT FOR DECRYPTION`,
       hint: "Wait for the token to be decrypted",
       state: waitForDecryptState,
       errorMessage: sharedErrMessage,
+      userInteraction: false,
     },
     {
       title: "Claim",
