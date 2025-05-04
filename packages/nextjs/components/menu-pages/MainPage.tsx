@@ -6,15 +6,13 @@ import { CleartextBalance } from "../ui/CleartextBalance";
 import { DisplayValue } from "../ui/DisplayValue";
 import { EncryptedBalance } from "../ui/EncryptedValue";
 import { TokenIcon } from "../ui/TokenIcon";
-import { Luggage, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
+import { ChevronRight, Luggage, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
 import { formatUnits } from "viem";
 import { Button } from "~~/components/ui/Button";
-import { Separator } from "~~/components/ui/Separator";
 import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
 import { cn } from "~~/lib/utils";
 import { ClaimWithAddresses, useAllClaims } from "~~/services/store/claim";
 import { DrawerPageName, useDrawerPushPage, useSetDrawerOpen } from "~~/services/store/drawerStore";
-import { useSelectSendToken } from "~~/services/store/sendStore";
 import { useGlobalState } from "~~/services/store/store";
 import {
   useConfidentialTokenPair,
@@ -136,7 +134,7 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
       variant="ghost"
       noOutline
       className={cn(
-        "rounded-none flex flex-row items-center justify-between p-2 w-full text-primary font-normal",
+        "rounded-none flex flex-row items-center p-2 w-full text-primary font-normal",
         index % 2 === 0 && "bg-surface",
       )}
       onClick={() => {
@@ -146,7 +144,7 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
         });
       }}
     >
-      <div className="flex flex-row gap-2 items-center">
+      <div className="flex flex-row flex-grow gap-2 items-center">
         <TokenIcon publicToken={pair.publicToken} />
         <div className="flex flex-col items-start">
           <DisplayValue value={pair.publicToken.symbol} left />
@@ -164,6 +162,9 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
         ) : (
           <DisplayValue value="(not deployed)" className="italic" />
         )}
+      </div>
+      <div className="text-xs text-primary">
+        <ChevronRight className="w-4 h-4" />
       </div>
     </Button>
   );
@@ -200,6 +201,7 @@ const ClaimItem = ({ claim }: { claim: ClaimWithAddresses }) => {
     onClaimFherc20({
       publicTokenSymbol: pair.publicToken.symbol,
       claim,
+      tokenDecimals: pair.publicToken.decimals,
     });
   };
 
