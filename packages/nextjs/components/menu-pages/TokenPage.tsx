@@ -5,7 +5,6 @@ import { Button } from "../ui/Button";
 import { CleartextBalance } from "../ui/CleartextBalance";
 import { ConfirmButton } from "../ui/ConfirmButton";
 import { DisplayBalance } from "../ui/DisplayBalance";
-import { DisplayValue } from "../ui/DisplayValue";
 import { EncryptedBalance } from "../ui/EncryptedValue";
 import { Separator } from "../ui/Separator";
 import { Spinner } from "../ui/Spinner";
@@ -26,7 +25,6 @@ import {
   useSetDrawerOpen,
 } from "~~/services/store/drawerStore";
 import { useEncryptDecryptSetIsEncrypt, useSelectEncryptDecryptToken } from "~~/services/store/encryptDecrypt";
-import { useSelectSendToken } from "~~/services/store/sendStore";
 import {
   ConfidentialTokenPair,
   ConfidentialTokenPairBalances,
@@ -117,6 +115,7 @@ const TokenBalancesRow = ({
     setToken(pair.publicToken.address);
     setDrawerOpen(false);
   };
+  const decryptedBalance = useDecryptValue(FheTypes.Uint128, balances.confidentialBalance);
 
   return (
     <div className="flex flex-row items-center w-full bg-primary-foreground rounded-4xl p-4 gap-4">
@@ -127,7 +126,13 @@ const TokenBalancesRow = ({
           <CleartextBalance balance={balances.publicBalance} decimals={pair.publicToken.decimals} className="w-full" />
         </div>
 
-        <Button variant="outline" size="sm" className="w-min" onClick={() => handleEncryptDecrypt(true)}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-min"
+          onClick={() => handleEncryptDecrypt(true)}
+          disabled={balances.publicBalance == 0n}
+        >
           ENCRYPT
         </Button>
       </div>
@@ -147,7 +152,7 @@ const TokenBalancesRow = ({
           variant="outline"
           size="sm"
           className="w-min"
-          disabled={pair.confidentialToken == null}
+          disabled={pair.confidentialToken == null || decryptedBalance.value == 0n}
           onClick={() => handleEncryptDecrypt(false)}
         >
           DECRYPT
@@ -185,6 +190,7 @@ const TokenClaimRow = ({ pair }: { pair: ConfidentialTokenPair }) => {
       publicTokenAddress: pair.publicToken.address,
       confidentialTokenAddress: pair.confidentialToken.address,
       claimAmount: pairClaims.totalDecryptedAmount,
+      tokenDecimals: pair.publicToken.decimals,
     });
   };
 
@@ -227,7 +233,6 @@ const TokenClaimRow = ({ pair }: { pair: ConfidentialTokenPair }) => {
 
 const TokenSendReceiveRow = ({ pair }: { pair: ConfidentialTokenPair }) => {
   const pushPage = useDrawerPushPage();
-  const selectSendToken = useSelectSendToken();
 
   return (
     <div className="flex gap-4 w-full">
