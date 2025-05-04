@@ -535,7 +535,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       hint: "Claim the token",
       state: claimState,
       action: handleClaim,
-      disabled: pair == null || valueError != null || isClaiming,
+      disabled: pair == null || isClaiming,
       errorMessage: sharedErrMessage,
     },
   ];
