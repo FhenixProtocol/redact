@@ -90,13 +90,15 @@ export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => 
       notification.remove(notificationId);
 
       // Add tx to store
-      const redactTx = storeTxOptions
-        ? {
-            hash: transactionHash,
-            chainId: network,
-            ...storeTxOptions,
-          }
-        : undefined;
+      const redactTx =
+        storeTxOptions && walletClient.account?.address
+          ? {
+              hash: transactionHash,
+              chainId: network,
+              account: walletClient.account.address,
+              ...storeTxOptions,
+            }
+          : undefined;
       txString = redactTx ? transactionToString(redactTx) : "Transaction";
       if (redactTx) addTx(redactTx);
 

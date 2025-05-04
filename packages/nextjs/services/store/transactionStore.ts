@@ -42,14 +42,15 @@ export interface RedactTransaction {
   chainId: number;
   actionType: TransactionActionType;
   timestamp: number;
+  account: string;
 }
 
 export interface TransactionStore {
   transactions: ChainRecord<HashRecord<RedactTransaction>>;
   addTransaction: (transaction: Omit<RedactTransaction, "status" | "timestamp">) => void;
   getTransaction: (chainId: number, hash: string) => RedactTransaction | undefined;
-  getAllTransactions: (chainId: number) => RedactTransaction[];
-  getAllTransactionsByToken: (chainId: number, publicTokenAddress: string) => RedactTransaction[];
+  getAllTransactions: (chainId: number, account?: string) => RedactTransaction[];
+  getAllTransactionsByToken: (chainId: number, tokenAddress: string, account?: string) => RedactTransaction[];
   updateTransactionStatus: (chainId: number, hash: string, status: TransactionStatus) => void;
 }
 
@@ -122,19 +123,22 @@ export const useTransactionStore = create<TransactionStore>()(
         return get().transactions[chainId]?.[hash];
       },
 
-      getAllTransactions: (chainId: number): RedactTransaction[] => {
+      getAllTransactions: (chainId: number, account?: string): RedactTransaction[] => {
         const chainTxs = get().transactions[chainId];
         return chainTxs
-          ? Object.values(chainTxs).sort((a, b) => b.timestamp - a.timestamp) // newest first
+          ? Object.values(chainTxs)
+              .filter(tx => !account || !tx.account || tx.account.toLowerCase() === account.toLowerCase())
+              .sort((a, b) => b.timestamp - a.timestamp) // newest first
           : [];
       },
 
-      getAllTransactionsByToken: (chainId: number, tokenAddress: string): RedactTransaction[] => {
+      getAllTransactionsByToken: (chainId: number, tokenAddress: string, account?: string): RedactTransaction[] => {
         const chainTxs = get().transactions[chainId];
         return chainTxs
           ? Object.values(chainTxs)
               .filter(tx => {
                 if (!tx.tokenAddress || !tokenAddress) return false;
+                if (account && tx.account && tx.account.toLowerCase() !== account.toLowerCase()) return false;
                 return tx.tokenAddress.toLowerCase() === tokenAddress.toLowerCase();
               })
               .sort((a, b) => b.timestamp - a.timestamp) // newest first

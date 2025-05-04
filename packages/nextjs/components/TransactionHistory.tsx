@@ -2,7 +2,7 @@ import Image from "next/image";
 import { HashLink } from "./HashLink";
 import { formatDistanceToNow } from "date-fns";
 import { formatUnits } from "viem";
-import { useChainId } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
 import {
   RedactTransaction,
@@ -68,11 +68,12 @@ const TransactionItem = ({ tx }: { tx: RedactTransaction }) => {
 export const TransactionHistory = ({ pair }: TransactionHistoryProps) => {
   const chainId = useChainId();
   const transactionsStore = useTransactionStore();
+  const { address: currentAccount } = useAccount();
 
   const transactions =
     pair !== undefined
-      ? transactionsStore.getAllTransactionsByToken(chainId, pair.publicToken.address)
-      : transactionsStore.getAllTransactions(chainId);
+      ? transactionsStore.getAllTransactionsByToken(chainId, pair.publicToken.address, currentAccount)
+      : transactionsStore.getAllTransactions(chainId, currentAccount);
 
   if (!transactions.length) {
     return (
