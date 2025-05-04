@@ -246,6 +246,7 @@ export const usePairClaims = (pairAddress?: Address) => {
       return Object.values(claims ?? {}).reduce(
         (acc, claim) => {
           if (claim.claimed) return acc;
+          if (claim.to.toLowerCase() !== account.toLowerCase()) return acc;
 
           const totalRequestedAmount = acc.totalRequestedAmount + claim.requestedAmount;
           const totalDecryptedAmount = acc.totalDecryptedAmount + (claim.decrypted ? claim.decryptedAmount : 0n);
