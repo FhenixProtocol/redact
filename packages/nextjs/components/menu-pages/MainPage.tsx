@@ -11,7 +11,7 @@ import { Button } from "~~/components/ui/Button";
 import { FheTypes } from "~~/hooks/useCofhe";
 import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
 import { cn } from "~~/lib/utils";
-import { ClaimWithAddresses, useAllClaims } from "~~/services/store/claim";
+import { ClaimWithAddresses, useAllClaims, usePairClaims } from "~~/services/store/claim";
 import { useDecryptValue } from "~~/services/store/decrypted";
 import { DrawerPageName, useDrawerPushPage, useSetDrawerOpen } from "~~/services/store/drawerStore";
 import { useGlobalState } from "~~/services/store/store";
@@ -127,6 +127,9 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
   const pair = useConfidentialTokenPair(pairAddress);
   const balances = useConfidentialTokenPairBalances(pairAddress);
   const pushPage = useDrawerPushPage();
+  const pairClaims = usePairClaims(pair?.publicToken.address);
+  const isClaimable = (pairClaims?.totalDecryptedAmount ?? 0n) > 0n;
+
   const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint128, balances?.confidentialBalance);
   const totalBalance = useMemo(() => {
     if (decryptedBalance == null) return -1n;
@@ -155,6 +158,9 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
         <div className="flex flex-col items-start">
           <DisplayValue value={pair.publicToken.symbol} left />
         </div>
+        {isClaimable && (
+          <div className="flex flex-col items-end text-xs text-primary-accent font-reddit-sans">(Claim available)</div>
+        )}
       </div>
       <div className="flex flex-col items-end">
         <DisplayBalance balance={totalBalance} decimals={pair.publicToken.decimals} className="text-md" left />
