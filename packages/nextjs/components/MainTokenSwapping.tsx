@@ -512,6 +512,9 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
 
   // Steps
 
+  const claimAmountHint = pairClaims?.totalDecryptedAmount
+    ? formatUnits(pairClaims.totalDecryptedAmount, pair?.confidentialToken?.decimals ?? 18)
+    : "";
   const steps = [
     {
       title: "Decrypt",
@@ -533,7 +536,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
     {
       title: "Claim",
       cta: pair == null ? "Select a token" : `CLAIM ${getConfidentialSymbol(pair)}`,
-      hint: "Claim the token",
+      hint: claimAmountHint !== "" ? `Claim ${claimAmountHint} tokens` : "",
       state: claimState,
       action: handleClaim,
       disabled: pair == null || isClaiming,
