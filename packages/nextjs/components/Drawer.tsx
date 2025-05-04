@@ -21,7 +21,6 @@ import { truncateAddress } from "~~/lib/common";
 import { cn } from "~~/lib/utils";
 import {
   DrawerPageName,
-  useDrawerAnimationDirection,
   useDrawerBackButtonAction,
   useDrawerOpen,
   useDrawerPage,
@@ -126,12 +125,11 @@ const DrawerHeaderBackButton = () => {
 
 const DrawerContentBody = () => {
   const { page, pairAddress } = useDrawerPage();
-  const direction = useDrawerAnimationDirection();
 
   const slideVariants = {
-    enter: { opacity: 0, x: direction === "right" ? "50px" : "-50px" }, // page enters from the right or left
-    center: { opacity: 1, x: 0 }, // page is centered
-    exit: { opacity: 0, x: direction === "left" ? "-50px" : "50px" }, // page exits to the opposite side
+    enter: { opacity: 0, x: "50px" }, // Always enter from right
+    center: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: "-50px" }, // Always exit to left
   };
 
   return (
