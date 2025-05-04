@@ -30,7 +30,7 @@ const TransactionItem = ({ tx }: { tx: RedactTransaction }) => {
         </div>
 
         <div className="flex flex-col flex-grow justify-between items-stretch">
-          <div className="text-md font-semibold text-primary self-start mb-auto p-0 m-0">
+          <div className="text-md font-semibold text-primary self-start mb-auto p-0 m-0 whitespace-nowrap">
             {actionToString(tx.actionType)}
           </div>
           <div
