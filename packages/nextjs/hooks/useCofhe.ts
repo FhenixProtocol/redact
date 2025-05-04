@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Encryptable, Environment, FheTypes, Permit, cofhejs } from "cofhejs/web";
 import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia } from "viem/chains";
-import { usePublicClient, useWalletClient } from "wagmi";
+import { usePublicClient, useWalletClient, useChainId } from "wagmi";
 
 // Track initialization state globally
 let isInitializedGlobally = false;
@@ -33,6 +33,7 @@ const ChainEnvironments = {
 export function useCofhe(config?: Partial<CofheConfig>) {
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
+  const chainId = useChainId();
   const [isInitialized, setIsInitialized] = useState(isInitializedGlobally);
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -41,17 +42,22 @@ export function useCofhe(config?: Partial<CofheConfig>) {
   // Add checks to ensure we're in a browser environment
   const isBrowser = typeof window !== "undefined";
 
+  // Reset initialization when chain changes
+  useEffect(() => {
+    isInitializedGlobally = false;
+    setIsInitialized(false);
+  }, [chainId]);
+
   // Initialize when wallet is connected
   useEffect(() => {
-    // Only run initialization in browser environment
-    if (!isBrowser && !isInitializing) return;
+    // Skip initialization if not in browser
+    if (!isBrowser) return;
 
     const initialize = async () => {
       if (isInitializedGlobally || isInitializing || !publicClient || !walletClient) return;
       try {
         setIsInitializing(true);
 
-        const chainId = await publicClient.getChainId();
         const environment = ChainEnvironments[chainId as keyof typeof ChainEnvironments] ?? "TESTNET";
 
         const defaultConfig = {
@@ -95,7 +101,7 @@ export function useCofhe(config?: Partial<CofheConfig>) {
     };
 
     initialize();
-  }, [walletClient, publicClient]);
+  }, [walletClient, publicClient, config, chainId, isInitializing]);
 
   return {
     isInitialized,
