@@ -12,6 +12,7 @@ export function DisplayBalance({
 }) {
   const display = useMemo(() => {
     if (balance == null) return "...";
+    if (balance < 0n) return "N/A";
     return formatUnits(balance, decimals);
   }, [balance, decimals]);
   return <DisplayValue value={display} {...props} />;

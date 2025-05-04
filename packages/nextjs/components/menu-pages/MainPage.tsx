@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { TransactionHistory } from "../TransactionHistory";
-import { CleartextBalance } from "../ui/CleartextBalance";
+import { DisplayBalance } from "../ui/DisplayBalance";
 import { DisplayValue } from "../ui/DisplayValue";
-import { EncryptedBalance } from "../ui/EncryptedValue";
 import { TokenIcon } from "../ui/TokenIcon";
 import { ChevronRight, Luggage, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
 import { formatUnits } from "viem";
 import { Button } from "~~/components/ui/Button";
+import { FheTypes } from "~~/hooks/useCofhe";
 import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
 import { cn } from "~~/lib/utils";
 import { ClaimWithAddresses, useAllClaims } from "~~/services/store/claim";
+import { useDecryptValue } from "~~/services/store/decrypted";
 import { DrawerPageName, useDrawerPushPage, useSetDrawerOpen } from "~~/services/store/drawerStore";
 import { useGlobalState } from "~~/services/store/store";
 import {
@@ -126,6 +127,11 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
   const pair = useConfidentialTokenPair(pairAddress);
   const balances = useConfidentialTokenPairBalances(pairAddress);
   const pushPage = useDrawerPushPage();
+  const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint128, balances?.confidentialBalance);
+  const totalBalance = useMemo(() => {
+    if (decryptedBalance == null) return -1n;
+    return (balances?.publicBalance ?? 0n) + (decryptedBalance != null ? decryptedBalance : 0n);
+  }, [decryptedBalance, balances?.publicBalance]);
 
   if (pair == null) return null;
 
@@ -148,20 +154,10 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
         <TokenIcon publicToken={pair.publicToken} />
         <div className="flex flex-col items-start">
           <DisplayValue value={pair.publicToken.symbol} left />
-          <DisplayValue value={pair.confidentialToken?.symbol ?? `e${pair.publicToken.symbol}`} left />
         </div>
       </div>
       <div className="flex flex-col items-end">
-        <CleartextBalance balance={balances.publicBalance} decimals={pair.publicToken.decimals} />
-        {pair.confidentialTokenDeployed ? (
-          <EncryptedBalance
-            ctHash={balances.confidentialBalance}
-            decimals={pair.confidentialToken?.decimals ?? pair.publicToken.decimals}
-            className="text-right"
-          />
-        ) : (
-          <DisplayValue value="(not deployed)" className="italic" />
-        )}
+        <DisplayBalance balance={totalBalance} decimals={pair.publicToken.decimals} className="text-md" left />
       </div>
       <div className="text-xs text-primary">
         <ChevronRight className="w-4 h-4" />
