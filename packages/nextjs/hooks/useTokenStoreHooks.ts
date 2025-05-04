@@ -26,7 +26,7 @@ export const useTokenStoreFetcher = () => {
     if (!account) return;
 
     // Skip fetching only if loading toasts are visible
-    if (toasts.some(toast => toast.visible && toast.type === "loading")) {
+    if (toasts.some(toast => toast.visible && toast.type === "custom")) {
       return;
     }
 
