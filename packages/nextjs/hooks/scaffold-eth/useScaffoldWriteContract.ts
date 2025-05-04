@@ -107,7 +107,7 @@ export function useScaffoldWriteContract<TContractName extends ContractName>(
 
     try {
       setIsMining(true);
-      const { blockConfirmations, onBlockConfirmation, ...mutateOptions } = options || {};
+      const { ...mutateOptions } = options || {};
 
       const writeContractObject = {
         abi: deployedContractData.abi as Abi,
@@ -131,7 +131,13 @@ export function useScaffoldWriteContract<TContractName extends ContractName>(
               >
             | undefined,
         );
-      const writeTxResult = await writeTx(makeWriteWithParams, { blockConfirmations, onBlockConfirmation });
+      const writeTxResult = await writeTx(makeWriteWithParams, {
+        tokenSymbol: "",
+        tokenAddress: "",
+        tokenDecimals: 0,
+        tokenAmount: 0n,
+        actionType: 0,
+      });
 
       return writeTxResult;
     } catch (e: any) {
