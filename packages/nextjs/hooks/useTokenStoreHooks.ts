@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useRefresh } from "./useRefresh";
+import { useToaster } from "react-hot-toast";
 import { useAccount, useChainId } from "wagmi";
 import { fetchTokenPairBalances, fetchTokenPairsData } from "~~/services/store/tokenStore";
 
@@ -13,6 +14,7 @@ export const useTokenStoreFetcher = () => {
   const chain = useChainId();
   const { address: account } = useAccount();
   const { refresh } = useRefresh();
+  const { toasts } = useToaster();
 
   useEffect(() => {
     if (!chain) return;
@@ -22,6 +24,12 @@ export const useTokenStoreFetcher = () => {
   useEffect(() => {
     if (!chain) return;
     if (!account) return;
+
+    // Skip fetching only if loading toasts are visible
+    if (toasts.some(toast => toast.visible && toast.type === "loading")) {
+      return;
+    }
+
     fetchTokenPairBalances();
-  }, [chain, account, refresh]);
+  }, [chain, account, refresh, toasts]);
 };
