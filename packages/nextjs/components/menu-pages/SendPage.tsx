@@ -95,7 +95,8 @@ const AmountInputRow = () => {
           onChange={e => setInputValue(e.target.value)}
           className="w-30 text-lg text-primary-accent font-bold outline-none no-spinner"
         />
-        <div className="text-xs text-[#336699]">$ Fiat amount</div>
+        {/* TODO: add fiat amount */}
+        <div className="text-xs text-[#336699]">&nbsp;</div>
       </div>
       <div className="flex flex-col items-end flex-none justify-between">
         <TokenSelector
