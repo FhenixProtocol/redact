@@ -221,8 +221,14 @@ const TokenClaimRow = ({ pair }: { pair: ConfidentialTokenPair }) => {
             {isClaimable && (
               <DisplayBalance balance={pairClaims.totalDecryptedAmount} decimals={pair.publicToken.decimals} left />
             )}
-            <Button variant="default" size="md" className="w-min" disabled={!isClaimable} onClick={handleClaim}>
-              CLAIM
+            <Button
+              variant="default"
+              size="md"
+              className="w-min"
+              disabled={!isClaimable || isClaiming}
+              onClick={handleClaim}
+            >
+              {isClaiming ? "CLAIMING..." : "CLAIM"}
             </Button>
           </div>
         </div>

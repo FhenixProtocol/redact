@@ -71,7 +71,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           buttonVariants[variant],
           // Size-specific classes
           sizeVariants[size],
-          "disabled:opacity-50 disabled:cursor-not-allowed hover:disabled:bg-inherit",
+          "disabled:opacity-50 disabled:cursor-not-allowed", //hover:disabled:bg-inherit
           uppercase && "uppercase",
           className,
         )}
