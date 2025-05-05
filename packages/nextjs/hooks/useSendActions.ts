@@ -158,6 +158,7 @@ export const useSendConfidentialTokenAction = () => {
             },
           },
         );
+        setIsPending(false);
 
         return writeTxResult;
       } catch (error) {
