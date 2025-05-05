@@ -1,7 +1,7 @@
 "use client";
 
 import { estimateGas, getPublicClient } from "@wagmi/core";
-import { formatEther, parseEther } from "viem";
+import { formatEther, formatUnits, parseEther } from "viem";
 import deployedContracts from "~~/contracts/deployedContracts";
 import tokenListData from "~~/public/token-list.json";
 import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
@@ -114,4 +114,12 @@ export const getDeployedContract = <TContractName extends ContractName>(
 export const getConfidentialSymbol = (pair?: ConfidentialTokenPair) => {
   if (pair == null) return "TOKEN";
   return pair?.confidentialToken?.symbol ?? `e${pair?.publicToken.symbol}`;
+};
+
+// TODO: Implement this everywhere
+export const formatTokenAmount = (amount: bigint | number, decimals: number, precision = 4): string => {
+  const raw = formatUnits(BigInt(amount), decimals);
+  const [intPart, fracPart = ""] = raw.split(".");
+  const trimmedFrac = fracPart.slice(0, precision).replace(/0+$/, "");
+  return trimmedFrac ? `${intPart}.${trimmedFrac}` : intPart;
 };
