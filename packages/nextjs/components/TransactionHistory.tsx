@@ -20,7 +20,7 @@ const TransactionItem = ({ tx }: { tx: RedactTransaction }) => {
   return (
     <div key={tx.hash} className="bg-base-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
       <div className="flex h-13 gap-4">
-        <div className="text-green-500 text-xl flex items-center">
+        <div className="text-green-500 text-xl flex items-center w-6">
           <Image
             src={`/icons/${actionToString(tx.actionType)}.svg`}
             alt={actionToString(tx.actionType)}
