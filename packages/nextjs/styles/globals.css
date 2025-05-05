@@ -77,6 +77,12 @@
     --color-info-700: #1976d2;
     --color-info-900: #0d47a1;
 
+    --color-blue-200: #99C7F5;
+    --color-blue-300: #90caf9;
+    --color-blue-500: #2196f3;
+    --color-blue-700: #003366;
+    --color-blue-900: #00172E;
+
     --color-success-100: #e8f5e9;
     --color-success-300: #a5d6a7;
     --color-success-500: #4caf50;
@@ -155,6 +161,12 @@
     --color-info-500: #2196f3;
     --color-info-700: #90caf9;
     --color-info-900: #e3f2fd;
+
+    --color-blue-200: #002E5C;
+    --color-blue-300: #90caf9;
+    --color-blue-500: #2196f3;
+    --color-blue-700: #66ABF0;
+    --color-blue-900: #00172E;
 
     --color-success-100: #a5d6a7;
     --color-success-300: #388e3c;
@@ -242,6 +254,12 @@
   --color-info-500: var(--color-info-500);
   --color-info-700: var(--color-info-700);
   --color-info-900: var(--color-info-900);
+
+  --color-blue-200: var(--color-blue-200);
+  --color-blue-300: var(--color-blue-300);
+  --color-blue-500: var(--color-blue-500);
+  --color-blue-700: var(--color-blue-700);
+  --color-blue-900: var(--color-blue-900);
 
   --color-success-100: var(--color-success-100);
   --color-success-300: var(--color-success-300);
@@ -576,4 +594,82 @@ body {
 
 .styled-scrollbar:hover {
   scrollbar-color: #666 transparent;   /* shows on hover   */
+}
+
+
+
+.balance-bar {
+  margin: 2px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.balance-bar .values {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  line-height: 8px;
+}
+
+.balance-bar .scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 5px;
+  line-height: 8px;
+}
+
+.balance-bar .bars {
+  position: relative;
+  display: flex;
+  width: 100%;
+  border-radius: 10px;
+  overflow: visible;
+}
+
+.balance-bar .bars .bar {
+  height: 100%;
+  position: relative;
+  z-index: 0;
+}
+
+.balance-bar .bars div.bar:first-of-type {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.balance-bar .bars div.bar:last-of-type {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.balance-bar .legends {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.balance-bar .legends .legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.balance-bar .legends .legend .dot {
+  font-size: 12px;
+}
+
+.balance-bar .bar-separator {
+  position: absolute;
+  top: -5px;
+  width: 4px;
+  height: calc(100% + 10px);
+  background: var(--color-blue-700);
+  z-index: 999;
+  border-radius: 2px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
 }

@@ -2,8 +2,10 @@
 
 import React, { useMemo, useState } from "react";
 import { TransactionHistory } from "../TransactionHistory";
+import { BalanceBar } from "../ui/BalanceBar";
 import { DisplayBalance } from "../ui/DisplayBalance";
 import { DisplayValue } from "../ui/DisplayValue";
+import { EncryptedBalance } from "../ui/EncryptedValue";
 import { TokenIcon } from "../ui/TokenIcon";
 import { ChevronRight, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
 import { useAccount } from "wagmi";
@@ -34,7 +36,7 @@ export function WalletMainPanel() {
       <EthBalanceRow />
       <SendReceiveButtonsRow />
       <TabRow selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
-      <div className="flex flex-col flex-grow overflow-hidden">
+      <div className="flex flex-col gap-4 flex-grow overflow-hidden">
         {selectedTab === "tokens" && <Tokens />}
         {selectedTab === "history" && <TransactionHistory />}
         {/* <ClaimsList /> */}
@@ -151,10 +153,7 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
     <Button
       variant="ghost"
       noOutline
-      className={cn(
-        "rounded-none flex flex-row items-center p-2 w-full text-primary font-normal py-4",
-        index % 2 === 0 && "bg-surface",
-      )}
+      className={cn("rounded-2xl flex flex-col items-start p-2 w-full text-primary font-normal group", "bg-surface")}
       onClick={() => {
         pushPage({
           page: DrawerPageName.Token,
@@ -162,20 +161,19 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
         });
       }}
     >
-      <div className="flex flex-row flex-grow gap-2 items-center">
-        <TokenIcon publicToken={pair.publicToken} />
-        <div className="flex flex-col items-start">
-          <DisplayValue value={pair.publicToken.symbol} left />
-        </div>
-        {isClaimable && (
-          <div className="flex flex-col items-end text-xs text-primary-accent font-reddit-sans">(Claim available)</div>
-        )}
+      <div className="flex flex-row flex-grow gap-2 w-full items-center text-md font-bold p-2">
+        <TokenIcon size={24} publicToken={pair.publicToken} />
+        <div className="flex-grow text-start">{pair.publicToken.symbol}</div>
+        <div className="items-end">{formatTokenAmount(totalBalance, pair.publicToken.decimals)}</div>
       </div>
-      <div className="flex flex-col items-end">
-        <DisplayBalance balance={totalBalance} decimals={pair.publicToken.decimals} className="text-md" left />
-      </div>
-      <div className="text-xs text-primary">
-        <ChevronRight className="w-4 h-4" />
+      <div className="flex flex-col items-start relative w-full">
+        <BalanceBar
+          publicBalance={balances?.publicBalance ?? 0n}
+          confidentialBalance={balances?.confidentialBalance ?? 0n}
+          claimableAmount={pairClaims?.totalDecryptedAmount ?? 0n}
+          decimals={pair.publicToken.decimals}
+          showBalance={true}
+        />
       </div>
     </Button>
   );
