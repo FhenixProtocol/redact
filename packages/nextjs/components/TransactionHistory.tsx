@@ -26,6 +26,7 @@ const TransactionItem = ({ tx }: { tx: RedactTransaction }) => {
             alt={actionToString(tx.actionType)}
             width={32}
             height={32}
+            className="dark:brightness-0 dark:invert"
           />
         </div>
 
