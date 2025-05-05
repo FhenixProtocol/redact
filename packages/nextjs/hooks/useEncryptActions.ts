@@ -7,7 +7,6 @@ import { WriteContractVariables } from "wagmi/query";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import confidentialEthAbi from "~~/contracts/ConfidentialEthAbi";
 import deployedContracts from "~~/contracts/deployedContracts";
-import { ETH_ADDRESS } from "~~/lib/common";
 import { refetchSingleTokenPairBalances, refetchSingleTokenPairData } from "~~/services/store/tokenStore";
 import { TransactionActionType } from "~~/services/store/transactionStore";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
@@ -179,13 +178,17 @@ export const useEncryptErc20Action = () => {
         setIsPending(true);
 
         const abi = isWeth || isEth ? confidentialEthAbi : confidentialErc20Abi;
+        const address = confidentialTokenAddress;
         const functionName = isWeth ? "encryptWETH" : isEth ? "encryptETH" : "encrypt";
+        const value = isEth ? amount : undefined;
+        const args = isEth ? [account] : [account, amount];
 
         const writeContractObject = {
           abi,
-          address: confidentialTokenAddress,
+          address,
           functionName,
-          args: [account, amount],
+          value,
+          args,
         } as WriteContractVariables<Abi, string, any[], Config, number>;
 
         await simulateContractWriteAndNotifyError({ wagmiConfig, writeContractParams: writeContractObject });
