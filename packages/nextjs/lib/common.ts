@@ -8,8 +8,7 @@ import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 import { Contract, ContractName } from "~~/utils/scaffold-eth/contract";
 
-// TODO: Use scaffold-eth hooks
-export const REDACT_CORE_ADDRESS = "0x3087103FB1638156758CFE89A489c890E522B82e" as `0x${string}`;
+export const ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" as `0x${string}`;
 
 export const truncateAddress = (address: string, start = 6, end = 4) => {
   return address.slice(0, start) + "..." + address.slice(-end);
