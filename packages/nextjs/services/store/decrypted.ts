@@ -13,12 +13,21 @@ type DecryptionResult<T extends FheTypes> =
       ctHash: bigint;
       value: UnsealedItem<T>;
       error: null;
+      state: "success";
+    }
+  | {
+      fheType: T;
+      ctHash: bigint;
+      value: null;
+      error: null;
+      state: "pending";
     }
   | {
       fheType: T;
       ctHash: bigint;
       value: null;
       error: string;
+      state: "error";
     };
 
 type DecryptedStore = {
@@ -49,6 +58,7 @@ const _decryptValue = async <T extends FheTypes>(fheType: T, value: bigint): Pro
       ctHash: 0n,
       value: fheType === FheTypes.Bool ? false : fheType === FheTypes.Uint160 ? zeroAddress : 0n,
       error: null,
+      state: "success",
     } as DecryptionResult<T>;
   }
   const result = await cofhejs.unseal(value, fheType);
@@ -58,6 +68,7 @@ const _decryptValue = async <T extends FheTypes>(fheType: T, value: bigint): Pro
       ctHash: value,
       value: result.data,
       error: null,
+      state: "success",
     } as DecryptionResult<T>;
   }
   return {
@@ -65,6 +76,7 @@ const _decryptValue = async <T extends FheTypes>(fheType: T, value: bigint): Pro
     ctHash: value,
     value: null,
     error: result.error.message,
+    state: "error",
   } as DecryptionResult<T>;
 };
 
@@ -73,7 +85,7 @@ export const decryptValue = async <T extends FheTypes>(
   ctHash: bigint,
 ): Promise<DecryptionResult<T> | undefined> => {
   const existing = useDecryptedStore.getState().decryptions[ctHash.toString()];
-  if (existing && existing.value != null) {
+  if (existing && existing.state !== "error") {
     return existing as DecryptionResult<T>;
   }
 
@@ -84,6 +96,13 @@ export const decryptValue = async <T extends FheTypes>(
   }
   useDecryptedStore.setState(state => {
     state.lastDecryptionTimestamp[ctHash.toString()] = Date.now();
+    state.decryptions[ctHash.toString()] = {
+      fheType,
+      ctHash,
+      value: null,
+      error: null,
+      state: "pending",
+    };
   });
 
   const result = await _decryptValue(fheType, ctHash);
@@ -117,7 +136,7 @@ export const useDecryptValue = <T extends FheTypes>(
 
   useEffect(() => {
     if (ctHash == null) return;
-    if (result != null && result.value != null) return;
+    if (result != null && result.state !== "error") return;
     decryptValue(fheType, ctHash).then(result => {
       if (result == null) return;
       useDecryptedStore.setState(state => {
@@ -132,7 +151,8 @@ export const useDecryptValue = <T extends FheTypes>(
       fheType,
       ctHash: ctHash,
       value: null,
-      error: "Missing value",
+      error: null,
+      state: "pending",
     } as DecryptionResult<T>;
   }, [fheType, result, ctHash]);
 };
