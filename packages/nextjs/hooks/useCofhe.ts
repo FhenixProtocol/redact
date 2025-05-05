@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Encryptable, Environment, FheTypes, Permit, cofhejs } from "cofhejs/web";
 import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia } from "viem/chains";
-import { usePublicClient, useWalletClient, useChainId } from "wagmi";
+import { useAccount, useChainId, usePublicClient, useWalletClient } from "wagmi";
 
 // Track initialization state globally
 let isInitializedGlobally = false;
@@ -33,6 +33,10 @@ const ChainEnvironments = {
 export function useCofhe(config?: Partial<CofheConfig>) {
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
+  const { address: accountAddress } = useAccount();
+
+  console.log("accountAddress", accountAddress);
+
   const chainId = useChainId();
   const [isInitialized, setIsInitialized] = useState(isInitializedGlobally);
   const [isInitializing, setIsInitializing] = useState(false);
@@ -46,7 +50,7 @@ export function useCofhe(config?: Partial<CofheConfig>) {
   useEffect(() => {
     isInitializedGlobally = false;
     setIsInitialized(false);
-  }, [chainId]);
+  }, [chainId, accountAddress]);
 
   // Initialize when wallet is connected
   useEffect(() => {
@@ -54,9 +58,12 @@ export function useCofhe(config?: Partial<CofheConfig>) {
     if (!isBrowser) return;
 
     const initialize = async () => {
+      console.log("Re-run initialize");
       if (isInitializedGlobally || isInitializing || !publicClient || !walletClient) return;
       try {
         setIsInitializing(true);
+
+        console.log("Re-initializing Cofhe", accountAddress);
 
         const environment = ChainEnvironments[chainId as keyof typeof ChainEnvironments] ?? "TESTNET";
 
@@ -101,7 +108,7 @@ export function useCofhe(config?: Partial<CofheConfig>) {
     };
 
     initialize();
-  }, [walletClient, publicClient, config, chainId, isInitializing]);
+  }, [walletClient, publicClient, config, chainId, isInitializing, accountAddress]);
 
   return {
     isInitialized,
