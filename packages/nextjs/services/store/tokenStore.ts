@@ -369,8 +369,6 @@ const _fetchConfidentialPairBalances = async (
     address: account,
   });
 
-  console.log("ethBalance", ethBalance);
-
   const contracts = [];
 
   for (let i = 0; i < addresses.length; i++) {
@@ -403,8 +401,6 @@ const _fetchConfidentialPairBalances = async (
   const results = await publicClient.multicall({
     contracts,
   });
-
-  console.log("results", results);
 
   const balances: ConfidentialTokenPairBalances[] = [];
   let resultIndex = 0;
@@ -658,13 +654,11 @@ export const useRemoveArbitraryToken = (address?: string) => {
 export const loadPredefinedValues = async (url: string) => {
   try {
     const response = await fetch(url);
-    console.log("response", response);
     if (!response.ok) {
       throw new Error(`Failed to fetch predefined values: ${response.statusText}`);
     }
 
     const data = await response.json();
-    console.log("data", data);
 
     useTokenStore.setState(state => {
       // Merge the predefined values with existing state
