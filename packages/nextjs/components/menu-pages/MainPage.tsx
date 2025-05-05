@@ -6,8 +6,11 @@ import { DisplayBalance } from "../ui/DisplayBalance";
 import { DisplayValue } from "../ui/DisplayValue";
 import { TokenIcon } from "../ui/TokenIcon";
 import { ChevronRight, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
+import { useAccount } from "wagmi";
+import { useBalance } from "wagmi";
 import { Button } from "~~/components/ui/Button";
 import { FheTypes } from "~~/hooks/useCofhe";
+import { formatTokenAmount } from "~~/lib/common";
 import { cn } from "~~/lib/utils";
 import { usePairClaims } from "~~/services/store/claim";
 import { useDecryptValue } from "~~/services/store/decrypted";
@@ -42,7 +45,15 @@ export function WalletMainPanel() {
 }
 
 const EthBalanceRow = () => {
-  return <div className="text-xxl font-bold text-primary self-center">TODO: ETH BAL</div>;
+  const { address: account } = useAccount();
+  const { data: ethBalance } = useBalance({
+    address: account,
+  });
+  return (
+    <div className="pl-4 pt-4 text-3xl font-bold text-primary mb-12">
+      {formatTokenAmount(ethBalance?.value ?? 0n, 18)} ETH
+    </div>
+  );
 };
 
 const SendReceiveButtonsRow = () => {
