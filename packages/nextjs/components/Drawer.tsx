@@ -125,31 +125,29 @@ const DrawerHeaderBackButton = () => {
 };
 
 const DrawerContentBody = () => {
-  const { page } = useDrawerPage();
+  const { page, pairAddress } = useDrawerPage();
   const animationDirection = useDrawerAnimationDirection();
 
   return (
     <AnimatePresence custom={animationDirection} initial={false}>
-      <DrawerContentSlide key={page} />
+      <DrawerContentSlide key={page} page={page} pairAddress={pairAddress} />
     </AnimatePresence>
   );
 };
 
 const slideVariants = {
-  "enter-from-right": { opacity: 0, x: "50px" },
-  "enter-from-left": { opacity: 0, x: "-50px" },
+  "enter-from-right": { opacity: -1, x: "50px" },
+  "enter-from-left": { opacity: -1, x: "-50px" },
   center: { opacity: 1, x: 0 },
-  "exit-to-right": { opacity: 0, x: "-50px" },
-  "exit-to-left": { opacity: 0, x: "50px" },
+  "exit-to-right": { opacity: -1, x: "-50px" },
+  "exit-to-left": { opacity: -1, x: "50px" },
 };
 
-const DrawerContentSlide = () => {
-  const { page, pairAddress } = useDrawerPage();
+const DrawerContentSlide = ({ page, pairAddress }: { page: DrawerPageName; pairAddress: string | undefined }) => {
   const animationDirection = usePresenceData();
 
   return (
     <motion.div
-      key={page}
       variants={slideVariants}
       initial={animationDirection === "right" ? "enter-from-right" : "enter-from-left"}
       animate="center"
@@ -159,7 +157,7 @@ const DrawerContentSlide = () => {
       {page === DrawerPageName.Main && <WalletMainPanel />}
       {page === DrawerPageName.Settings && <SettingsPage />}
       {page === DrawerPageName.Token && <TokenPage pairAddress={pairAddress} />}
-      {page === DrawerPageName.Send && <SendPage /*pairAddress={pairAddress}*/ />}
+      {page === DrawerPageName.Send && <SendPage />}
       {page === DrawerPageName.Receive && <ReceivePage />}
       {page === DrawerPageName.Connect && <ConnectPage />}
     </motion.div>

@@ -19,8 +19,7 @@ export function EncryptedValue<T extends FheTypes>({
 }) {
   const decRes = useDecryptValue(fheType, ctHash);
   const decryptedValue = decRes.value;
-
-  console.log({ decRes });
+  const error = decRes.error;
 
   const display = useMemo(() => {
     if (ctHash == null) return "...";
@@ -32,14 +31,14 @@ export function EncryptedValue<T extends FheTypes>({
     <DisplayValue
       value={display}
       icon={<EyeOff className="w-5 h-5" />}
-      className={cn(
-        "border-primary text-primary min-w-32",
-        decryptedValue == null && "text-primary-foreground",
-        className,
-      )}
+      className={cn("text-primary min-w-32", decryptedValue == null && "text-primary-foreground", className)}
     >
       <div
-        className={cn("absolute right-0 h-full bg-primary transition-all", decryptedValue == null ? "w-full" : "w-0")}
+        className={cn(
+          "absolute right-0 h-full bg-primary transition-all",
+          decryptedValue == null ? "w-full" : "w-0",
+          error != null && "bg-destructive",
+        )}
       />
     </DisplayValue>
   );
