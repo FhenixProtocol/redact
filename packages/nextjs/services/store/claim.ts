@@ -29,8 +29,6 @@ export type ClaimWithAddresses = Claim & {
   fherc20Address: Address;
 };
 
-type ClaimCtHashAndAddresses = Pick<ClaimWithAddresses, "ctHash" | "erc20Address" | "fherc20Address">;
-
 export interface AddressPair {
   erc20Address: Address;
   fherc20Address: Address | undefined;
@@ -41,6 +39,7 @@ type AddressRecord<T> = Record<string, T>;
 type StringRecord<T> = Record<string, T>;
 
 interface ClaimStore {
+  // { chain: { erc20Address: { ctHash: ClaimWithAddresses } } }
   claims: ChainRecord<AddressRecord<StringRecord<ClaimWithAddresses>>>;
 }
 
