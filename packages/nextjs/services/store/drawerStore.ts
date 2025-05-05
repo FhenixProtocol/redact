@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useCallback, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { create } from "zustand";
@@ -95,6 +96,7 @@ export const useDrawerBackButtonAction = () => {
       });
     } else {
       useDrawerStore.setState(state => {
+        state.animationDirection = "left";
         state.stack = state.stack.slice(0, -1);
       });
     }
@@ -106,8 +108,8 @@ export const useDrawerPushPage = () => {
   return useCallback(
     (page: DrawerPage) =>
       useDrawerStore.setState(state => {
-        state.stack = [...state.stack, page];
         state.animationDirection = "right";
+        state.stack = [...state.stack, page];
       }),
     [],
   );
@@ -117,8 +119,8 @@ export const useDrawerPopPage = () => {
   return useCallback(
     () =>
       useDrawerStore.setState(state => {
-        state.stack = state.stack.slice(0, -1);
         state.animationDirection = "left";
+        state.stack = state.stack.slice(0, -1);
       }),
     [],
   );

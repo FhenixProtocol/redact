@@ -5,13 +5,14 @@ import { TransactionHistory } from "../TransactionHistory";
 import { DisplayBalance } from "../ui/DisplayBalance";
 import { DisplayValue } from "../ui/DisplayValue";
 import { TokenIcon } from "../ui/TokenIcon";
-import { ChevronRight, Luggage, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
-import { formatUnits } from "viem";
+import { ChevronRight, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
+import { useAccount } from "wagmi";
+import { useBalance } from "wagmi";
 import { Button } from "~~/components/ui/Button";
 import { FheTypes } from "~~/hooks/useCofhe";
-import { useClaimFherc20Action } from "~~/hooks/useDecryptActions";
+import { formatTokenAmount } from "~~/lib/common";
 import { cn } from "~~/lib/utils";
-import { ClaimWithAddresses, useAllClaims, usePairClaims } from "~~/services/store/claim";
+import { usePairClaims } from "~~/services/store/claim";
 import { useDecryptValue } from "~~/services/store/decrypted";
 import { DrawerPageName, useDrawerPushPage, useSetDrawerOpen } from "~~/services/store/drawerStore";
 import { useGlobalState } from "~~/services/store/store";
@@ -33,7 +34,7 @@ export function WalletMainPanel() {
       <EthBalanceRow />
       <SendReceiveButtonsRow />
       <TabRow selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
-      <div className="flex flex-col gap-4 flex-grow overflow-hidden">
+      <div className="flex flex-col flex-grow overflow-hidden">
         {selectedTab === "tokens" && <Tokens />}
         {selectedTab === "history" && <TransactionHistory />}
         {/* <ClaimsList /> */}
@@ -44,7 +45,15 @@ export function WalletMainPanel() {
 }
 
 const EthBalanceRow = () => {
-  return <div className="text-xxl font-bold text-primary self-center">TODO: ETH BAL</div>;
+  const { address: account } = useAccount();
+  const { data: ethBalance } = useBalance({
+    address: account,
+  });
+  return (
+    <div className="pl-4 pt-4 text-3xl font-bold text-primary mb-12">
+      {formatTokenAmount(ethBalance?.value ?? 0n, 18)} ETH
+    </div>
+  );
 };
 
 const SendReceiveButtonsRow = () => {
@@ -143,7 +152,7 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
       variant="ghost"
       noOutline
       className={cn(
-        "rounded-none flex flex-row items-center p-2 w-full text-primary font-normal",
+        "rounded-none flex flex-row items-center p-2 w-full text-primary font-normal py-4",
         index % 2 === 0 && "bg-surface",
       )}
       onClick={() => {
@@ -169,60 +178,6 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
         <ChevronRight className="w-4 h-4" />
       </div>
     </Button>
-  );
-};
-
-const ClaimsList = () => {
-  const claims = useAllClaims();
-  return (
-    <>
-      <div className="flex flex-row justify-around">
-        <div className="flex flex-row gap-2 font-semibold">Amount</div>
-        <div className="flex flex-row gap-2 font-semibold">Action</div>
-      </div>
-      <div className="flex flex-col gap-4 w-full">
-        {claims.map(claim => {
-          return <ClaimItem key={claim.ctHash.toString()} claim={claim} />;
-        })}
-      </div>
-    </>
-  );
-};
-
-const ClaimItem = ({ claim }: { claim: ClaimWithAddresses }) => {
-  const pair = useConfidentialTokenPair(claim.erc20Address);
-  const { onClaimFherc20, isClaiming } = useClaimFherc20Action();
-
-  if (pair == null) return null;
-  if (pair.confidentialToken == null) return null;
-
-  // TODO: Remove it from the store, not filter it out here
-  if (claim.claimed) return null;
-
-  const handleClaim = () => {
-    onClaimFherc20({
-      publicTokenSymbol: pair.publicToken.symbol,
-      claim,
-      tokenDecimals: pair.publicToken.decimals,
-    });
-  };
-
-  return (
-    <div className="flex flex-row w-full items-center justify-between">
-      <div className="flex flex-row gap-2 items-center">
-        <b>{formatUnits(claim.requestedAmount, pair.publicToken.decimals)}</b>
-        <span className="text-sm">{pair.publicToken.symbol}</span>
-      </div>
-      <Button
-        variant="default"
-        size="xs"
-        onClick={handleClaim}
-        icon={claim.decrypted ? Luggage : undefined}
-        disabled={isClaiming || !claim.decrypted}
-      >
-        {claim.decrypted ? "CLAIM" : "PENDING"}
-      </Button>
-    </div>
   );
 };
 

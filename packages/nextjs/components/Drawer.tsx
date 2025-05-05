@@ -11,7 +11,7 @@ import { TokenPage, TokenPageButtonFooter } from "./menu-pages/TokenPage";
 import { Button } from "./ui/Button";
 import { Separator } from "./ui/Separator";
 import { ArrowBack, Logout } from "@mui/icons-material";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, usePresenceData } from "framer-motion";
 import { ChevronLeft, Settings, WalletIcon, X } from "lucide-react";
 import { zeroAddress } from "viem";
 import { useAccount, useChainId, useDisconnect } from "wagmi";
@@ -21,6 +21,7 @@ import { truncateAddress } from "~~/lib/common";
 import { cn } from "~~/lib/utils";
 import {
   DrawerPageName,
+  useDrawerAnimationDirection,
   useDrawerBackButtonAction,
   useDrawerOpen,
   useDrawerPage,
@@ -125,31 +126,41 @@ const DrawerHeaderBackButton = () => {
 
 const DrawerContentBody = () => {
   const { page, pairAddress } = useDrawerPage();
-
-  const slideVariants = {
-    enter: { opacity: 0, x: "50px" }, // Always enter from right
-    center: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: "-50px" }, // Always exit to left
-  };
+  const animationDirection = useDrawerAnimationDirection();
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={page}
-        variants={slideVariants}
-        initial="enter"
-        animate="center"
-        exit="exit"
-        className="flex-1 overflow-hidden p-4"
-      >
-        {page === DrawerPageName.Main && <WalletMainPanel />}
-        {page === DrawerPageName.Settings && <SettingsPage />}
-        {page === DrawerPageName.Token && <TokenPage pairAddress={pairAddress} />}
-        {page === DrawerPageName.Send && <SendPage /*pairAddress={pairAddress}*/ />}
-        {page === DrawerPageName.Receive && <ReceivePage />}
-        {page === DrawerPageName.Connect && <ConnectPage />}
-      </motion.div>
+    <AnimatePresence custom={animationDirection} initial={false}>
+      <DrawerContentSlide key={page} page={page} pairAddress={pairAddress} />
     </AnimatePresence>
+  );
+};
+
+const slideVariants = {
+  "enter-from-right": { opacity: -1, x: "50px" },
+  "enter-from-left": { opacity: -1, x: "-50px" },
+  center: { opacity: 1, x: 0 },
+  "exit-to-right": { opacity: -1, x: "-50px" },
+  "exit-to-left": { opacity: -1, x: "50px" },
+};
+
+const DrawerContentSlide = ({ page, pairAddress }: { page: DrawerPageName; pairAddress: string | undefined }) => {
+  const animationDirection = usePresenceData();
+
+  return (
+    <motion.div
+      variants={slideVariants}
+      initial={animationDirection === "right" ? "enter-from-right" : "enter-from-left"}
+      animate="center"
+      exit={animationDirection === "right" ? "exit-to-right" : "exit-to-left"}
+      className="flex-1 overflow-hidden p-4 absolute top-0 left-0 w-full h-full"
+    >
+      {page === DrawerPageName.Main && <WalletMainPanel />}
+      {page === DrawerPageName.Settings && <SettingsPage />}
+      {page === DrawerPageName.Token && <TokenPage pairAddress={pairAddress} />}
+      {page === DrawerPageName.Send && <SendPage />}
+      {page === DrawerPageName.Receive && <ReceivePage />}
+      {page === DrawerPageName.Connect && <ConnectPage />}
+    </motion.div>
   );
 };
 

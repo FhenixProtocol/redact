@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { DisplayValue } from "./DisplayValue";
 import { FheTypes, UnsealedItem } from "cofhejs/web";
-import { EyeOff } from "lucide-react";
+import { EyeOff, LoaderCircle } from "lucide-react";
 import { formatUnits } from "viem";
 import { cn } from "~~/lib/utils";
 import { useDecryptValue } from "~~/services/store/decrypted";
@@ -17,27 +17,30 @@ export function EncryptedValue<T extends FheTypes>({
   className?: string;
   transform: (value: UnsealedItem<T>) => string;
 }) {
-  const decRes = useDecryptValue(fheType, ctHash);
-  const decryptedValue = decRes.value;
+  const { value, state } = useDecryptValue(fheType, ctHash);
 
   const display = useMemo(() => {
     if (ctHash == null) return "...";
-    if (decryptedValue == null) return "XXXXXX";
-    return transform(decryptedValue);
-  }, [ctHash, transform, decryptedValue]);
+    if (value == null) return "XXXXXX";
+    return transform(value);
+  }, [ctHash, transform, value]);
 
   return (
     <DisplayValue
       value={display}
-      icon={<EyeOff className="w-5 h-5" />}
+      icon={state === "pending" ? <LoaderCircle className="w-5 h-5 animate-spin" /> : <EyeOff className="w-5 h-5" />}
       className={cn(
-        "border-primary text-primary min-w-32",
-        decryptedValue == null && "text-primary-foreground",
+        "text-primary min-w-32",
+        (state === "pending" || state === "error") && "text-primary-foreground",
         className,
       )}
     >
       <div
-        className={cn("absolute right-0 h-full bg-primary transition-all", decryptedValue == null ? "w-full" : "w-0")}
+        className={cn(
+          "absolute right-0 h-full bg-primary transition-all",
+          state === "pending" || state === "error" ? "w-full" : "w-0",
+          state === "error" && "bg-destructive",
+        )}
       />
     </DisplayValue>
   );
