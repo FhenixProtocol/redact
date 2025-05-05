@@ -51,9 +51,7 @@ const _decryptValue = async <T extends FheTypes>(fheType: T, value: bigint): Pro
       error: null,
     } as DecryptionResult<T>;
   }
-  console.log("decrypting", value, fheType);
   const result = await cofhejs.unseal(value, fheType);
-  console.log("result", result, value);
   if (result.success) {
     return {
       fheType,
@@ -75,7 +73,6 @@ export const decryptValue = async <T extends FheTypes>(
   value: bigint,
 ): Promise<DecryptionResult<T> | undefined> => {
   const existing = useDecryptedStore.getState().decryptions[value.toString()];
-  console.log("decryptValue", { fheType, value, existing });
   if (existing && existing.value != null) {
     return existing as DecryptionResult<T>;
   }
@@ -117,7 +114,8 @@ export const useDecryptValue = <T extends FheTypes>(
   const result = useDecryptedStore(state => state.decryptions[value?.toString() ?? ""]);
 
   useEffect(() => {
-    if (result != null || value == null) return;
+    if (value == null) return;
+    if (result != null && result.value != null) return;
     decryptValue(fheType, value).then(result => {
       if (result == null) return;
       useDecryptedStore.setState(state => {
@@ -134,5 +132,5 @@ export const useDecryptValue = <T extends FheTypes>(
       value: null,
       error: "Missing value",
     } as DecryptionResult<T>;
-  }, [result, value]);
+  }, [fheType, result, value]);
 };

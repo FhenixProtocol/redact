@@ -20,6 +20,8 @@ export function EncryptedValue<T extends FheTypes>({
   const decRes = useDecryptValue(fheType, ctHash);
   const decryptedValue = decRes.value;
 
+  console.log({ decRes });
+
   const display = useMemo(() => {
     if (ctHash == null) return "...";
     if (decryptedValue == null) return "XXXXXX";
