@@ -70,26 +70,26 @@ const _decryptValue = async <T extends FheTypes>(fheType: T, value: bigint): Pro
 
 export const decryptValue = async <T extends FheTypes>(
   fheType: T,
-  value: bigint,
+  ctHash: bigint,
 ): Promise<DecryptionResult<T> | undefined> => {
-  const existing = useDecryptedStore.getState().decryptions[value.toString()];
+  const existing = useDecryptedStore.getState().decryptions[ctHash.toString()];
   if (existing && existing.value != null) {
     return existing as DecryptionResult<T>;
   }
 
   // Rate limit decryption to 5 seconds
-  const lastDecryptionTimestamp = useDecryptedStore.getState().lastDecryptionTimestamp[value.toString()];
+  const lastDecryptionTimestamp = useDecryptedStore.getState().lastDecryptionTimestamp[ctHash.toString()];
   if (lastDecryptionTimestamp != null && lastDecryptionTimestamp > Date.now() - DecryptionRateLimit) {
     return undefined;
   }
   useDecryptedStore.setState(state => {
-    state.lastDecryptionTimestamp[value.toString()] = Date.now();
+    state.lastDecryptionTimestamp[ctHash.toString()] = Date.now();
   });
 
-  const result = await _decryptValue(fheType, value);
+  const result = await _decryptValue(fheType, ctHash);
 
   useDecryptedStore.setState(state => {
-    state.decryptions[value.toString()] = result;
+    state.decryptions[ctHash.toString()] = result;
   });
 
   return result;
@@ -97,11 +97,11 @@ export const decryptValue = async <T extends FheTypes>(
 
 export const getDecryptedValue = <T extends FheTypes>(
   fheType: T,
-  value: bigint | null | undefined,
+  ctHash: bigint | null | undefined,
 ): DecryptionResult<T> | undefined => {
-  if (value == null) return undefined;
+  if (ctHash == null) return undefined;
 
-  const existing = useDecryptedStore.getState().decryptions[value.toString()];
+  const existing = useDecryptedStore.getState().decryptions[ctHash.toString()];
   if (existing != null && existing.value != null) return existing as DecryptionResult<T>;
 
   return undefined;
@@ -109,28 +109,30 @@ export const getDecryptedValue = <T extends FheTypes>(
 
 export const useDecryptValue = <T extends FheTypes>(
   fheType: T,
-  value: bigint | null | undefined,
+  ctHash: bigint | null | undefined,
 ): DecryptionResult<T> => {
-  const result = useDecryptedStore(state => state.decryptions[value?.toString() ?? ""]);
+  const result = useDecryptedStore(
+    state => state.decryptions[ctHash?.toString() ?? ""] as DecryptionResult<T> | undefined,
+  );
 
   useEffect(() => {
-    if (value == null) return;
+    if (ctHash == null) return;
     if (result != null && result.value != null) return;
-    decryptValue(fheType, value).then(result => {
+    decryptValue(fheType, ctHash).then(result => {
       if (result == null) return;
       useDecryptedStore.setState(state => {
-        state.decryptions[value.toString()] = result;
+        state.decryptions[ctHash.toString()] = result;
       });
     });
-  }, [fheType, result, value]);
+  }, [fheType, result, ctHash]);
 
   return useMemo(() => {
-    if (result != null) return result as DecryptionResult<T>;
+    if (result != null) return result;
     return {
       fheType,
-      ctHash: value,
+      ctHash: ctHash,
       value: null,
       error: "Missing value",
     } as DecryptionResult<T>;
-  }, [fheType, result, value]);
+  }, [fheType, result, ctHash]);
 };
