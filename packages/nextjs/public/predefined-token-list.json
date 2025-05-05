@@ -1,6 +1,27 @@
 {
   "pairs": {
     "11155111": {
+      "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee": {
+        "publicToken": {
+          "name": "Ether",
+          "symbol": "ETH",
+          "decimals": 18,
+          "error": null,
+          "address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "loading": false
+        },
+        "confidentialToken": {
+          "name": "Confidential Wrapped ETHER",
+          "symbol": "eETH",
+          "decimals": 18,
+          "error": null,
+          "address": "0x60e8F2b6f4AE6CB53B034cA892E520B32eC129cf",
+          "loading": false
+        },
+        "confidentialTokenDeployed": true,
+        "isStablecoin": false,
+        "isWETH": false
+      },
       "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9": {
         "publicToken": {
           "name": "Wrapped Ether",
@@ -58,12 +79,6 @@
         "isStablecoin": false,
         "isWETH": false
       }
-    }
-  },
-  "confidentialToPublicMap": {
-    "11155111": {
-      "0xA0E9EA8E48a4c401B365CEA36050bDB948A1bc14": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-      "0x4bFF5d451c64F7F6C0CAD59291f66641CfBd49B7": "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4"
     }
   }
 }

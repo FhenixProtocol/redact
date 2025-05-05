@@ -10,7 +10,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
-import { chunk, getChainId, getDeployedContract } from "~~/lib/common";
+import { ETH_ADDRESS, chunk, getChainId, getDeployedContract } from "~~/lib/common";
 
 type ChainRecord<T> = Record<number, T>;
 type AddressRecord<T> = Record<Address, T>;
@@ -58,7 +58,6 @@ interface TokenStore {
   loadingTokens: boolean;
 
   pairs: ChainRecord<AddressRecord<ConfidentialTokenPair>>;
-  confidentialToPublicMap: ChainRecord<AddressRecord<Address>>;
 
   balances: ChainRecord<AddressRecord<ConfidentialTokenPairBalances>>;
 
@@ -72,7 +71,6 @@ export const useTokenStore = create<TokenStore>()(
       loadingTokens: false,
 
       pairs: {},
-      confidentialToPublicMap: {},
 
       balances: {},
 
@@ -97,12 +95,6 @@ const _addPairToStore = (
     ...state.pairs[chain],
     [pair.publicToken.address]: pair,
   };
-  if (pair.confidentialToken != null) {
-    state.confidentialToPublicMap[chain] = {
-      ...state.confidentialToPublicMap[chain],
-      [pair.confidentialToken.address]: pair.publicToken.address,
-    };
-  }
   if (balances != null) {
     state.balances[chain] = {
       ...state.balances[chain],
@@ -153,18 +145,13 @@ const _addArbitraryToken = async (chain: number, { pair, balances }: Confidentia
   // await _fetchToken(chain, pair.publicToken.address);
 };
 
-const _removeArbitraryToken = async (chain: number, address: string) => {
+const _removeArbitraryToken = async (chain: number, publicTokenAddress: string) => {
   useTokenStore.setState(state => {
-    const publicTokenAddress = state.confidentialToPublicMap[chain]?.[address] ?? address;
-
     if (state.arbitraryTokens[chain]?.[publicTokenAddress] != null) {
       delete state.arbitraryTokens[chain][publicTokenAddress];
     }
     if (state.pairs[chain]?.[publicTokenAddress] != null) {
       delete state.pairs[chain][publicTokenAddress];
-    }
-    if (state.confidentialToPublicMap[chain]?.[publicTokenAddress] != null) {
-      delete state.confidentialToPublicMap[chain][publicTokenAddress];
     }
     if (state.balances[chain]?.[publicTokenAddress] != null) {
       delete state.balances[chain][publicTokenAddress];
@@ -378,6 +365,12 @@ const _fetchConfidentialPairBalances = async (
 
   const publicClient = getPublicClient(wagmiConfig);
 
+  const ethBalance = await publicClient.getBalance({
+    address: account,
+  });
+
+  console.log("ethBalance", ethBalance);
+
   const contracts = [];
 
   for (let i = 0; i < addresses.length; i++) {
@@ -411,6 +404,8 @@ const _fetchConfidentialPairBalances = async (
     contracts,
   });
 
+  console.log("results", results);
+
   const balances: ConfidentialTokenPairBalances[] = [];
   let resultIndex = 0;
 
@@ -418,9 +413,22 @@ const _fetchConfidentialPairBalances = async (
     const { fherc20Address } = addresses[i];
     const fherc20Exists = fherc20Address != null && fherc20Address !== zeroAddress;
 
-    const publicBalanceResult = results[resultIndex++];
+    let publicBalanceResult = results[resultIndex++];
     const confidentialBalanceResult = fherc20Exists ? results[resultIndex++] : null;
-    const fherc20AllowanceResult = fherc20Exists ? results[resultIndex++] : null;
+    let fherc20AllowanceResult = fherc20Exists ? results[resultIndex++] : null;
+
+    const isEth = addresses[i].erc20Address.toLowerCase() === ETH_ADDRESS.toLowerCase();
+    if (isEth) {
+      publicBalanceResult = {
+        status: "success",
+        result: ethBalance,
+      };
+      fherc20AllowanceResult = {
+        status: "success",
+        result: ethBalance,
+      };
+    }
+
     balances.push({
       publicBalance: publicBalanceResult.status === "success" ? (publicBalanceResult.result as bigint) : undefined,
       confidentialBalance:
@@ -475,7 +483,7 @@ export const fetchTokenPairsData = async () => {
   const chain = await getChainId();
 
   try {
-    await loadPredefinedValues("https://redact-resources.s3.eu-west-1.amazonaws.com/predefined-token-list.json");
+    await loadPredefinedValues("http://redact-resources.s3.eu-west-1.amazonaws.com/predefined-token-list.json");
   } catch (error) {
     console.error("Error loading predefined values:", error);
   }
@@ -650,21 +658,19 @@ export const useRemoveArbitraryToken = (address?: string) => {
 export const loadPredefinedValues = async (url: string) => {
   try {
     const response = await fetch(url);
+    console.log("response", response);
     if (!response.ok) {
       throw new Error(`Failed to fetch predefined values: ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log("data", data);
 
     useTokenStore.setState(state => {
       // Merge the predefined values with existing state
       state.pairs = {
         ...state.pairs,
         ...data.pairs,
-      };
-      state.confidentialToPublicMap = {
-        ...state.confidentialToPublicMap,
-        ...data.confidentialToPublicMap,
       };
     });
 

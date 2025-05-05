@@ -35,8 +35,6 @@ export function useCofhe(config?: Partial<CofheConfig>) {
   const { data: walletClient } = useWalletClient();
   const { address: accountAddress } = useAccount();
 
-  console.log("accountAddress", accountAddress);
-
   const chainId = useChainId();
   const [isInitialized, setIsInitialized] = useState(isInitializedGlobally);
   const [isInitializing, setIsInitializing] = useState(false);
@@ -58,12 +56,9 @@ export function useCofhe(config?: Partial<CofheConfig>) {
     if (!isBrowser) return;
 
     const initialize = async () => {
-      console.log("Re-run initialize");
       if (isInitializedGlobally || isInitializing || !publicClient || !walletClient) return;
       try {
         setIsInitializing(true);
-
-        console.log("Re-initializing Cofhe", accountAddress);
 
         const environment = ChainEnvironments[chainId as keyof typeof ChainEnvironments] ?? "TESTNET";
 
@@ -108,6 +103,7 @@ export function useCofhe(config?: Partial<CofheConfig>) {
     };
 
     initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walletClient, publicClient, config, chainId, isInitializing, accountAddress]);
 
   return {
