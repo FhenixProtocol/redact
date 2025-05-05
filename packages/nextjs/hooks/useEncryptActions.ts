@@ -5,7 +5,9 @@ import { Address, erc20Abi } from "viem";
 import { Config, useAccount, useChainId, useWriteContract } from "wagmi";
 import { WriteContractVariables } from "wagmi/query";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
+import confidentialEthAbi from "~~/contracts/ConfidentialEthAbi";
 import deployedContracts from "~~/contracts/deployedContracts";
+import { ETH_ADDRESS } from "~~/lib/common";
 import { refetchSingleTokenPairBalances, refetchSingleTokenPairData } from "~~/services/store/tokenStore";
 import { TransactionActionType } from "~~/services/store/transactionStore";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
@@ -170,13 +172,19 @@ export const useEncryptErc20Action = () => {
         return;
       }
 
+      const isEth = publicTokenSymbol === "ETH";
+      const isWeth = publicTokenSymbol === "WETH";
+
       try {
         setIsPending(true);
 
+        const abi = isWeth || isEth ? confidentialEthAbi : confidentialErc20Abi;
+        const functionName = isWeth ? "encryptWETH" : isEth ? "encryptETH" : "encrypt";
+
         const writeContractObject = {
-          abi: confidentialErc20Abi,
+          abi,
           address: confidentialTokenAddress,
-          functionName: "encrypt",
+          functionName,
           args: [account, amount],
         } as WriteContractVariables<Abi, string, any[], Config, number>;
 
