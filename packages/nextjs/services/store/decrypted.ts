@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { superjsonStorage } from "./superjsonStorage";
 import { FheTypes, UnsealedItem } from "cofhejs/web";
 import { cofhejs } from "cofhejs/web";
+import superjson from "superjson";
 import { zeroAddress } from "viem";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -61,6 +62,7 @@ const _decryptValue = async <T extends FheTypes>(fheType: T, value: bigint): Pro
       state: "success",
     } as DecryptionResult<T>;
   }
+
   const result = await cofhejs.unseal(value, fheType);
   if (result.success) {
     return {
@@ -80,10 +82,35 @@ const _decryptValue = async <T extends FheTypes>(fheType: T, value: bigint): Pro
   } as DecryptionResult<T>;
 };
 
+const _pendingIfCofhejsNotInitialized = <T extends FheTypes>(
+  fheType: T,
+  ctHash: bigint,
+): DecryptionResult<T> | undefined => {
+  if (
+    !cofhejs.store.getState().fheKeysInitialized ||
+    !cofhejs.store.getState().providerInitialized ||
+    !cofhejs.store.getState().signerInitialized
+  ) {
+    return {
+      fheType,
+      ctHash,
+      value: null,
+      error: null,
+      state: "pending",
+    } as DecryptionResult<T>;
+  }
+  return undefined;
+};
+
 export const decryptValue = async <T extends FheTypes>(
   fheType: T,
   ctHash: bigint,
 ): Promise<DecryptionResult<T> | undefined> => {
+  // Check if cofhejs is initialized, if not return a pending decryption
+  const pending = _pendingIfCofhejsNotInitialized(fheType, ctHash);
+  if (pending != null) return pending;
+
+  // Return existing decryption if it exists and is not an error
   const existing = useDecryptedStore.getState().decryptions[ctHash.toString()];
   if (existing && existing.state !== "error") {
     return existing as DecryptionResult<T>;
@@ -133,17 +160,13 @@ export const useDecryptValue = <T extends FheTypes>(
   const result = useDecryptedStore(
     state => state.decryptions[ctHash?.toString() ?? ""] as DecryptionResult<T> | undefined,
   );
+  const strResult = superjson.stringify(result);
 
   useEffect(() => {
     if (ctHash == null) return;
     if (result != null && result.state !== "error") return;
-    decryptValue(fheType, ctHash).then(result => {
-      if (result == null) return;
-      useDecryptedStore.setState(state => {
-        state.decryptions[ctHash.toString()] = result;
-      });
-    });
-  }, [fheType, result, ctHash]);
+    decryptValue(fheType, ctHash);
+  }, [fheType, strResult, ctHash]);
 
   return useMemo(() => {
     if (result != null) return result;
