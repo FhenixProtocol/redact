@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { useCallback, useRef } from "react";
 import { wagmiConfig } from "../web3/wagmiConfig";
+import { decryptValue } from "./decrypted";
 import { superjsonStorage } from "./superjsonStorage";
+import { FheTypes } from "cofhejs/web";
 import { WritableDraft } from "immer";
 import { Address, erc20Abi, zeroAddress } from "viem";
 import { deepEqual, useChainId } from "wagmi";
@@ -437,6 +439,10 @@ const _fetchConfidentialPairBalances = async (
   return balances;
 };
 
+const _decryptConfidentialBalances = async (chain: number, account: Address, ctHashes: bigint[]) => {
+  ctHashes.map(ctHash => decryptValue(FheTypes.Uint128, ctHash));
+};
+
 export const _fetchTokenPairsData = async (
   chain: number,
   erc20Addresses: Address[],
@@ -512,6 +518,12 @@ export const fetchTokenPairBalances = async () => {
   );
 
   const pairBalances = await _fetchConfidentialPairBalances(chain, account, addressPairs);
+
+  // Request decryption of the confidential balance ctHashes
+  const confidentialBalanceCtHashes = pairBalances
+    .map(balance => balance.confidentialBalance)
+    .filter((ctHashMaybe): ctHashMaybe is bigint => ctHashMaybe != null);
+  _decryptConfidentialBalances(chain, account, confidentialBalanceCtHashes);
 
   useTokenStore.setState(state => {
     const pairPublicAddresses = addressPairs.map(({ erc20Address }) => erc20Address);
