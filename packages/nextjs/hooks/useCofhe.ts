@@ -118,5 +118,46 @@ export function useCofhe(config?: Partial<CofheConfig>) {
   };
 }
 
+export const useCofhejsInitialized = () => {
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = cofhejs.store.subscribe(state =>
+      setInitialized(state.providerInitialized && state.signerInitialized && state.fheKeysInitialized),
+    );
+
+    // Initial state
+    const initialState = cofhejs.store.getState();
+    setInitialized(
+      initialState.providerInitialized && initialState.signerInitialized && initialState.fheKeysInitialized,
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  return initialized;
+};
+
+export const useCofhejsAccount = () => {
+  const [account, setAccount] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = cofhejs.store.subscribe(state => {
+      setAccount(state.account);
+    });
+
+    // Initial state
+    setAccount(cofhejs.store.getState().account);
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  return account;
+};
+
 // Export FheTypes directly for convenience
 export { FheTypes } from "cofhejs/web";
