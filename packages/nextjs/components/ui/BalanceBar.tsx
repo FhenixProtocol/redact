@@ -4,7 +4,8 @@ import * as React from "react";
 import { useMemo } from "react";
 import { FheTypes } from "cofhejs/web";
 import { Eye, EyeOff, Ticket } from "lucide-react";
-import { formatUnits } from "viem";
+import { formatTokenAmount } from "~~/lib/common";
+import { cn } from "~~/lib/utils";
 import { useDecryptValue } from "~~/services/store/decrypted";
 
 interface BalanceBarProps {
@@ -40,17 +41,17 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
 
   const displayPublic = useMemo(() => {
     if (totalBalance === 0n) return "0";
-    return formatUnits(publicBalance, decimals);
+    return formatTokenAmount(publicBalance, decimals);
   }, [totalBalance, publicBalance, decimals]);
 
   const displayConfidential = useMemo(() => {
     if (totalBalance === 0n) return "0";
-    return formatUnits(unsealedConfidentialBalance, decimals);
+    return formatTokenAmount(unsealedConfidentialBalance, decimals);
   }, [unsealedConfidentialBalance, decimals, totalBalance]);
 
   const displayClaimable = useMemo(() => {
     if (totalBalance === 0n) return "0";
-    return formatUnits(claimableAmount, decimals);
+    return formatTokenAmount(claimableAmount, decimals);
   }, [claimableAmount, decimals, totalBalance]);
 
   const readings = [
@@ -107,20 +108,20 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
         </div>
       </div>
       <div
-        className={`relative flex w-full rounded-[${height}px] overflow-visible ${borderClassName}`}
+        className={cn(`relative flex items-center w-full rounded-full`, borderClassName)}
         style={{ height: `${height}px` }}
       >
-        {visibleBars.map((r, idx) => (
+        {visibleBars.map(r => (
           <div
             key={r.i}
-            className={`${r.color} first:rounded-l-[${height}px] last:rounded-r-[${height}px]`}
+            className={cn("first:rounded-l-full last:rounded-r-full h-full relative", r.color)}
             style={{ width: r.percentage + "%" }}
           />
         ))}
         {/* Single separator before the last bar */}
         {showSeparator && (
           <div
-            className={`bg-blue-700 absolute -top-[${height / 2}px] w-1 h-[calc(100%+${height}px)] z-[999] rounded-[2px] shadow-[0_0_2px_rgba(0,0,0,0.2)] pointer-events-none`}
+            className={`bg-blue-700 absolute h-[300%] w-1 z-10 rounded-xs`}
             style={{ left: `${separatorOffset}%` }}
           />
         )}
