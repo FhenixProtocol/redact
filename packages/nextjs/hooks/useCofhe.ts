@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Encryptable, Environment, FheTypes, Permit, cofhejs } from "cofhejs/web";
+import { useEffect, useMemo, useState } from "react";
+import { Encryptable, Environment, FheTypes, Permit, cofhejs, permitStore } from "cofhejs/web";
+import { Address } from "viem";
 import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia } from "viem/chains";
 import { useAccount, useChainId, usePublicClient, useWalletClient } from "wagmi";
 
@@ -157,6 +158,61 @@ export const useCofhejsAccount = () => {
   }, []);
 
   return account;
+};
+
+export const useCofhejsActivePermitHashes = () => {
+  const [activePermitHash, setActivePermitHash] = useState<Record<Address, string | undefined>>({});
+
+  useEffect(() => {
+    const unsubscribe = permitStore.store.subscribe(state => {
+      const hash = state.activePermitHash;
+      setActivePermitHash(hash);
+    });
+
+    setActivePermitHash(permitStore.store.getState().activePermitHash);
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  return useMemo(() => activePermitHash, [activePermitHash]);
+};
+
+export const useCofhejsActivePermitHash = () => {
+  const account = useCofhejsAccount();
+  const activePermitHashes = useCofhejsActivePermitHashes();
+
+  return useMemo(() => {
+    if (!account) return undefined;
+    return activePermitHashes[account];
+  }, [account, activePermitHashes]);
+};
+
+export const useCofhejsActivePermit = () => {
+  const account = useCofhejsAccount();
+  const initialized = useCofhejsInitialized();
+  const activePermitHash = useCofhejsActivePermitHash();
+
+  console.log("activePermitHash", activePermitHash);
+
+  return useMemo(() => {
+    if (!account || !initialized) return undefined;
+    return permitStore.getPermit(account, activePermitHash);
+  }, [account, initialized, activePermitHash]);
+};
+
+export const useCofhejsAllPermits = () => {
+  const account = useCofhejsAccount();
+  const initialized = useCofhejsInitialized();
+  const activePermitHashes = useCofhejsActivePermitHashes();
+
+  console.log("activePermitHashes", activePermitHashes);
+
+  return useMemo(() => {
+    if (!account || !initialized) return undefined;
+    return Object.values(cofhejs.getAllPermits()?.data ?? {});
+  }, [account, initialized, activePermitHashes]);
 };
 
 // Export FheTypes directly for convenience
