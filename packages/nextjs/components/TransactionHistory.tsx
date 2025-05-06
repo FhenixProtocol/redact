@@ -18,14 +18,15 @@ interface TransactionHistoryProps {
 
 const TransactionItem = ({ tx }: { tx: RedactTransaction }) => {
   return (
-    <div key={tx.hash} className="bg-base-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+    <div key={tx.hash} className="bg-surface-alt p-4 rounded-2xl">
       <div className="flex h-13 gap-4">
-        <div className="text-green-500 text-xl flex items-center">
+        <div className="text-green-500 text-xl flex items-center w-6">
           <Image
             src={`/icons/${actionToString(tx.actionType)}.svg`}
             alt={actionToString(tx.actionType)}
             width={32}
             height={32}
+            className="dark:brightness-0 dark:invert"
           />
         </div>
 

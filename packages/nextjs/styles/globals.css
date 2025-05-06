@@ -33,6 +33,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
     --surface: #d9f0ff;
+    --surface-alt: #ffffff;
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
     --primary-accent: #0073e6;
@@ -77,6 +78,12 @@
     --color-info-700: #1976d2;
     --color-info-900: #0d47a1;
 
+    --color-blue-200: #99C7F5;
+    --color-blue-300: #90caf9;
+    --color-blue-500: #2196f3;
+    --color-blue-700: #003366;
+    --color-blue-900: #00172E;
+
     --color-success-100: #e8f5e9;
     --color-success-300: #a5d6a7;
     --color-success-500: #4caf50;
@@ -114,6 +121,7 @@
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
     --surface: #1a1a1a;
+    --surface-alt: #1a1a1a;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
     --primary-accent: #3399ff;
@@ -155,6 +163,12 @@
     --color-info-500: #2196f3;
     --color-info-700: #90caf9;
     --color-info-900: #e3f2fd;
+
+    --color-blue-200: #002E5C;
+    --color-blue-300: #90caf9;
+    --color-blue-500: #2196f3;
+    --color-blue-700: #66ABF0;
+    --color-blue-900: #CCE3FA;
 
     --color-success-100: #a5d6a7;
     --color-success-300: #388e3c;
@@ -243,6 +257,12 @@
   --color-info-700: var(--color-info-700);
   --color-info-900: var(--color-info-900);
 
+  --color-blue-200: var(--color-blue-200);
+  --color-blue-300: var(--color-blue-300);
+  --color-blue-500: var(--color-blue-500);
+  --color-blue-700: var(--color-blue-700);
+  --color-blue-900: var(--color-blue-900);
+
   --color-success-100: var(--color-success-100);
   --color-success-300: var(--color-success-300);
   --color-success-500: var(--color-success-500);
@@ -270,7 +290,7 @@
   --color-disable-accent: var(--primary-accent-disabled);
 
   --color-surface: var(--surface);
-
+  --color-surface-alt: var(--surface-alt);
   --color-secondary: #8a8a8a;
   --color-secondary-light: #8a8a8a;
   --color-secondary-dark: #8a8a8a;
@@ -534,8 +554,6 @@ html {
 body {
   font-size: 16px;
 }
-
-
 
 /* apply to any overflowing element */
 .styled-scrollbar {
