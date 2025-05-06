@@ -31,7 +31,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
     claimableAmount = 0n,
     showBalance = false,
     decimals = 18,
-    height = 15,
+    height = 10,
     borderClassName = "border-2 border-blue-700",
   } = props;
 
