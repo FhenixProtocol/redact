@@ -115,7 +115,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
           <div
             key={r.i}
             className={cn("first:rounded-l-full last:rounded-r-full h-full relative", r.color)}
-            style={{ width: r.percentage + "%" }}
+            style={{ width: `${r.percentage}%` }}
           />
         ))}
         {/* Single separator before the last bar */}
