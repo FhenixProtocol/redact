@@ -33,6 +33,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
     --surface: #d9f0ff;
+    --surface-alt: #ffffff;
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
     --primary-accent: #0073e6;
@@ -120,6 +121,7 @@
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
     --surface: #1a1a1a;
+    --surface-alt: #1a1a1a;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
     --primary-accent: #3399ff;
@@ -288,7 +290,7 @@
   --color-disable-accent: var(--primary-accent-disabled);
 
   --color-surface: var(--surface);
-
+  --color-surface-alt: var(--surface-alt);
   --color-secondary: #8a8a8a;
   --color-secondary-light: #8a8a8a;
   --color-secondary-dark: #8a8a8a;

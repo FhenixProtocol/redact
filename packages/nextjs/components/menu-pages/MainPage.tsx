@@ -175,7 +175,7 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
       noOutline
       className={cn(
         "rounded-2xl flex flex-col items-start p-2 w-full text-primary font-normal group",
-        "bg-theme-white",
+        "bg-surface-alt",
       )}
       onClick={() => {
         pushPage({
