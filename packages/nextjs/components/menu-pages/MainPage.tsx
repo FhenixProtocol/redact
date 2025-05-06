@@ -189,7 +189,9 @@ const TokenRowItem = ({ pairAddress }: { pairAddress: string }) => {
       <div className="flex flex-row flex-grow gap-2 w-full items-center text-md font-bold p-2">
         <TokenIcon size={24} publicToken={pair.publicToken} />
         <div className="flex-grow text-start">{pair.publicToken.symbol}</div>
-        <div className="items-end">{formatTokenAmount(totalBalance, pair.publicToken.decimals)}</div>
+        <div className="items-end">
+          {totalBalance < 0 ? "N/A" : formatTokenAmount(totalBalance, pair.publicToken.decimals)}
+        </div>
       </div>
       <div className="flex flex-col items-start relative w-full">
         <BalanceBar
