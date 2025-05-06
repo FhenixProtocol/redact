@@ -62,15 +62,14 @@ export function PermitsPage() {
       <Button
         variant="outline"
         size="sm"
-        onClick={async () => {
+        onClick={() => {
           if (!account) return;
-          const permit = await cofhejs.createPermit({
+          cofhejs.createPermit({
             type: "self",
             name: "Test Permit",
             issuer: account,
             expiration: (activePermit?.expiration ?? 1000000000) + 1,
           });
-          console.log("permit", permit);
         }}
       >
         Create New Permit

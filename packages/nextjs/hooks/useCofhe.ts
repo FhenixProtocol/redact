@@ -194,8 +194,6 @@ export const useCofhejsActivePermit = () => {
   const initialized = useCofhejsInitialized();
   const activePermitHash = useCofhejsActivePermitHash();
 
-  console.log("activePermitHash", activePermitHash);
-
   return useMemo(() => {
     if (!account || !initialized) return undefined;
     return permitStore.getPermit(account, activePermitHash);
@@ -206,8 +204,6 @@ export const useCofhejsAllPermits = () => {
   const account = useCofhejsAccount();
   const initialized = useCofhejsInitialized();
   const activePermitHashes = useCofhejsActivePermitHashes();
-
-  console.log("activePermitHashes", activePermitHashes);
 
   return useMemo(() => {
     if (!account || !initialized) return undefined;
