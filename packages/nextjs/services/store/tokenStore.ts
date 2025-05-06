@@ -485,7 +485,7 @@ export const fetchTokenPairsData = async () => {
   const chain = await getChainId();
 
   try {
-    await loadPredefinedValues("http://redact-resources.s3.eu-west-1.amazonaws.com/predefined-token-list.json");
+    await loadPredefinedValues("https://redact-resources.s3.eu-west-1.amazonaws.com/predefined-token-list.json");
   } catch (error) {
     console.error("Error loading predefined values:", error);
   }
