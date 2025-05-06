@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { superjsonStorage } from "./superjsonStorage";
 import { FheTypes, UnsealedItem } from "cofhejs/web";
 import { cofhejs } from "cofhejs/web";
 import superjson from "superjson";
 import { zeroAddress } from "viem";
+import { useAccount } from "wagmi";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import { useCofhejsAccount } from "~~/hooks/useCofhe";
 
 type DecryptionResult<T extends FheTypes> =
   | {
@@ -52,7 +54,11 @@ export const useDecryptedStore = create<DecryptedStore>()(
   ),
 );
 
-const _decryptValue = async <T extends FheTypes>(fheType: T, value: bigint): Promise<DecryptionResult<T>> => {
+const _decryptValue = async <T extends FheTypes>(
+  fheType: T,
+  value: bigint,
+  address: string,
+): Promise<DecryptionResult<T>> => {
   if (value === 0n) {
     return {
       fheType,
@@ -63,7 +69,7 @@ const _decryptValue = async <T extends FheTypes>(fheType: T, value: bigint): Pro
     } as DecryptionResult<T>;
   }
 
-  const result = await cofhejs.unseal(value, fheType);
+  const result = await cofhejs.unseal(value, fheType, address);
   if (result.success) {
     return {
       fheType,
@@ -105,6 +111,7 @@ const _pendingIfCofhejsNotInitialized = <T extends FheTypes>(
 export const decryptValue = async <T extends FheTypes>(
   fheType: T,
   ctHash: bigint,
+  address: string,
 ): Promise<DecryptionResult<T> | undefined> => {
   // Check if cofhejs is initialized, if not return a pending decryption
   const pending = _pendingIfCofhejsNotInitialized(fheType, ctHash);
@@ -132,7 +139,7 @@ export const decryptValue = async <T extends FheTypes>(
     };
   });
 
-  const result = await _decryptValue(fheType, ctHash);
+  const result = await _decryptValue(fheType, ctHash, address);
 
   useDecryptedStore.setState(state => {
     state.decryptions[ctHash.toString()] = result;
@@ -157,16 +164,19 @@ export const useDecryptValue = <T extends FheTypes>(
   fheType: T,
   ctHash: bigint | null | undefined,
 ): DecryptionResult<T> => {
+  const cofhejsAccount = useCofhejsAccount();
+
   const result = useDecryptedStore(
     state => state.decryptions[ctHash?.toString() ?? ""] as DecryptionResult<T> | undefined,
   );
   const strResult = superjson.stringify(result);
 
   useEffect(() => {
-    if (ctHash == null) return;
+    if (ctHash == null || cofhejsAccount == null) return;
     if (result != null && result.state !== "error") return;
-    decryptValue(fheType, ctHash);
-  }, [fheType, strResult, ctHash]);
+    decryptValue(fheType, ctHash, cofhejsAccount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fheType, strResult, ctHash, cofhejsAccount]);
 
   return useMemo(() => {
     if (result != null) return result;

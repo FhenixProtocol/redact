@@ -4,9 +4,12 @@ import { Moon, Sun } from "lucide-react";
 import { Button } from "~~/components/ui/Button";
 import { Switcher } from "~~/components/ui/Switcher";
 import { useTheme } from "~~/hooks/useTheme";
+import { DrawerPageName, useDrawerPushPage } from "~~/services/store/drawerStore";
 
 export function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const pushPage = useDrawerPushPage();
+
   const handleThemeChange = (value: number) => {
     const newTheme = value === 0 ? "light" : "dark";
     setTheme(newTheme);
@@ -15,9 +18,15 @@ export function SettingsPage() {
   return (
     <div className="p-4 pt-0 pb-0 flex flex-col gap-4 h-full">
       <div className="text-3xl text-primary font-semibold mb-3">Settings</div>
-      {/* <Button size="md" iconSize="lg" variant="surface" icon={AddModeratorOutlined}>
-        Create or Share Permits
-      </Button> */}
+      <Button
+        size="md"
+        iconSize="lg"
+        variant="surface"
+        icon={AddModeratorOutlined}
+        onClick={() => pushPage({ page: DrawerPageName.Permits, pairAddress: undefined })}
+      >
+        Manage Permits
+      </Button>
       <Button size="md" iconSize="lg" variant="surface" icon={DescriptionOutlined}>
         Documentation
       </Button>

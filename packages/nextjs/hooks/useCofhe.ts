@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Encryptable, Environment, FheTypes, Permit, cofhejs } from "cofhejs/web";
+import { useEffect, useMemo, useState } from "react";
+import { Encryptable, Environment, FheTypes, Permit, cofhejs, permitStore } from "cofhejs/web";
+import { Address } from "viem";
 import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia } from "viem/chains";
 import { useAccount, useChainId, usePublicClient, useWalletClient } from "wagmi";
 
@@ -117,6 +118,98 @@ export function useCofhe(config?: Partial<CofheConfig>) {
     Encryptable,
   };
 }
+
+export const useCofhejsInitialized = () => {
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = cofhejs.store.subscribe(state =>
+      setInitialized(state.providerInitialized && state.signerInitialized && state.fheKeysInitialized),
+    );
+
+    // Initial state
+    const initialState = cofhejs.store.getState();
+    setInitialized(
+      initialState.providerInitialized && initialState.signerInitialized && initialState.fheKeysInitialized,
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  return initialized;
+};
+
+export const useCofhejsAccount = () => {
+  const [account, setAccount] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = cofhejs.store.subscribe(state => {
+      setAccount(state.account);
+    });
+
+    // Initial state
+    setAccount(cofhejs.store.getState().account);
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  return account;
+};
+
+export const useCofhejsActivePermitHashes = () => {
+  const [activePermitHash, setActivePermitHash] = useState<Record<Address, string | undefined>>({});
+
+  useEffect(() => {
+    const unsubscribe = permitStore.store.subscribe(state => {
+      const hash = state.activePermitHash;
+      setActivePermitHash(hash);
+    });
+
+    setActivePermitHash(permitStore.store.getState().activePermitHash);
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  return useMemo(() => activePermitHash, [activePermitHash]);
+};
+
+export const useCofhejsActivePermitHash = () => {
+  const account = useCofhejsAccount();
+  const activePermitHashes = useCofhejsActivePermitHashes();
+
+  return useMemo(() => {
+    if (!account) return undefined;
+    return activePermitHashes[account];
+  }, [account, activePermitHashes]);
+};
+
+export const useCofhejsActivePermit = () => {
+  const account = useCofhejsAccount();
+  const initialized = useCofhejsInitialized();
+  const activePermitHash = useCofhejsActivePermitHash();
+
+  return useMemo(() => {
+    if (!account || !initialized) return undefined;
+    return permitStore.getPermit(account, activePermitHash);
+  }, [account, initialized, activePermitHash]);
+};
+
+export const useCofhejsAllPermits = () => {
+  const account = useCofhejsAccount();
+  const initialized = useCofhejsInitialized();
+  const activePermitHashes = useCofhejsActivePermitHashes();
+
+  return useMemo(() => {
+    if (!account || !initialized) return undefined;
+    return Object.values(cofhejs.getAllPermits()?.data ?? {});
+  }, [account, initialized, activePermitHashes]);
+};
 
 // Export FheTypes directly for convenience
 export { FheTypes } from "cofhejs/web";
