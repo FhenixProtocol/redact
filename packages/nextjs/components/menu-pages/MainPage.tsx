@@ -7,6 +7,7 @@ import { DisplayBalance } from "../ui/DisplayBalance";
 import { DisplayValue } from "../ui/DisplayValue";
 import { EncryptedBalance } from "../ui/EncryptedValue";
 import { TokenIcon } from "../ui/TokenIcon";
+import { Eye, EyeOff, Ticket } from "lucide-react";
 import { ChevronRight, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useBalance } from "wagmi";
@@ -131,13 +132,27 @@ const Tokens = () => {
   const addresses = useConfidentialTokenPairAddresses();
   return (
     <div className="flex flex-col gap-4 overflow-x-hidden overflow-y-auto styled-scrollbar">
+      <div className="flex flex-row gap-4 text-xs items-center opacity-70">
+        {/* Optional: sticky top-0 bg-background */}
+        <div className="flex flex-row gap-2 items-center">
+          <Eye className="w-4 h-4" />
+          <span>Public</span>
+        </div>
+        <div className="flex flex-row gap-2 items-center">
+          <EyeOff className="w-4 h-4" />
+          <span>Confidential</span>
+        </div>
+        <div className="flex flex-row gap-2 items-center">
+          <Ticket className="w-4 h-4" />
+          <span>Claimable</span>
+        </div>
+      </div>
       {addresses.map((address, i) => {
         return <TokenRowItem key={address} pairAddress={address} index={i} />;
       })}
     </div>
   );
 };
-
 
 const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: number }) => {
   const pair = useConfidentialTokenPair(pairAddress);
@@ -158,7 +173,10 @@ const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: numb
     <Button
       variant="ghost"
       noOutline
-      className={cn("rounded-2xl flex flex-col items-start p-2 w-full text-primary font-normal group", "bg-surface")}
+      className={cn(
+        "rounded-2xl flex flex-col items-start p-2 w-full text-primary font-normal group",
+        "bg-theme-white",
+      )}
       onClick={() => {
         pushPage({
           page: DrawerPageName.Token,

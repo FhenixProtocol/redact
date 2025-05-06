@@ -108,11 +108,12 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
               <div className="flex flex-row items-center gap-1">
                 <Ticket className="w-4 h-4" /> {claimablePercentage}%
               </div>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block">
+              {/* Optional: tooltip */}
+              {/* <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block">
                 <div className="bg-gray-900 text-white text-sm rounded py-1 px-2 whitespace-nowrap">
                   {displayClaimable} tokens available to claim
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         )}
