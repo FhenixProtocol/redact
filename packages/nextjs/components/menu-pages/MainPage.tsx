@@ -132,35 +132,40 @@ const Tokens = () => {
   const addresses = useConfidentialTokenPairAddresses();
   return (
     <div className="flex flex-col gap-4 overflow-x-hidden overflow-y-auto styled-scrollbar">
-      <div className="flex flex-row gap-4 text-xs items-center">
-        {/* Optional: sticky top-0 bg-background */}
-        <div className="text-primary text-sm font-semibold">Balance Legend:</div>
-        <div className="flex flex-row gap-1 items-center text-primary-accent text-sm font-semibold">
-          <div className="w-3 h-3 bg-blue-200 rounded-[3px]" />
-          <span>Public</span>
-        </div>
-        <div className="flex flex-row gap-1 items-center text-primary-accent text-sm font-semibold">
-          <div className="w-3 h-3 bg-primary-accent rounded-[3px]" />
-          <span>Confidential</span>
-        </div>
-        <div className="flex flex-row gap-1 items-center text-info-900 text-sm font-semibold">
-          <div className="w-3 h-3 bg-info-900 rounded-[3px]" />
-          <span>Claimable</span>
-        </div>
-      </div>
-      {addresses.map((address, i) => {
-        return <TokenRowItem key={address} pairAddress={address} index={i} />;
+      <BalanceBarKey />
+      {addresses.map(address => {
+        return <TokenRowItem key={address} pairAddress={address} />;
       })}
     </div>
   );
 };
 
-const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: number }) => {
+const BalanceBarKey = () => {
+  return (
+    <div className="flex flex-row gap-4 text-xs items-center">
+      {/* Optional: sticky top-0 bg-background */}
+      <div className="text-primary text-sm font-semibold">Balance Legend:</div>
+      <div className="flex flex-row gap-1 items-center text-blue-200 text-sm font-semibold">
+        <div className="w-3 h-3 bg-blue-200 rounded-[3px]" />
+        <span>Public</span>
+      </div>
+      <div className="flex flex-row gap-1 items-center text-primary-accent text-sm font-semibold">
+        <div className="w-3 h-3 bg-primary-accent rounded-[3px]" />
+        <span>Claimable</span>
+      </div>
+      <div className="flex flex-row gap-1 items-center text-info-900 text-sm font-semibold">
+        <div className="w-3 h-3 bg-info-900 rounded-[3px]" />
+        <span>Confidential</span>
+      </div>
+    </div>
+  );
+};
+
+const TokenRowItem = ({ pairAddress }: { pairAddress: string }) => {
   const pair = useConfidentialTokenPair(pairAddress);
   const balances = useConfidentialTokenPairBalances(pairAddress);
   const pushPage = useDrawerPushPage();
   const pairClaims = usePairClaims(pair?.publicToken.address);
-  const isClaimable = (pairClaims?.totalDecryptedAmount ?? 0n) > 0n;
 
   const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint128, balances?.confidentialBalance);
   const totalBalance = useMemo(() => {
