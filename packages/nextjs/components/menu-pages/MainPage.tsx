@@ -3,12 +3,8 @@
 import React, { useMemo, useState } from "react";
 import { TransactionHistory } from "../TransactionHistory";
 import { BalanceBar } from "../ui/BalanceBar";
-import { DisplayBalance } from "../ui/DisplayBalance";
-import { DisplayValue } from "../ui/DisplayValue";
-import { EncryptedBalance } from "../ui/EncryptedValue";
 import { TokenIcon } from "../ui/TokenIcon";
-import { Eye, EyeOff, Ticket } from "lucide-react";
-import { ChevronRight, MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
+import { MoveDownLeft, MoveUpRight, PlusIcon } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useBalance } from "wagmi";
 import { Button } from "~~/components/ui/Button";
@@ -145,7 +141,7 @@ const BalanceBarKey = () => {
     <div className="flex flex-row gap-4 text-xs items-center">
       {/* Optional: sticky top-0 bg-background */}
       <div className="text-primary text-sm font-semibold">Balance Legend:</div>
-      <div className="flex flex-row gap-1 items-center text-blue-200 text-sm font-semibold">
+      <div className="flex flex-row gap-1 items-center text-primary-accent text-sm font-semibold">
         <div className="w-3 h-3 bg-blue-200 rounded-[3px]" />
         <span>Public</span>
       </div>
