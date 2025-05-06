@@ -8,6 +8,7 @@ import { useAccount } from "wagmi";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import { useCofhejsAccount } from "~~/hooks/useCofhe";
 
 type DecryptionResult<T extends FheTypes> =
   | {
@@ -163,7 +164,7 @@ export const useDecryptValue = <T extends FheTypes>(
   fheType: T,
   ctHash: bigint | null | undefined,
 ): DecryptionResult<T> => {
-  const { address } = useAccount();
+  const cofhejsAccount = useCofhejsAccount();
 
   const result = useDecryptedStore(
     state => state.decryptions[ctHash?.toString() ?? ""] as DecryptionResult<T> | undefined,
@@ -171,11 +172,11 @@ export const useDecryptValue = <T extends FheTypes>(
   const strResult = superjson.stringify(result);
 
   useEffect(() => {
-    if (ctHash == null || address == null) return;
+    if (ctHash == null || cofhejsAccount == null) return;
     if (result != null && result.state !== "error") return;
-    decryptValue(fheType, ctHash, address);
+    decryptValue(fheType, ctHash, cofhejsAccount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fheType, strResult, ctHash, address]);
+  }, [fheType, strResult, ctHash, cofhejsAccount]);
 
   return useMemo(() => {
     if (result != null) return result;
