@@ -66,7 +66,6 @@ const _addClaimsToStore = (
   if (state.claims[chain] == null) state.claims[chain] = {};
 
   Object.entries(claimsMap).forEach(([erc20Address, claims]) => {
-    console.log("ADDING CLAIMS", { erc20Address, claims });
     if (state.claims[chain][erc20Address] == null) state.claims[chain][erc20Address] = {};
     claims.forEach(claim => {
       state.claims[chain][erc20Address][claim.ctHash.toString()] = claim;
@@ -91,7 +90,6 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
   const erc20Claims = {} as Record<Address, ClaimWithAddresses[]>;
 
   results.forEach(({ status, result }, index) => {
-    console.log("fetchClaims result", { status, result });
     if (status === "failure") return;
 
     const claimsWithAddresses = (result as unknown as Claim[]).map(claim => ({
@@ -105,13 +103,10 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
     erc20Claims[pairsWithFherc20[index].erc20Address] = claimsWithAddresses;
   });
 
-  console.log({ erc20Claims });
-
   return erc20Claims;
 };
 
 const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
-  console.log("REFETCHING PENDING CLAIMS", { pendingClaims });
   const publicClient = getPublicClient(wagmiConfig);
 
   const results = await publicClient?.multicall({
@@ -123,12 +118,9 @@ const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
     })),
   });
 
-  console.log({ results });
-
   const erc20Claims = {} as Record<Address, ClaimWithAddresses[]>;
 
   results.forEach(({ status, result }, index) => {
-    console.log("fetchClaims result", { status, result });
     if (status === "failure") return;
 
     const { erc20Address, fherc20Address } = pendingClaims[index];
@@ -142,8 +134,6 @@ const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
     if (erc20Claims[erc20Address] == null) erc20Claims[erc20Address] = [];
     erc20Claims[erc20Address].push(claimWithAddresses);
   });
-
-  console.log("PENDING", { erc20Claims });
 
   return erc20Claims;
 };
@@ -169,7 +159,6 @@ export const removeClaimedClaim = async (claim: ClaimWithAddresses) => {
   if (account == null) return;
 
   useClaimStore.setState(state => {
-    console.log("Remaving CLAIM CLAIMED", { claim, chain, chainClaims: state.claims[chain] });
     if (state.claims[chain]?.[claim.erc20Address]?.[claim.ctHash.toString()] == null) return;
     delete state.claims[chain][claim.erc20Address][claim.ctHash.toString()];
   });
@@ -183,7 +172,6 @@ export const removePairClaimableClaims = async (pairAddress: Address) => {
   if (account == null) return;
 
   useClaimStore.setState(state => {
-    console.log("Removing pair claimable claims", { pairAddress, chain, chainClaims: state.claims[chain] });
     if (state.claims[chain]?.[pairAddress] == null) return;
 
     Object.keys(state.claims[chain][pairAddress]).forEach(ctHash => {
@@ -191,8 +179,6 @@ export const removePairClaimableClaims = async (pairAddress: Address) => {
 
       // Dont remove claims that are pending
       if (!claim.decrypted) return;
-
-      console.log("Actually removing claim", { ctHash, claim });
 
       // Delete the claim
       delete state.claims[chain][pairAddress][ctHash];
