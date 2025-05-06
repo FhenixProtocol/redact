@@ -132,18 +132,19 @@ const Tokens = () => {
   const addresses = useConfidentialTokenPairAddresses();
   return (
     <div className="flex flex-col gap-4 overflow-x-hidden overflow-y-auto styled-scrollbar">
-      <div className="flex flex-row gap-4 text-xs items-center opacity-70">
+      <div className="flex flex-row gap-4 text-xs items-center">
         {/* Optional: sticky top-0 bg-background */}
-        <div className="flex flex-row gap-2 items-center">
-          <Eye className="w-4 h-4" />
+        <div className="text-primary text-sm font-semibold">Balance Legend:</div>
+        <div className="flex flex-row gap-1 items-center text-primary-accent text-sm font-semibold">
+          <div className="w-3 h-3 bg-blue-200 rounded-[3px]" />
           <span>Public</span>
         </div>
-        <div className="flex flex-row gap-2 items-center">
-          <EyeOff className="w-4 h-4" />
+        <div className="flex flex-row gap-1 items-center text-primary-accent text-sm font-semibold">
+          <div className="w-3 h-3 bg-primary-accent rounded-[3px]" />
           <span>Confidential</span>
         </div>
-        <div className="flex flex-row gap-2 items-center">
-          <Ticket className="w-4 h-4" />
+        <div className="flex flex-row gap-1 items-center text-info-900 text-sm font-semibold">
+          <div className="w-3 h-3 bg-info-900 rounded-[3px]" />
           <span>Claimable</span>
         </div>
       </div>

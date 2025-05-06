@@ -74,7 +74,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
       name: "Confidential",
       percentage: confidentialPercentage,
       balance: displayConfidential,
-      color: "bg-blue-900", //"bg-[#eb90f5]"
+      color: "bg-info-900", //"bg-[#eb90f5]"
     },
   ];
 
