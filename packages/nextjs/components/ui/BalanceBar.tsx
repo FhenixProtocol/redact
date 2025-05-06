@@ -78,9 +78,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
     },
   ];
 
-  const bars = readings.map((r, i) =>
-    r.percentage > 0 ? <div key={i} className={`bar ${r.color}`} style={{ width: r.percentage + "%" }} /> : null,
-  );
+  const visibleBars = readings.map((r, i) => ({ ...r, i })).filter(r => r.percentage > 0);
 
   // Calculate separator position: sum of all but last
   const separatorOffset = readings
@@ -90,7 +88,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
   const showSeparator = readings.length > 1 && separatorOffset > 2 && separatorOffset < 98;
 
   return (
-    <div className="balance-bar" ref={ref}>
+    <div className="m-0.5 w-full flex flex-col gap-1" ref={ref}>
       <div className="flex flex-row justify-between text-xs mb-1">
         <div className="flex flex-row items-center gap-2">
           <Eye className="w-4 h-4" /> {publicPercentage}% {showBalance && <div>({displayPublic})</div>}
@@ -108,17 +106,24 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
           {showBalance && <div>({displayConfidential})</div>} {confidentialPercentage}% <EyeOff className="w-4 h-4" />
         </div>
       </div>
-
-      <div className={`bars ${borderClassName}`} style={{ height: `${height}px` }}>
-        {bars.map((bar, idx) => (
-          <React.Fragment key={idx}>
-            {bar}
-            {/* Single separator before the last bar */}
-            {idx === bars.length - 2 && showSeparator && (
-              <div className="bar-separator" style={{ left: `${separatorOffset}%` }} />
-            )}
-          </React.Fragment>
+      <div
+        className={`relative flex w-full rounded-[10px] overflow-visible ${borderClassName}`}
+        style={{ height: `${height}px` }}
+      >
+        {visibleBars.map((r, idx) => (
+          <div
+            key={r.i}
+            className={`${r.color} first:rounded-l-[10px] last:rounded-r-[10px]`}
+            style={{ width: r.percentage + "%" }}
+          />
         ))}
+        {/* Single separator before the last bar */}
+        {showSeparator && (
+          <div
+            className="absolute -top-[5px] w-1 h-[calc(100%+10px)] bg-[var(--color-blue-700)] z-[999] rounded-[2px] shadow-[0_0_2px_rgba(0,0,0,0.2)] pointer-events-none"
+            style={{ left: `${separatorOffset}%` }}
+          />
+        )}
       </div>
     </div>
   );
