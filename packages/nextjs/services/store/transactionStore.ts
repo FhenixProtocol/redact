@@ -1,8 +1,8 @@
 import { superjsonStorage } from "./superjsonStorage";
-import { formatUnits } from "viem";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import { formatTokenAmount } from "~~/lib/common";
 
 type ChainRecord<T> = Record<number, T>;
 type HashRecord<T> = Record<string, T>;
@@ -80,7 +80,7 @@ export const transactionToString = (tx: Omit<RedactTransaction, "status" | "time
   if (tx.actionType === TransactionActionType.Deploy) {
     return `${actionToString(tx.actionType)} ${tx.tokenSymbol}`;
   }
-  return `${actionToString(tx.actionType)} ${formatUnits(tx.tokenAmount, tx.tokenDecimals)} ${tx.tokenSymbol}`;
+  return `${actionToString(tx.actionType)} ${formatTokenAmount(tx.tokenAmount, tx.tokenDecimals)} ${tx.tokenSymbol}`;
 };
 
 const statusToStringMap: Record<TransactionStatus, TransactionStatusString> = {

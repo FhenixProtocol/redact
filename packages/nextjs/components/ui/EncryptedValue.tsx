@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { DisplayValue } from "./DisplayValue";
 import { FheTypes, UnsealedItem } from "cofhejs/web";
 import { EyeOff, LoaderCircle } from "lucide-react";
-import { formatUnits } from "viem";
+import { formatTokenAmount } from "~~/lib/common";
 import { cn } from "~~/lib/utils";
 import { useDecryptValue } from "~~/services/store/decrypted";
 
@@ -49,17 +49,19 @@ export function EncryptedValue<T extends FheTypes>({
 export function EncryptedBalance({
   ctHash,
   decimals = 18,
+  precision,
   className,
 }: {
   ctHash: bigint | null | undefined;
   decimals?: number;
+  precision?: number;
   className?: string;
 }) {
   return (
     <EncryptedValue
       fheType={FheTypes.Uint128}
       ctHash={ctHash}
-      transform={value => formatUnits(value, decimals)}
+      transform={value => formatTokenAmount(value, decimals, precision)}
       className={className}
     />
   );

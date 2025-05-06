@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Hash, Transaction, TransactionReceipt, formatEther, formatUnits } from "viem";
+import { Hash, Transaction, TransactionReceipt, formatEther } from "viem";
 import { hardhat } from "viem/chains";
 import { usePublicClient } from "wagmi";
 import { Address } from "~~/components/scaffold-eth";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
+import { formatTokenAmount } from "~~/lib/common";
 import { decodeTransactionData, getFunctionDetails } from "~~/utils/scaffold-eth";
 import { replacer } from "~~/utils/scaffold-eth/common";
 
@@ -111,7 +112,7 @@ const TransactionComp = ({ txHash }: { txHash: Hash }) => {
                 <td>
                   <strong>Gas Price:</strong>
                 </td>
-                <td>{formatUnits(transaction.gasPrice || 0n, 9)} Gwei</td>
+                <td>{formatTokenAmount(transaction.gasPrice || 0n, 9)} Gwei</td>
               </tr>
               <tr>
                 <td>

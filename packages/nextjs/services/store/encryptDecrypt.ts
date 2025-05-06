@@ -6,6 +6,7 @@ import { Address, formatUnits, parseUnits } from "viem";
 import { useAccount, useChainId } from "wagmi";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
+import { formatTokenAmount } from "~~/lib/common";
 
 type EncryptDecryptStore = {
   pairPublicToken: Address | null;
@@ -197,7 +198,7 @@ export const useEncryptDecryptFormattedAllowance = () => {
   return useMemo(
     () =>
       balances?.fherc20Allowance != null
-        ? formatUnits(balances.fherc20Allowance, pair?.publicToken.decimals ?? 18)
+        ? formatTokenAmount(balances.fherc20Allowance, pair?.publicToken.decimals ?? 18)
         : "0",
     [balances, pair],
   );

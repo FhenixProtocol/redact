@@ -1,8 +1,8 @@
 import Image from "next/image";
 import { HashLink } from "./HashLink";
 import { formatDistanceToNow } from "date-fns";
-import { formatUnits } from "viem";
 import { useAccount, useChainId } from "wagmi";
+import { formatTokenAmount } from "~~/lib/common";
 import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
 import {
   RedactTransaction,
@@ -50,7 +50,7 @@ const TransactionItem = ({ tx }: { tx: RedactTransaction }) => {
 
         <div className="flex flex-col justify-between items-stretch">
           <div className="text-md font-semibold text-primary self-end">
-            {formatUnits(tx.tokenAmount, tx.tokenDecimals)} {tx.tokenSymbol}
+            {formatTokenAmount(tx.tokenAmount, tx.tokenDecimals)} {tx.tokenSymbol}
           </div>
           <HashLink
             className="text-xs text-gray-500"

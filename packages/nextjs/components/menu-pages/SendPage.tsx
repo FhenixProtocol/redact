@@ -6,8 +6,8 @@ import { Slider } from "../ui/FnxSlider";
 import { Switcher } from "../ui/Switcher";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
-import { formatUnits } from "viem";
 import { useSendConfidentialTokenAction, useSendPublicTokenAction } from "~~/hooks/useSendActions";
+import { formatTokenAmount } from "~~/lib/common";
 import { getConfidentialSymbol, truncateAddress } from "~~/lib/common";
 import {
   useSelectSendToken,
@@ -107,8 +107,8 @@ const AmountInputRow = () => {
         />
         <div className="flex justify-between items-center w-full">
           <div className="text-xs text-[#336699]">
-            Balance: {isPublic && formatUnits(balances?.publicBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
-            {!isPublic && formatUnits(balances?.confidentialBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
+            Balance: {isPublic && formatTokenAmount(balances?.publicBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
+            {!isPublic && formatTokenAmount(balances?.confidentialBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
           </div>
           <Button
             onClick={() => setSliderValue(100)}

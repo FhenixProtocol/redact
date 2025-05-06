@@ -5,10 +5,11 @@ import { ClearOutlined } from "@mui/icons-material";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlusIcon, TriangleAlert } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { formatUnits, isAddress } from "viem";
+import { isAddress } from "viem";
 import { Button } from "~~/components/ui/Button";
 import { FnxInput } from "~~/components/ui/FnxInput";
 import { Spinner } from "~~/components/ui/Spinner";
+import { formatTokenAmount } from "~~/lib/common";
 import {
   ConfidentialTokenPairWithBalances,
   TokenItemData,
@@ -135,7 +136,7 @@ export const PublicTokenDetails = ({
   tokenDetails: TokenItemData | undefined;
   balance: bigint | undefined;
 }) => {
-  const { name, symbol, decimals } = tokenDetails || {};
+  const { name, decimals } = tokenDetails || {};
 
   return (
     <>
@@ -157,7 +158,7 @@ export const PublicTokenDetails = ({
               <span>
                 Balance:{" "}
                 <span className="font-semibold font-reddit-mono">
-                  {balance ? formatUnits(balance, decimals ?? 18) : "0"}
+                  {balance ? formatTokenAmount(balance, decimals ?? 18) : "0"}
                 </span>
               </span>
             </div>
@@ -230,7 +231,7 @@ export const WarningRow = () => {
       <div className="flex flex-col gap-1">
         <div className="text-primary text-xs font-bold">Always do your research.</div>
         <div className="text-primary text-xs font-bold">
-          This token isn’t traded on leading U.S. centralized exchanges.
+          This token isn{"'"}t traded on leading U.S. centralized exchanges.
         </div>
       </div>
     </div>

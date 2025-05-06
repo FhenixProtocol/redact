@@ -4,7 +4,6 @@ import { TransactionGuide } from "./TransactionGuide";
 import { TxGuideStepState } from "./TransactionGuide";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
-import { formatUnits } from "viem";
 import { arbitrum, arbitrumSepolia, mainnet, sepolia } from "viem/chains";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { TokenSelector } from "~~/components/TokenSelector";
@@ -15,6 +14,7 @@ import { Slider } from "~~/components/ui/FnxSlider";
 import { useCofhe } from "~~/hooks/useCofhe";
 import { useClaimAllAction, useDecryptFherc20Action } from "~~/hooks/useDecryptActions";
 import { useApproveFherc20Action, useDeployFherc20Action, useEncryptErc20Action } from "~~/hooks/useEncryptActions";
+import { formatTokenAmount } from "~~/lib/common";
 import { getConfidentialSymbol } from "~~/lib/common";
 import { usePairClaims } from "~~/services/store/claim";
 import {
@@ -191,8 +191,8 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
         />
         <div className="flex justify-between items-center w-full">
           <div className="text-xs text-[#336699]">
-            Balance: {isEncrypt && formatUnits(balances?.publicBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
-            {!isEncrypt && formatUnits(balances?.confidentialBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
+            Balance: {isEncrypt && formatTokenAmount(balances?.publicBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
+            {!isEncrypt && formatTokenAmount(balances?.confidentialBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
           </div>
           <Button
             disabled={disabled}
@@ -303,7 +303,7 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   // Approve
 
   const rawInputValue = useEncryptDecryptRawInputValue();
-  const displayAmount = formatUnits(rawInputValue, pair?.publicToken.decimals ?? 18);
+  const displayAmount = formatTokenAmount(rawInputValue, pair?.publicToken.decimals ?? 18);
 
   const requiresApproval = useEncryptDecryptRequiresApproval();
   const displayAllowance = useEncryptDecryptFormattedAllowance();
@@ -514,7 +514,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   // Steps
 
   const claimAmountHint = pairClaims?.totalDecryptedAmount
-    ? formatUnits(pairClaims.totalDecryptedAmount, pair?.confidentialToken?.decimals ?? 18)
+    ? formatTokenAmount(pairClaims.totalDecryptedAmount, pair?.confidentialToken?.decimals ?? 18)
     : "";
   const steps = [
     {

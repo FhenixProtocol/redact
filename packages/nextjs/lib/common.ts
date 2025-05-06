@@ -116,7 +116,6 @@ export const getConfidentialSymbol = (pair?: ConfidentialTokenPair) => {
   return pair?.confidentialToken?.symbol ?? `e${pair?.publicToken.symbol}`;
 };
 
-// TODO: Implement this everywhere
 export const formatTokenAmount = (amount: bigint | number, decimals: number, precision = 4): string => {
   const raw = formatUnits(BigInt(amount), decimals);
   const [intPart, fracPart = ""] = raw.split(".");
