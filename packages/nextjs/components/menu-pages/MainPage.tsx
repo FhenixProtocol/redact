@@ -49,7 +49,7 @@ const EthBalanceRow = () => {
     address: account,
   });
   return (
-    <div className="pl-4 pt-4 text-3xl font-bold text-primary mb-12">
+    <div className="pl-4 pt-0 text-3xl font-bold text-primary mb-3">
       {formatTokenAmount(ethBalance?.value ?? 0n, 18)} ETH
     </div>
   );

@@ -16,9 +16,9 @@ export function ReceivePage() {
   };
 
   return (
-    <div className="p-4 pb-0 flex flex-col gap-4 h-full items-center">
+    <div className="p-4 pt-0 pb-0 flex flex-col gap-4 h-full items-center">
       <div className="flex flex-col items-start justify-start w-full">
-        <div className="text-3xl text-primary font-semibold mb-12">Receive</div>
+        <div className="text-3xl text-primary font-semibold mb-3">Receive</div>
       </div>
 
       {address && (

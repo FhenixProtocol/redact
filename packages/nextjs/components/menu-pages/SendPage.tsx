@@ -31,9 +31,9 @@ export function SendPage() {
   const isPublic = useSendIsPublic();
 
   return (
-    <div className="p-4 pb-0 flex flex-col gap-1 h-full items-center">
+    <div className="p-4 pt-0 pb-0 flex flex-col gap-1 h-full items-center">
       <div className="flex flex-col items-start justify-start w-full">
-        <div className="text-3xl text-primary font-semibold mb-12">
+        <div className="text-3xl text-primary font-semibold mb-3">
           Send {pair != null ? (isPublic ? pair.publicToken.symbol : getConfidentialSymbol(pair)) : ""}
         </div>
       </div>
