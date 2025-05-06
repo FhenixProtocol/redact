@@ -100,7 +100,7 @@ const SymbolImage: React.FC<Props> = ({ publicSymbol, isConfidential, ext, size,
       ) : (
         <Image
           className="absolute left-1/2 top-1/2 bg-cover bg-no-repeat bg-center"
-          src={`/tokens/${publicSymbol.toLocaleLowerCase()}.${ext}`}
+          src={`/tokens/${publicSymbol.toLowerCase()}.${ext}`}
           alt={publicSymbol}
           width={size}
           height={size}
