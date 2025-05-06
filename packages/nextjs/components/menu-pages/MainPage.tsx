@@ -129,10 +129,15 @@ const TabRow = ({
 
 const Tokens = () => {
   const addresses = useConfidentialTokenPairAddresses();
-  return addresses.map((address, i) => {
-    return <TokenRowItem key={address} pairAddress={address} index={i} />;
-  });
+  return (
+    <div className="flex flex-col gap-4 overflow-x-hidden overflow-y-auto styled-scrollbar">
+      {addresses.map((address, i) => {
+        return <TokenRowItem key={address} pairAddress={address} index={i} />;
+      })}
+    </div>
+  );
 };
+
 
 const TokenRowItem = ({ pairAddress, index }: { pairAddress: string; index: number }) => {
   const pair = useConfidentialTokenPair(pairAddress);
