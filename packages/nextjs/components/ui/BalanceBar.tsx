@@ -107,20 +107,20 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
         </div>
       </div>
       <div
-        className={`relative flex w-full rounded-[10px] overflow-visible ${borderClassName}`}
+        className={`relative flex w-full rounded-[${height}px] overflow-visible ${borderClassName}`}
         style={{ height: `${height}px` }}
       >
         {visibleBars.map((r, idx) => (
           <div
             key={r.i}
-            className={`${r.color} first:rounded-l-[10px] last:rounded-r-[10px]`}
+            className={`${r.color} first:rounded-l-[${height}px] last:rounded-r-[${height}px]`}
             style={{ width: r.percentage + "%" }}
           />
         ))}
         {/* Single separator before the last bar */}
         {showSeparator && (
           <div
-            className="absolute -top-[5px] w-1 h-[calc(100%+10px)] bg-[var(--color-blue-700)] z-[999] rounded-[2px] shadow-[0_0_2px_rgba(0,0,0,0.2)] pointer-events-none"
+            className={`bg-blue-700 absolute -top-[${height / 2}px] w-1 h-[calc(100%+${height}px)] z-[999] rounded-[2px] shadow-[0_0_2px_rgba(0,0,0,0.2)] pointer-events-none`}
             style={{ left: `${separatorOffset}%` }}
           />
         )}
