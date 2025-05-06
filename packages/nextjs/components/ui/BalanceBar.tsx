@@ -7,13 +7,6 @@ import { Eye, EyeOff, Ticket } from "lucide-react";
 import { formatUnits } from "viem";
 import { useDecryptValue } from "~~/services/store/decrypted";
 
-// interface Reading {
-//   percentage: number;
-//   balance: number;
-//   color: string;
-//   name: string;
-// }
-
 interface BalanceBarProps {
   publicBalance: bigint;
   confidentialBalance: bigint;
@@ -65,7 +58,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
       name: "Public",
       percentage: publicPercentage,
       balance: displayPublic,
-      color: "bg-blue-200",
+      color: "bg-blue-200", // "bg-[#b290f5]"
     },
     ...(claimableAmount > 0n
       ? [
@@ -81,20 +74,20 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
       name: "Confidential",
       percentage: confidentialPercentage,
       balance: displayConfidential,
-      color: "bg-blue-900",
+      color: "bg-blue-900", //"bg-[#eb90f5]"
     },
   ];
 
-  const bars =
-    readings &&
-    readings.length &&
-    readings.map(function (item, i: number) {
-      if (item.percentage > 0) {
-        return <div className={`bar ${item.color}`} style={{ width: item.percentage + "%" }} key={i}></div>;
-      }
-    });
+  const bars = readings.map((r, i) =>
+    r.percentage > 0 ? <div key={i} className={`bar ${r.color}`} style={{ width: r.percentage + "%" }} /> : null,
+  );
 
-  const safeBars = Array.isArray(bars) ? bars : [];
+  // Calculate separator position: sum of all but last
+  const separatorOffset = readings
+    .slice(0, readings.length - 1)
+    .reduce((sum, r) => sum + (r.percentage > 0 ? r.percentage : 0), 0);
+
+  const showSeparator = readings.length > 1 && separatorOffset > 2 && separatorOffset < 98;
 
   return (
     <div className="balance-bar" ref={ref}>
@@ -108,12 +101,6 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
               <div className="flex flex-row items-center gap-1">
                 <Ticket className="w-4 h-4" /> {claimablePercentage}%
               </div>
-              {/* Optional: tooltip */}
-              {/* <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block">
-                <div className="bg-gray-900 text-white text-sm rounded py-1 px-2 whitespace-nowrap">
-                  {displayClaimable} tokens available to claim
-                </div>
-              </div> */}
             </div>
           </div>
         )}
@@ -121,22 +108,17 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
           {showBalance && <div>({displayConfidential})</div>} {confidentialPercentage}% <EyeOff className="w-4 h-4" />
         </div>
       </div>
+
       <div className={`bars ${borderClassName}`} style={{ height: `${height}px` }}>
-        {safeBars[0]}
-        {readings[0]?.percentage > 2 && readings[0]?.percentage < 98 && readings.length > 1 && (
-          <div className="bar-separator" style={{ left: `${readings[0]?.percentage}%` }}></div>
-        )}
-        {safeBars[1]}
-        {readings.length > 2 &&
-          readings[1]?.percentage > 0 &&
-          readings[0]?.percentage + readings[1]?.percentage > 2 &&
-          readings[0]?.percentage + readings[1]?.percentage < 98 && (
-            <div
-              className="bar-separator"
-              style={{ left: `${(readings[0]?.percentage ?? 0) + (readings[1]?.percentage ?? 0)}%` }}
-            ></div>
-          )}
-        {safeBars[2]}
+        {bars.map((bar, idx) => (
+          <React.Fragment key={idx}>
+            {bar}
+            {/* Single separator before the last bar */}
+            {idx === bars.length - 2 && showSeparator && (
+              <div className="bar-separator" style={{ left: `${separatorOffset}%` }} />
+            )}
+          </React.Fragment>
+        ))}
       </div>
     </div>
   );
