@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { decryptValue, useDecryptValue } from "./decrypted";
+import { useDecryptValue } from "./decrypted";
 import { setDrawerPairAddress, useDrawerPairAddress } from "./drawerStore";
 import { useConfidentialTokenPair, useConfidentialTokenPairBalances } from "./tokenStore";
 import { FheTypes } from "cofhejs/web";

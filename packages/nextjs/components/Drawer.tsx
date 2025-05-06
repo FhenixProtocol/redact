@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CopyButton } from "./HashLink";
 import { ConnectPage } from "./menu-pages/ConnectPage";
 import { WalletMainPanel } from "./menu-pages/MainPage";
+import { PermitsPage } from "./menu-pages/PermitsPage";
 import { ReceivePage } from "./menu-pages/ReceivePage";
 import { SendPage } from "./menu-pages/SendPage";
 import { TokenPage, TokenPageButtonFooter } from "./menu-pages/TokenPage";
@@ -160,6 +161,7 @@ const DrawerContentSlide = ({ page, pairAddress }: { page: DrawerPageName; pairA
       {page === DrawerPageName.Send && <SendPage />}
       {page === DrawerPageName.Receive && <ReceivePage />}
       {page === DrawerPageName.Connect && <ConnectPage />}
+      {page === DrawerPageName.Permits && <PermitsPage />}
     </motion.div>
   );
 };

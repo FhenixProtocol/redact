@@ -440,7 +440,7 @@ const _fetchConfidentialPairBalances = async (
 };
 
 const _decryptConfidentialBalances = async (chain: number, account: Address, ctHashes: bigint[]) => {
-  ctHashes.map(ctHash => decryptValue(FheTypes.Uint128, ctHash));
+  ctHashes.map(ctHash => decryptValue(FheTypes.Uint128, ctHash, account));
 };
 
 export const _fetchTokenPairsData = async (

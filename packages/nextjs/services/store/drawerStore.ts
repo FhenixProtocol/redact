@@ -11,6 +11,7 @@ export enum DrawerPageName {
   Token = "token",
   Send = "send",
   Receive = "receive",
+  Permits = "permits",
 }
 
 type DrawerPage = {
