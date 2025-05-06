@@ -112,7 +112,6 @@ export const useTransactionStore = create<TransactionStore>()(
       updateTransactionStatus: (chainId: number, hash: string, status: TransactionStatus) => {
         set(state => {
           const transaction = state.transactions[chainId]?.[hash];
-          console.log("updateTransactionStatus", chainId, hash, status, transaction);
           if (transaction) {
             transaction.status = status;
           }
