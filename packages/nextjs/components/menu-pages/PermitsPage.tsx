@@ -68,7 +68,7 @@ export function PermitsPage() {
             type: "self",
             name: "Test Permit",
             issuer: account,
-            expiration: (activePermit?.expiration ?? 1000000000) + 1,
+            expiration: (activePermit?.expiration ?? 1000000000000) + 1,
           });
         }}
       >
