@@ -24,7 +24,7 @@ export const Header = () => {
   );
 
   return (
-    <header className="flex items-center justify-between p-4 bg-card-bg">
+    <header className="flex items-center justify-between p-4 bg-card-bg backdrop-blur-[2px]">
       <div className="flex items-center gap-4">
         <div className="logo" aria-label="Logo" />
       </div>
