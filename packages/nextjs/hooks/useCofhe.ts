@@ -34,9 +34,10 @@ const ChainEnvironments = {
 export function useCofhe(config?: Partial<CofheConfig>) {
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
-  const { address: accountAddress } = useAccount();
 
-  const chainId = useChainId();
+  const chainId = publicClient?.chain.id;
+  const accountAddress = walletClient?.account.address;
+
   const [isInitialized, setIsInitialized] = useState(isInitializedGlobally);
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
