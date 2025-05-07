@@ -138,18 +138,18 @@ const Tokens = () => {
 
 const BalanceBarKey = () => {
   return (
-    <div className="flex flex-row gap-4 text-xs items-center">
+    <div className="flex flex-row gap-4 text-xs items-center text-primary">
       {/* Optional: sticky top-0 bg-background */}
-      <div className="text-primary text-sm font-semibold">Balance Legend:</div>
-      <div className="flex flex-row gap-1 items-center text-primary-accent text-sm font-semibold">
+      <div className="text-sm font-semibold">Balance Legend:</div>
+      <div className="flex flex-row gap-1 items-center text-sm font-semibold">
         <div className="w-3 h-3 bg-blue-200 rounded-[3px]" />
         <span>Public</span>
       </div>
-      <div className="flex flex-row gap-1 items-center text-primary-accent text-sm font-semibold">
+      <div className="flex flex-row gap-1 items-center text-sm font-semibold">
         <div className="w-3 h-3 bg-primary-accent rounded-[3px]" />
         <span>Claimable</span>
       </div>
-      <div className="flex flex-row gap-1 items-center text-info-900 text-sm font-semibold">
+      <div className="flex flex-row gap-1 items-center text-sm font-semibold">
         <div className="w-3 h-3 bg-info-900 rounded-[3px]" />
         <span>Confidential</span>
       </div>
