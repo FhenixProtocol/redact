@@ -17,7 +17,8 @@ export function EncryptedValue<T extends FheTypes>({
   className?: string;
   transform: (value: UnsealedItem<T>) => string;
 }) {
-  const { value, state } = useDecryptValue(fheType, ctHash);
+  const decryptedValue = useDecryptValue(fheType, ctHash);
+  const { value, state } = decryptedValue;
 
   const display = useMemo(() => {
     if (ctHash == null) return "...";
@@ -34,6 +35,9 @@ export function EncryptedValue<T extends FheTypes>({
         (state === "pending" || state === "error") && "text-primary-foreground",
         className,
       )}
+      onClick={() => {
+        console.log("Encrypted Value:", decryptedValue);
+      }}
     >
       <div
         className={cn(

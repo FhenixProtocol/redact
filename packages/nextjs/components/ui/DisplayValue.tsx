@@ -7,6 +7,7 @@ export type DisplayValueProps = {
   icon?: React.ReactNode;
   className?: string;
   left?: boolean;
+  onClick?: () => void;
 };
 
 export function DisplayValue({
@@ -17,6 +18,7 @@ export function DisplayValue({
   className,
   left,
   children,
+  onClick,
 }: DisplayValueProps & { value: string; children?: React.ReactNode }) {
   return (
     <div
@@ -24,6 +26,7 @@ export function DisplayValue({
         "flex flex-row items-center justify-between gap-1 border-2 border-transparent px-1 py-0 font-semibold text-primary relative",
         className,
       )}
+      onClick={onClick}
     >
       {children}
       <div className="flex flex-row gap-2 items-center justify-between w-full z-0">
