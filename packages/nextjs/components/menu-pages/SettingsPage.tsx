@@ -4,6 +4,7 @@ import { Moon, Sun } from "lucide-react";
 import { Button } from "~~/components/ui/Button";
 import { Switcher } from "~~/components/ui/Switcher";
 import { useTheme } from "~~/hooks/useTheme";
+import scaffoldConfig from "~~/scaffold.config";
 import { DrawerPageName, useDrawerPushPage } from "~~/services/store/drawerStore";
 
 export function SettingsPage() {
@@ -41,6 +42,7 @@ export function SettingsPage() {
         className="w-full"
       />
       <div className="flex justify-between flex-1"></div>
+      <div className="text-xs text-primary">Version: {scaffoldConfig.version}</div>
     </div>
   );
 }

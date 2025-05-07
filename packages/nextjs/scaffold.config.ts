@@ -6,6 +6,7 @@ export type ScaffoldConfig = {
   alchemyApiKey: string;
   walletConnectProjectId: string;
   onlyLocalBurnerWallet: boolean;
+  version: string;
 };
 
 export const DEFAULT_ALCHEMY_API_KEY = "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
@@ -32,6 +33,8 @@ const scaffoldConfig = {
 
   // Only show the Burner Wallet when running on hardhat network
   onlyLocalBurnerWallet: true,
+
+  version: process.env.NEXT_PUBLIC_APP_VERSION || "0.0.1-beta",
 } as const satisfies ScaffoldConfig;
 
 export default scaffoldConfig;
