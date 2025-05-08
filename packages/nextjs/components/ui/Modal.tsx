@@ -40,7 +40,7 @@ export function Modal({ isOpen, onClose, title, children, duration = "normal" }:
 
       {/* Modal with slide up and fade */}
       <div
-        className="relative drop-shadow-lg z-50 w-[450px] rounded-[24px] border-primary-accent border-1 bg-surface p-6 shadow-xl"
+        className="relative drop-shadow-lg z-50 w-[450px] m-2 rounded-[24px] border-primary-accent border-1 bg-surface p-6 shadow-xl"
         style={{
           animation: `contentShow ${animationDuration} cubic-bezier(0.16, 1, 0.3, 1)`,
         }}

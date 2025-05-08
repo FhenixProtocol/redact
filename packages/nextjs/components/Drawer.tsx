@@ -64,7 +64,7 @@ const Drawer: React.FC = () => {
   return (
     <div
       className={cn(
-        "fixed top-0 right-0 h-full w-[400px] bg-background shadow-lg z-20 border-l border-blue-400",
+        "fixed top-0 right-0 h-full w-[400px] max-w-[95vw] bg-background shadow-lg z-20 border-l border-blue-400",
         open ? "translate-x-0" : "translate-x-full",
         "transform transition-transform duration-300",
         "flex flex-col",

@@ -38,9 +38,9 @@ export function MainTokenSwapping() {
   const [isControlsDisabled, setIsControlsDisabled] = useState(false);
 
   return (
-    <div className="text-center inline-block">
-      <div className=" flex gap-8 items-center justify-center w-[450px] rounded-3xl drop-shadow-xl">
-        <Card className="rounded-[inherit] w-[450px] bg-background/60 border-component-stroke backdrop-blur-xs">
+    <div className="text-center inline-block w-full">
+      <div className="flex gap-8 items-center justify-center w-full max-w-[450px] md:w-[450px] mx-auto rounded-3xl drop-shadow-xl">
+        <Card className="rounded-[inherit] w-full max-w-[450px] bg-background/60 border-component-stroke backdrop-blur-xs">
           <ConnectOverlay />
           <NetworkOverlay />
           <CofhejsInitializedOverlay />

@@ -32,7 +32,7 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
       <div className="relative min-h-screen">
         <div className="grid grid-rows-[auto_1fr_auto] min-h-screen relative">
           <Header />
-          <main className="relative p-4 flex justify-center items-center">{children}</main>
+          <main className="relative p-2 md:p-4 flex justify-center items-center">{children}</main>
           <Footer />
           <DrawerBlurOverlay />
           <Drawer />
