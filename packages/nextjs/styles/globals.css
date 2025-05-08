@@ -78,11 +78,11 @@
     --color-info-700: #1976d2;
     --color-info-900: #0d47a1;
 
-    --color-blue-200: #99C7F5;
+    --color-blue-200: #99c7f5;
     --color-blue-300: #90caf9;
     --color-blue-500: #2196f3;
     --color-blue-700: #003366;
-    --color-blue-900: #00172E;
+    --color-blue-900: #00172e;
 
     --color-success-100: #e8f5e9;
     --color-success-300: #a5d6a7;
@@ -164,11 +164,11 @@
     --color-info-700: #90caf9;
     --color-info-900: #e3f2fd;
 
-    --color-blue-200: #002E5C;
+    --color-blue-200: #002e5c;
     --color-blue-300: #90caf9;
     --color-blue-500: #2196f3;
-    --color-blue-700: #66ABF0;
-    --color-blue-900: #CCE3FA;
+    --color-blue-700: #66abf0;
+    --color-blue-900: #cce3fa;
 
     --color-success-100: #a5d6a7;
     --color-success-300: #388e3c;
@@ -485,7 +485,6 @@
   }
 
   .logo {
-    height: 50px;
     background-repeat: no-repeat;
     background-size: contain;
     aspect-ratio: 3.84/1; /* 192/50 = 3.84 */
@@ -557,8 +556,8 @@ body {
 
 /* apply to any overflowing element */
 .styled-scrollbar {
-  overflow: auto;            /* make it scrollable          */
-  scrollbar-gutter: stable;  /* keeps layout from shifting   */
+  overflow: auto; /* make it scrollable          */
+  scrollbar-gutter: stable; /* keeps layout from shifting   */
 }
 
 /* ---------- WebKit browsers (Chrome, Edge, Safari) ---------- */
@@ -568,11 +567,11 @@ body {
 }
 
 .styled-scrollbar::-webkit-scrollbar-track {
-  background: transparent;   /* invisible track              */
+  background: transparent; /* invisible track              */
 }
 
 .styled-scrollbar::-webkit-scrollbar-thumb {
-  background: transparent;   /* hidden by default            */
+  background: transparent; /* hidden by default            */
   border-radius: 4px;
 }
 
@@ -588,10 +587,10 @@ body {
 
 /* ---------- Firefox fallback ---------- */
 .styled-scrollbar {
-  scrollbar-width: thin;               /* thin bar, hidden */
+  scrollbar-width: thin; /* thin bar, hidden */
   scrollbar-color: transparent transparent;
 }
 
 .styled-scrollbar:hover {
-  scrollbar-color: #666 transparent;   /* shows on hover   */
+  scrollbar-color: #666 transparent; /* shows on hover   */
 }

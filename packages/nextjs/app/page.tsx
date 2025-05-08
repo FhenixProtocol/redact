@@ -6,8 +6,8 @@ import { MainTokenSwapping } from "~~/components/MainTokenSwapping";
 const Home: NextPage = () => {
   return (
     <>
-      <div className="flex gap-20">
-        <div className=" flex flex-col items-center justify-center">
+      <div className="flex flex-col md:flex-row gap-8 md:gap-20 md:p-8">
+        <div className="hidden md:flex flex-col items-center justify-center">
           <div className="flex flex-col gap-4">
             <div>
               <h1 className="text-primary-accent text-5xl font-bold">Redact Money.</h1>
