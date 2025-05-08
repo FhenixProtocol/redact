@@ -7,7 +7,7 @@ const Home: NextPage = () => {
   return (
     <>
       <div className="flex gap-20">
-        <div className=" flex flex-col items-center justify-center">
+        <div className="hidden md:flex flex-col items-center justify-center">
           <div className="flex flex-col gap-4">
             <div>
               <h1 className="text-primary-accent text-5xl font-bold">Redact Money.</h1>
