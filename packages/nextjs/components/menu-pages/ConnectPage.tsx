@@ -21,11 +21,26 @@ export const ConnectPage = () => {
     return <div className="p-4">Loading wallet options...</div>;
   }
 
+  const getConnectorType = (id: string) => {
+    const lower = id.toLowerCase();
+    if (lower.includes("metamask")) return "metamask";
+    if (lower.includes("walletconnect")) return "walletconnect";
+    if (lower.includes("coinbase")) return "coinbase";
+    if (lower.includes("safe")) return "safe";
+    return id; // fallback to original id
+  };
+
+  const uniqueConnectors = connectors.filter((connector, index, self) => {
+    const type = getConnectorType(connector.id);
+    return index === self.findIndex(c => getConnectorType(c.id) === type);
+  });
+
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Connect your wallet</h2>
       <div className="flex flex-wrap gap-4">
-        {connectors.map((connector, index) => {
+        {uniqueConnectors.map((connector, index) => {
+          console.log("connector", connector);
           if (excludeConnectors.includes(connector.name.toLocaleLowerCase())) {
             return null;
           }
@@ -37,7 +52,7 @@ export const ConnectPage = () => {
               key={`${connector.id}-${index}`}
               onClick={() => connect({ connector })}
               variant="outline"
-              className="flex items-center gap-2 w-full mr-1 px-1 py-0.5"
+              className="flex items-center gap-2 w-full mr-1 px-4 py-2"
             >
               {connector.id.toLowerCase().includes("metamask") && (
                 <Image
