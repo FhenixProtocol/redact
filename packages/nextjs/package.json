@@ -20,6 +20,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@heroicons/react": "~2.1.5",
+    "@lottiefiles/dotlottie-react": "^0.13.5",
     "@mui/icons-material": "^6.4.6",
     "@mui/material": "^6.4.6",
     "@radix-ui/react-accordion": "^1.2.3",

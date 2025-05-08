@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { TransactionGuide } from "./TransactionGuide";
 import { TxGuideStepState } from "./TransactionGuide";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Eye, EyeOff } from "lucide-react";
+import { useTheme } from "next-themes";
 import toast from "react-hot-toast";
 import { arbitrum, arbitrumSepolia, mainnet, sepolia } from "viem/chains";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
@@ -125,6 +126,7 @@ const NetworkOverlay = () => {
 };
 
 const CofhejsInitializedOverlay = () => {
+  const { theme } = useTheme();
   const { isConnected } = useAccount();
   const { isInitialized } = useCofhe({
     // coFheUrl: "https://testnet-cofhe.fhenix.zone",
@@ -138,7 +140,13 @@ const CofhejsInitializedOverlay = () => {
     <div className="absolute flex-col gap-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
       <div className="text-lg font-semibold text-theme-black">Waiting for Cofhe to initialize...</div>
       <div>
-        <Image src="/loading-cofhe.gif" alt="Loading Cofhe" width={300} height={100} className="mix-blend-multiply" />
+        <DotLottieReact
+          src={`/lottie/CoFHE-${theme === "dark" ? "White" : "Black"}.lottie`}
+          speed={0.7}
+          style={{ width: "150px", height: "150px" }}
+          loop
+          autoplay
+        />
       </div>
     </div>
   );
