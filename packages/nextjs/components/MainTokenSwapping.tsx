@@ -539,7 +539,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       cta: pair == null ? "Select a token" : `WAIT FOR DECRYPTION`,
       hint: "Wait for the token to be decrypted",
       state: waitForDecryptState,
-      errorMessage: sharedErrMessage,
+      //errorMessage: sharedErrMessage,
       userInteraction: false,
     },
     {
@@ -549,7 +549,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       state: claimState,
       action: handleClaim,
       disabled: pair == null || isClaiming,
-      errorMessage: sharedErrMessage,
+      //errorMessage: sharedErrMessage, // Current sharedErrMessage is not relevant for claim
     },
   ];
   return <TransactionGuide title="Decryption steps:" steps={steps} />;
