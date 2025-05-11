@@ -11,11 +11,13 @@ export function EncryptedValue<T extends FheTypes>({
   ctHash,
   className,
   transform,
+  showIcon = true,
 }: {
   fheType: T;
   ctHash: bigint | null | undefined;
   className?: string;
   transform: (value: UnsealedItem<T>) => string;
+  showIcon?: boolean;
 }) {
   const decryptedValue = useDecryptValue(fheType, ctHash);
   const { value, state } = decryptedValue;
@@ -29,7 +31,15 @@ export function EncryptedValue<T extends FheTypes>({
   return (
     <DisplayValue
       value={display}
-      icon={state === "pending" ? <LoaderCircle className="w-5 h-5 animate-spin" /> : <EyeOff className="w-5 h-5" />}
+      icon={
+        showIcon ? (
+          state === "pending" ? (
+            <LoaderCircle className="w-5 h-5 animate-spin" />
+          ) : (
+            <EyeOff className="w-5 h-5" />
+          )
+        ) : undefined
+      }
       className={cn(
         "text-primary min-w-32",
         (state === "pending" || state === "error") && "text-primary-foreground",
@@ -55,11 +65,13 @@ export function EncryptedBalance({
   decimals = 18,
   precision,
   className,
+  showIcon = true,
 }: {
   ctHash: bigint | null | undefined;
   decimals?: number;
   precision?: number;
   className?: string;
+  showIcon?: boolean;
 }) {
   return (
     <EncryptedValue
@@ -67,6 +79,7 @@ export function EncryptedBalance({
       ctHash={ctHash}
       transform={value => formatTokenAmount(value, decimals, precision)}
       className={className}
+      showIcon={showIcon}
     />
   );
 }
