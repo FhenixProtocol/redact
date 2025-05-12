@@ -4,7 +4,7 @@ import { getBlockExplorerAddressLink, getBlockExplorerTokenLink, getBlockExplore
 
 export type HashLinkType = "token" | "address" | "tx";
 
-export const useHashLink = (type: HashLinkType, hash: string) => {
+export const useHashLink = (type: HashLinkType, hash: string, extraShort = false) => {
   const { targetNetwork } = useTargetNetwork();
 
   // For both token and address types, we use the address link
@@ -16,8 +16,10 @@ export const useHashLink = (type: HashLinkType, hash: string) => {
         ? getBlockExplorerTxLink(targetNetwork.id, hash)
         : getBlockExplorerAddressLink(targetNetwork, hash);
 
+  const start = extraShort ? 5 : 6;
+  const end = extraShort ? 3 : 4;
   // Generate the ellipsed version of the hash
-  const ellipsed = truncateAddress(hash, 6, 4);
+  const ellipsed = truncateAddress(hash, start, end);
 
   return {
     href,
