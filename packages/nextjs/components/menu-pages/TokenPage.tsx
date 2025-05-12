@@ -145,7 +145,7 @@ const TokenBalanceRow = ({
             />
           ) : (
             <div className="flex flex-row gap-1 items-center">
-              {pairClaims?.totalDecryptedAmount && pairClaims.totalDecryptedAmount > 0n && (
+              {pairClaims && (pairClaims?.totalDecryptedAmount ?? 0n) > 0n && (
                 <>
                   <CleartextBalance
                     balance={pairClaims.totalDecryptedAmount}
@@ -167,7 +167,9 @@ const TokenBalanceRow = ({
         </div>
       </div>
       <div className="flex flex-row flex-1 items-center gap-2">
-        <div className="flex-grow">{!isEth && <HashLink type="token" hash={tokenAddress ?? ""} copyable />}</div>
+        <div className="flex-grow">
+          {!isEth && <HashLink extraShort type="token" hash={tokenAddress ?? ""} copyable />}
+        </div>
         <div className="flex flex-row gap-2">
           {!isConfidential && <TokenClaimButton pair={pair} />}
           <Button variant="outline" size="sm" className="w-min" disabled={actionDisabled} onClick={onAction}>
