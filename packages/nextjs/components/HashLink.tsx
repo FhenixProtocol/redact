@@ -12,6 +12,7 @@ export const HashLink = ({
   copyable,
   buttonSize = 4,
   copyStrokeWidth = 2,
+  extraShort = false,
 }: {
   type: HashLinkType;
   hash: string;
@@ -19,8 +20,9 @@ export const HashLink = ({
   copyable?: boolean;
   buttonSize?: number;
   copyStrokeWidth?: number;
+  extraShort?: boolean;
 }) => {
-  const { href, ellipsed } = useHashLink(type, hash);
+  const { href, ellipsed } = useHashLink(type, hash, extraShort);
 
   return (
     <div className="flex flex-row gap-2">
