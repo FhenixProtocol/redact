@@ -99,11 +99,16 @@ const TokenTotalBalanceRow = ({
 }) => {
   const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint128, balances?.confidentialBalance);
   const pairClaims = usePairClaims(pair?.publicToken.address);
+  const fragmentedPair = useConfidentialTokenPair(pair?.fragmentedPair);
+  const fragmentedBalances = useConfidentialTokenPairBalances(fragmentedPair?.publicToken.address);
+  const fragmentedBalance = fragmentedBalances?.publicBalance ?? 0n;
 
   const totalBalance = useMemo(() => {
     if (decryptedBalance == null) return -1n;
-    return (balances?.publicBalance ?? 0n) + decryptedBalance + (pairClaims?.totalDecryptedAmount ?? 0n);
-  }, [decryptedBalance, balances?.publicBalance, pairClaims?.totalDecryptedAmount]);
+    return (
+      (balances?.publicBalance ?? 0n) + decryptedBalance + (pairClaims?.totalDecryptedAmount ?? 0n) + fragmentedBalance
+    );
+  }, [decryptedBalance, balances?.publicBalance, pairClaims?.totalDecryptedAmount, fragmentedBalance]);
 
   return (
     <div className="flex flex-col items-start">

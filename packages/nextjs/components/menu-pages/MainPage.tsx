@@ -165,17 +165,18 @@ const TokenRowItem = ({ pairAddress }: { pairAddress: string }) => {
   const fragmentedBalances = useConfidentialTokenPairBalances(fragmentedPair?.publicToken.address);
   const pushPage = useDrawerPushPage();
   const pairClaims = usePairClaims(pair?.publicToken.address);
+  const fragmentedBalance = fragmentedBalances?.publicBalance ?? 0n;
 
   const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint128, balances?.confidentialBalance);
   const totalBalance = useMemo(() => {
     if (decryptedBalance == null) return -1n;
-    return (balances?.publicBalance ?? 0n) + decryptedBalance + (pairClaims?.totalDecryptedAmount ?? 0n);
-  }, [decryptedBalance, balances?.publicBalance, pairClaims?.totalDecryptedAmount]);
+    return (
+      (balances?.publicBalance ?? 0n) + decryptedBalance + (pairClaims?.totalDecryptedAmount ?? 0n) + fragmentedBalance
+    );
+  }, [decryptedBalance, balances?.publicBalance, pairClaims?.totalDecryptedAmount, fragmentedBalance]);
 
   if (pair == null) return null;
   if (pair.isWETH) return null;
-
-  const fragmentedBalance = fragmentedBalances?.publicBalance ?? 0n;
 
   return (
     <Button
