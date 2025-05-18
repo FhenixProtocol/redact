@@ -12,7 +12,7 @@ export function SelectTokenModal({
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
-  onSelectTokenPair: (tokenPair: ConfidentialTokenPair) => void;
+  onSelectTokenPair: (tokenPair: ConfidentialTokenPair, isEncrypt?: boolean) => void;
 }) {
   return (
     <Modal

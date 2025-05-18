@@ -10,7 +10,7 @@ import { ConfidentialTokenPair, useConfidentialTokenPair } from "~~/services/sto
 interface TokenSelectorProps {
   value?: string; // Token address
   isEncrypt?: boolean;
-  onChange?: (value: string) => void;
+  onChange?: (value: string, isEncrypt?: boolean) => void;
   className?: string;
   disabled?: boolean;
 }
@@ -22,9 +22,9 @@ export function TokenSelector({ value, isEncrypt, onChange, className, disabled 
   const displayPair = valuePair;
 
   const handleOpenModal = () => {
-    setSelectTokenModalOpen(true, (tokenPair: ConfidentialTokenPair) => {
+    setSelectTokenModalOpen(true, (tokenPair: ConfidentialTokenPair, isEncrypt?: boolean) => {
       if (onChange) {
-        onChange(tokenPair.publicToken.address);
+        onChange(tokenPair.publicToken.address, isEncrypt);
       }
     });
   };

@@ -23,7 +23,7 @@ export function DisplayValue({
   return (
     <div
       className={cn(
-        "flex flex-row items-center justify-between gap-1 border-2 border-transparent px-1 py-0 font-semibold text-primary relative",
+        "flex flex-row items-center justify-between gap-1 px-1 py-0 font-semibold text-primary relative",
         className,
       )}
       onClick={onClick}
