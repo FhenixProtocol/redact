@@ -27,15 +27,18 @@ export const useEncryptDecryptStore = create<EncryptDecryptStore>()(
 
 // Actions
 
-const selectToken = (chain: number, account: Address, pairPublicToken: Address | null) => {
+const selectToken = (chain: number, account: Address, pairPublicToken: Address | null, isEncrypt?: boolean) => {
   if (pairPublicToken === null) {
     useEncryptDecryptStore.setState({ pairPublicToken: null, encryptValue: null, decryptValue: null });
     return;
   }
 
-  // const pair = useTokenStore.getState().pairs[chain]?.[pairPublicToken];
-
-  useEncryptDecryptStore.setState({ pairPublicToken, encryptValue: 0n, decryptValue: 0n });
+  useEncryptDecryptStore.setState(state => {
+    state.pairPublicToken = pairPublicToken;
+    state.encryptValue = 0n;
+    state.decryptValue = 0n;
+    if (isEncrypt != null) state.isEncrypt = isEncrypt;
+  });
 };
 
 // Hooks
@@ -69,12 +72,12 @@ export const useSelectEncryptDecryptToken = () => {
   const { address: account } = useAccount();
 
   return useCallback(
-    (pairPublicToken: Address | null) => {
+    (pairPublicToken: Address | null, isEncrypt?: boolean) => {
       if (chainId === undefined || account === undefined) {
         return;
       }
 
-      selectToken(chainId, account, pairPublicToken);
+      selectToken(chainId, account, pairPublicToken, isEncrypt);
     },
     [chainId, account],
   );

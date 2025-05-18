@@ -185,7 +185,7 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
           disabled={disabled}
           value={pair?.publicToken.address}
           isEncrypt={isEncrypt}
-          onChange={(val: string) => setToken(val)}
+          onChange={(val: string, isEncrypt?: boolean) => setToken(val, isEncrypt)}
           className="z-100 text-sm w-[130px]"
         />
         <div className="flex justify-between items-center w-full">

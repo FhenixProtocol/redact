@@ -19,10 +19,10 @@ type GlobalState = {
 
   // Select Token Modal
   isSelectTokenModalOpen: boolean;
-  onSelectTokenCallback: ((tokenPair: ConfidentialTokenPair) => void) | null;
+  onSelectTokenCallback: ((tokenPair: ConfidentialTokenPair, isEncrypt?: boolean) => void) | null;
   setSelectTokenModalOpen: (
     isOpen: boolean,
-    onSelectToken?: ((tokenPair: ConfidentialTokenPair) => void) | null,
+    onSelectToken?: ((tokenPair: ConfidentialTokenPair, isEncrypt?: boolean) => void) | null,
   ) => void;
 };
 

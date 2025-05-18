@@ -8,17 +8,11 @@ import { useGlobalState } from "~~/services/store/store";
 import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
 
 export const GlobalModals = () => {
-  const {
-    isAddTokenModalOpen,
-    setAddTokenModalOpen,
-    isSelectTokenModalOpen,
-    setSelectTokenModalOpen,
-    onSelectTokenCallback,
-  } = useGlobalState();
+  const { isSelectTokenModalOpen, setSelectTokenModalOpen, onSelectTokenCallback } = useGlobalState();
 
-  const handleSelectToken = (tokenPair: ConfidentialTokenPair) => {
+  const handleSelectToken = (tokenPair: ConfidentialTokenPair, isEncrypt?: boolean) => {
     if (onSelectTokenCallback) {
-      onSelectTokenCallback(tokenPair);
+      onSelectTokenCallback(tokenPair, isEncrypt);
     }
     setSelectTokenModalOpen(false);
   };
