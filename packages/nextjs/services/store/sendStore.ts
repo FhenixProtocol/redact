@@ -15,6 +15,7 @@ type SendStore = {
   recipient: Address | null;
   inputString: string;
   hasInteracted: boolean;
+  addressHistory: Address[];
 };
 
 export const useSendStore = create<SendStore>()(
@@ -26,6 +27,7 @@ export const useSendStore = create<SendStore>()(
     recipient: null,
     inputString: "",
     hasInteracted: false,
+    addressHistory: [],
   })),
 );
 
@@ -272,8 +274,31 @@ export const useSetSendHasInteracted = () => {
   }, []);
 };
 
+export const useSendAddressHistory = () => {
+  return useSendStore(state => state.addressHistory);
+};
+
+export const useAddToAddressHistory = () => {
+  return useCallback((address: Address) => {
+    useSendStore.setState(state => {
+      // Remove the address if it already exists
+      state.addressHistory = state.addressHistory.filter(addr => addr !== address);
+      // Add the address to the beginning of the array
+      state.addressHistory.unshift(address);
+      // Keep only the last 5 addresses
+      state.addressHistory = state.addressHistory.slice(0, 5);
+    });
+  }, []);
+};
+
 export const useResetSendForm = () => {
+  const addToHistory = useAddToAddressHistory();
+  const recipient = useSendRecipient();
+
   return useCallback(() => {
+    if (recipient) {
+      addToHistory(recipient);
+    }
     useSendStore.setState(state => {
       state.publicSendValue = null;
       state.confidentialSendValue = null;
@@ -281,5 +306,5 @@ export const useResetSendForm = () => {
       state.recipient = null;
       state.hasInteracted = false;
     });
-  }, []);
+  }, [recipient, addToHistory]);
 };
