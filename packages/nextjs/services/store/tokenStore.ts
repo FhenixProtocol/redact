@@ -511,7 +511,7 @@ export const fetchTokenPairBalances = async () => {
   const { address: account } = getAccount(wagmiConfig);
   if (chain == null || account == null) return;
 
-  const addressPairs: AddressPair[] = Object.values(useTokenStore.getState().pairs[chain]).map(
+  const addressPairs: AddressPair[] = Object.values(useTokenStore.getState().pairs?.[chain] ?? {}).map(
     ({ publicToken, confidentialToken }) => ({
       erc20Address: publicToken.address,
       fherc20Address: confidentialToken?.address,
