@@ -21,6 +21,7 @@ import { usePairClaims } from "~~/services/store/claim";
 import {
   useEncryptDecryptBalances,
   useEncryptDecryptFormattedAllowance,
+  useEncryptDecryptHasInteracted,
   useEncryptDecryptInputString,
   useEncryptDecryptIsEncrypt,
   useEncryptDecryptPair,
@@ -30,6 +31,7 @@ import {
   useEncryptDecryptSetIsEncrypt,
   useEncryptDecryptValueError,
   useSelectEncryptDecryptToken,
+  useSetEncryptDecryptHasInteracted,
   useUpdateEncryptDecryptValue,
   useUpdateEncryptDecryptValueByPercent,
 } from "~~/services/store/encryptDecrypt";
@@ -165,6 +167,22 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
   const balances = useEncryptDecryptBalances();
   const setToken = useSelectEncryptDecryptToken();
   const setSliderValue = useUpdateEncryptDecryptValueByPercent();
+  const setHasInteracted = useSetEncryptDecryptHasInteracted();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHasInteracted(true);
+    setInputValue(e.target.value);
+  };
+
+  const handleTokenChange = (val: string, isEncrypt?: boolean) => {
+    setHasInteracted(true);
+    setToken(val, isEncrypt);
+  };
+
+  const handleMaxClick = () => {
+    setHasInteracted(true);
+    setSliderValue(100);
+  };
 
   return (
     <div className="mb-5 w-full flex content-stretch rounded-2xl border border-[#3399FF] p-4">
@@ -176,7 +194,7 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
           type="number"
           min="0"
           value={inputValueRaw === "" ? "0" : inputValueRaw}
-          onChange={e => setInputValue(e.target.value)}
+          onChange={handleInputChange}
           className="w-30 text-lg text-primary-accent font-bold outline-none no-spinner"
         />
         {/* TODO: add fiat amount */}
@@ -187,7 +205,7 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
           disabled={disabled}
           value={pair?.publicToken.address}
           isEncrypt={isEncrypt}
-          onChange={(val: string, isEncrypt?: boolean) => setToken(val, isEncrypt)}
+          onChange={handleTokenChange}
           className="z-100 text-sm w-[130px]"
         />
         <div className="flex justify-between items-center w-full">
@@ -197,7 +215,7 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
           </div>
           <Button
             disabled={disabled}
-            onClick={() => setSliderValue(100)}
+            onClick={handleMaxClick}
             uppercase={true}
             noOutline={true}
             className="py-[1px] ml-1"
@@ -214,16 +232,20 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
 const AmountSliderRow = ({ disabled }: { disabled: boolean }) => {
   const sliderValue = useEncryptDecryptPercentValue();
   const setSliderValue = useUpdateEncryptDecryptValueByPercent();
+  const setHasInteracted = useSetEncryptDecryptHasInteracted();
+
+  const handleSliderChange = (val: number[]) => {
+    setHasInteracted(true);
+    if (val[0] !== undefined) {
+      setSliderValue(val[0]);
+    }
+  };
 
   return (
     <Slider
       disabled={disabled}
       value={[sliderValue]}
-      onValueChange={val => {
-        if (val[0] !== undefined) {
-          setSliderValue(val[0]);
-        }
-      }}
+      onValueChange={handleSliderChange}
       max={100}
       step={1}
       showMarkers={true}
@@ -235,6 +257,9 @@ const AmountSliderRow = ({ disabled }: { disabled: boolean }) => {
 const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisabled: (disabled: boolean) => void }) => {
   const pair = useEncryptDecryptPair();
   const valueError = useEncryptDecryptValueError();
+  const setInputValue = useUpdateEncryptDecryptValue();
+  const hasInteracted = useEncryptDecryptHasInteracted();
+  const setHasInteracted = useSetEncryptDecryptHasInteracted();
 
   // Deploy
 
@@ -292,6 +317,8 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       timer = setTimeout(() => {
         setEncryptState(TxGuideStepState.Ready);
         setIsControlsDisabled(false);
+        setInputValue("0");
+        setHasInteracted(false);
       }, 5_000);
     }
     // update ref for next run
@@ -299,7 +326,7 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
 
     // cleanup if the component unmounts or `isEncrypting` flips again
     return () => timer && clearTimeout(timer);
-  }, [isEncrypting, isEncryptError, setIsControlsDisabled]);
+  }, [isEncrypting, isEncryptError, setIsControlsDisabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Approve
 
@@ -352,9 +379,10 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   const stablecoinErrMessage = isStablecoin
     ? "Stablecoin encryption disabled until FHED (FHE Dollar) release"
     : undefined;
-  const valueErrMessage = valueError != null ? `Invalid amount:\n${valueError}` : undefined;
-  const encryptErrMessage = isEncryptError ? `Encryption failed` : undefined;
-  const sharedErrMessage = missingPairErrMessage ?? valueErrMessage ?? encryptErrMessage;
+
+  const valueErrMessage = hasInteracted && valueError != null ? `Invalid amount:\n${valueError}` : undefined;
+  const encryptErrMessage = hasInteracted && isEncryptError ? `Encryption failed` : undefined;
+  const sharedErrMessage = hasInteracted ? (missingPairErrMessage ?? valueErrMessage ?? encryptErrMessage) : undefined;
 
   // Steps
 
@@ -362,7 +390,9 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
     {
       title: "Deploy",
       cta: pair == null ? "ENCRYPT" : `DEPLOY`,
-      hint: `e${pair?.publicToken.symbol} has not been deployed yet (1 time tx)`,
+      hint: pair?.publicToken.symbol
+        ? `e${pair.publicToken.symbol} has not been deployed yet (1 time tx)`
+        : "Please select a token",
       state: deployState,
       action: handleDeploy,
       disabled: pair == null || isDeploying || isStablecoin,
@@ -395,14 +425,17 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   const valueError = useEncryptDecryptValueError();
   const rawInputValue = useEncryptDecryptRawInputValue();
   const pairClaims = usePairClaims(pair?.publicToken.address);
+  const setInputValue = useUpdateEncryptDecryptValue();
+  const hasInteracted = useEncryptDecryptHasInteracted();
+  const setHasInteracted = useSetEncryptDecryptHasInteracted();
 
   const { onDecryptFherc20, isDecrypting, isDecryptError } = useDecryptFherc20Action();
   const prevDecrypting = useRef(isDecrypting);
   const [decryptState, setDecryptState] = useState<TxGuideStepState>(TxGuideStepState.Ready);
 
-  const valueErrMessage = valueError != null ? `Invalid amount:\n${valueError}` : undefined;
-  const decryptErrMessage = isDecryptError ? `Decryption failed` : undefined;
-  const sharedErrMessage = valueErrMessage ?? decryptErrMessage;
+  const valueErrMessage = hasInteracted && valueError != null ? `Invalid amount:\n${valueError}` : undefined;
+  const decryptErrMessage = hasInteracted && isDecryptError ? `Decryption failed` : undefined;
+  const sharedErrMessage = hasInteracted ? (valueErrMessage ?? decryptErrMessage) : undefined;
 
   useEffect(() => {
     if (isDecryptError) {
@@ -456,11 +489,13 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
         setWaitForDecryptState(TxGuideStepState.Loading);
       } else if (isClaimable) {
         setWaitForDecryptState(TxGuideStepState.Success);
+        setInputValue("0");
+        setHasInteracted(false);
       }
     } else {
       setWaitForDecryptState(TxGuideStepState.Ready);
     }
-  }, [isDecrypting, decryptState, pairClaims]);
+  }, [isDecrypting, decryptState, pairClaims]); // eslint-disable-line react-hooks/exhaustive-deps
   // Claim
 
   const { onClaimAll, isClaiming, isClaimError } = useClaimAllAction();

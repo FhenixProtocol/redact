@@ -14,6 +14,7 @@ type SendStore = {
   isPublic: boolean;
   recipient: Address | null;
   inputString: string;
+  hasInteracted: boolean;
 };
 
 export const useSendStore = create<SendStore>()(
@@ -24,6 +25,7 @@ export const useSendStore = create<SendStore>()(
     isPublic: true,
     recipient: null,
     inputString: "",
+    hasInteracted: false,
   })),
 );
 
@@ -256,4 +258,28 @@ export const useSendRequiresApproval = () => {
     if (rawInputValue > 0n && balances.fherc20Allowance < rawInputValue) return true;
     return false;
   }, [isPublic, balances, rawInputValue]);
+};
+
+export const useSendHasInteracted = () => {
+  return useSendStore(state => state.hasInteracted);
+};
+
+export const useSetSendHasInteracted = () => {
+  return useCallback((value: boolean) => {
+    useSendStore.setState(state => {
+      state.hasInteracted = value;
+    });
+  }, []);
+};
+
+export const useResetSendForm = () => {
+  return useCallback(() => {
+    useSendStore.setState(state => {
+      state.publicSendValue = null;
+      state.confidentialSendValue = null;
+      state.inputString = "";
+      state.recipient = null;
+      state.hasInteracted = false;
+    });
+  }, []);
 };

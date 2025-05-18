@@ -12,6 +12,7 @@ import { getConfidentialSymbol, truncateAddress } from "~~/lib/common";
 import {
   useSelectSendToken,
   useSendBalances,
+  useSendHasInteracted,
   useSendPair,
   useSendPercentValue,
   useSendRawInputValue,
@@ -19,6 +20,7 @@ import {
   useSendRecipientError,
   useSendSetIsPublic,
   useSendValueError,
+  useSetSendHasInteracted,
   useUpdateSendRecipient,
   useUpdateSendValue,
   useUpdateSendValueByPercent,
@@ -150,8 +152,15 @@ const RecipientInputRow = () => {
   const recipient = useSendRecipient();
   const setRecipient = useUpdateSendRecipient();
   const recipientError = useSendRecipientError();
+  const hasInteracted = useSendHasInteracted();
+  const setHasInteracted = useSetSendHasInteracted();
 
-  const isValidInput = recipientError == null;
+  const isValidInput = !hasInteracted || recipientError == null;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHasInteracted(true);
+    setRecipient(e.target.value);
+  };
 
   return (
     <FnxInput
@@ -160,8 +169,8 @@ const RecipientInputRow = () => {
       noOutline={true}
       placeholder="0x..."
       value={recipient ?? ""}
-      onChange={e => setRecipient(e.target.value)}
-      className={`w-full   ${!isValidInput ? "border-red-500" : ""}`}
+      onChange={handleChange}
+      className={`w-full ${!isValidInput ? "border-red-500" : ""}`}
       error={!isValidInput ? "Invalid address format" : undefined}
       fades={true}
       leftElement={<span className="px-4 text-primary text-sm font-normal">To:</span>}
@@ -236,7 +245,7 @@ const PublicSendButton = () => {
 };
 
 const ConfidentialSendButton = () => {
-  const { onSend, isSending } = useSendConfidentialTokenAction();
+  const { onSend, isSending, isEncrypting } = useSendConfidentialTokenAction();
   const pair = useSendPair();
   const rawAmount = useSendRawInputValue();
   const recipient = useSendRecipient();
@@ -273,7 +282,7 @@ const ConfidentialSendButton = () => {
       disabled={disabled || isSending}
       onClick={handleSend}
     >
-      {isSending ? "Sending..." : "Send"}
+      {isSending ? (isEncrypting ? "Encrypting..." : "Sending...") : "Send"}
     </Button>
   );
 };

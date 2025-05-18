@@ -7,6 +7,7 @@ import { Abi, Address, erc20Abi } from "viem";
 import { Config, useAccount, useWriteContract } from "wagmi";
 import { WriteContractVariables } from "wagmi/query";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
+import { useResetSendForm } from "~~/services/store/sendStore";
 import { refetchSingleTokenPairBalances } from "~~/services/store/tokenStore";
 import { TransactionActionType } from "~~/services/store/transactionStore";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
@@ -17,6 +18,7 @@ export const useSendPublicTokenAction = () => {
   const { address: account } = useAccount();
   const [isPending, setIsPending] = useState(false);
   const writeTx = useTransactor();
+  const resetForm = useResetSendForm();
 
   const onSend = useCallback(
     async ({
@@ -67,6 +69,7 @@ export const useSendPublicTokenAction = () => {
           {
             onBlockConfirmation: () => {
               refetchSingleTokenPairBalances(publicTokenAddress);
+              resetForm();
             },
           },
         );
@@ -78,7 +81,7 @@ export const useSendPublicTokenAction = () => {
         setIsPending(false);
       }
     },
-    [writeContractAsync, account, writeTx],
+    [writeContractAsync, account, writeTx, resetForm],
   );
 
   return { onSend, isSending: isPending };
@@ -87,8 +90,11 @@ export const useSendPublicTokenAction = () => {
 export const useSendConfidentialTokenAction = () => {
   const { writeContractAsync } = useWriteContract();
   const [isPending, setIsPending] = useState(false);
+  const [isEncrypting, setIsEncrypting] = useState(false);
   const { address: account } = useAccount();
   const writeTx = useTransactor();
+  const resetForm = useResetSendForm();
+
   const onSend = useCallback(
     async ({
       publicTokenSymbol,
@@ -121,12 +127,16 @@ export const useSendConfidentialTokenAction = () => {
 
       let encryptedAmount: CoFheInUint128;
       try {
+        setIsEncrypting(true);
         const encryptedAmountResult = await cofhejs.encrypt([Encryptable.uint128(amount)]);
         if (encryptedAmountResult.error) {
+          setIsEncrypting(false);
           throw encryptedAmountResult.error;
         }
+        setIsEncrypting(false);
         encryptedAmount = encryptedAmountResult.data[0];
       } catch (error) {
+        setIsEncrypting(false);
         console.error("Failed to encrypt amount:", error);
         toast.error("Failed to encrypt amount");
         throw error;
@@ -155,6 +165,7 @@ export const useSendConfidentialTokenAction = () => {
           {
             onBlockConfirmation: () => {
               refetchSingleTokenPairBalances(publicTokenAddress);
+              resetForm();
             },
           },
         );
@@ -168,8 +179,8 @@ export const useSendConfidentialTokenAction = () => {
         throw error;
       }
     },
-    [account, writeContractAsync, writeTx],
+    [account, writeContractAsync, writeTx, resetForm],
   );
 
-  return { onSend, isSending: isPending };
+  return { onSend, isSending: isPending, isEncrypting };
 };

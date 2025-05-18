@@ -14,6 +14,7 @@ type EncryptDecryptStore = {
   decryptValue: bigint | null;
   isEncrypt: boolean;
   inputString: string;
+  hasInteracted: boolean;
 };
 
 export const useEncryptDecryptStore = create<EncryptDecryptStore>()(
@@ -24,6 +25,7 @@ export const useEncryptDecryptStore = create<EncryptDecryptStore>()(
     decryptValue: null,
     isEncrypt: true,
     inputString: "",
+    hasInteracted: false,
   })),
 );
 
@@ -247,4 +249,16 @@ export const useEncryptDecryptRequiresApproval = () => {
     if (rawInputValue > 0n && balances.fherc20Allowance < rawInputValue) return true;
     return false;
   }, [isEncrypt, balances, rawInputValue]);
+};
+
+export const useEncryptDecryptHasInteracted = () => {
+  return useEncryptDecryptStore(state => state.hasInteracted);
+};
+
+export const useSetEncryptDecryptHasInteracted = () => {
+  return useCallback((value: boolean) => {
+    useEncryptDecryptStore.setState(state => {
+      state.hasInteracted = value;
+    });
+  }, []);
 };
