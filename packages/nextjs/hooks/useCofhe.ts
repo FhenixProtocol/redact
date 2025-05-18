@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Encryptable, Environment, FheTypes, Permit, cofhejs, permitStore } from "cofhejs/web";
 import { Address, Chain } from "viem";
 import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia } from "viem/chains";
-import { useChainId, usePublicClient, useWalletClient } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import scaffoldConfig from "~~/scaffold.config";
 
 // Track initialization state globally
@@ -37,7 +37,7 @@ export const targetNetworksNoHardhat = scaffoldConfig.targetNetworks.filter(
 );
 
 export const useIsConnectedChainSupported = () => {
-  const chainId = useChainId();
+  const { chainId } = useAccount();
   return useMemo(() => targetNetworksNoHardhat.some((network: Chain) => network.id === chainId), [chainId]);
 };
 
