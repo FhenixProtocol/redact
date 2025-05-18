@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Encryptable, Environment, FheTypes, Permit, cofhejs, permitStore } from "cofhejs/web";
-import { Address } from "viem";
+import { Address, Chain } from "viem";
 import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia } from "viem/chains";
-import { useAccount, useChainId, usePublicClient, useWalletClient } from "wagmi";
+import { useChainId, usePublicClient, useWalletClient } from "wagmi";
+import scaffoldConfig from "~~/scaffold.config";
 
 // Track initialization state globally
 let isInitializedGlobally = false;
@@ -31,9 +32,20 @@ const ChainEnvironments = {
   [hardhat.id]: "MOCK",
 } as const;
 
+export const targetNetworksNoHardhat = scaffoldConfig.targetNetworks.filter(
+  (network: Chain) => network.id !== hardhat.id,
+);
+
+export const useIsConnectedChainSupported = () => {
+  const chainId = useChainId();
+  return useMemo(() => targetNetworksNoHardhat.some((network: Chain) => network.id === chainId), [chainId]);
+};
+
 export function useCofhe(config?: Partial<CofheConfig>) {
+  // TODO: Only initialize if the user is connected to a supported chain
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
+  const isChainSupported = useIsConnectedChainSupported();
 
   const chainId = publicClient?.chain.id;
   const accountAddress = walletClient?.account.address;
@@ -58,7 +70,7 @@ export function useCofhe(config?: Partial<CofheConfig>) {
     if (!isBrowser) return;
 
     const initialize = async () => {
-      if (isInitializedGlobally || isInitializing || !publicClient || !walletClient) return;
+      if (isInitializedGlobally || isInitializing || !publicClient || !walletClient || !isChainSupported) return;
       try {
         setIsInitializing(true);
 
@@ -106,7 +118,7 @@ export function useCofhe(config?: Partial<CofheConfig>) {
 
     initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [walletClient, publicClient, config, chainId, isInitializing, accountAddress]);
+  }, [walletClient, publicClient, config, chainId, isInitializing, accountAddress, isChainSupported]);
 
   return {
     isInitialized,
@@ -209,6 +221,7 @@ export const useCofhejsAllPermits = () => {
   return useMemo(() => {
     if (!account || !initialized) return undefined;
     return Object.values(cofhejs.getAllPermits()?.data ?? {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account, initialized, activePermitHashes]);
 };
 

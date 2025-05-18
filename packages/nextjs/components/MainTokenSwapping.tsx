@@ -5,14 +5,14 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Eye, EyeOff } from "lucide-react";
 import { useTheme } from "next-themes";
 import toast from "react-hot-toast";
-import { arbitrum, arbitrumSepolia, mainnet, sepolia } from "viem/chains";
-import { useAccount, useChainId, useSwitchChain } from "wagmi";
+import { Chain } from "viem";
+import { useAccount, useSwitchChain } from "wagmi";
 import { TokenSelector } from "~~/components/TokenSelector";
 import { Button } from "~~/components/ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~~/components/ui/FnxCard";
 import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
 import { Slider } from "~~/components/ui/FnxSlider";
-import { useCofhe } from "~~/hooks/useCofhe";
+import { targetNetworksNoHardhat, useCofhe, useIsConnectedChainSupported } from "~~/hooks/useCofhe";
 import { useClaimAllAction, useDecryptFherc20Action } from "~~/hooks/useDecryptActions";
 import { useApproveFherc20Action, useDeployFherc20Action, useEncryptErc20Action } from "~~/hooks/useEncryptActions";
 import { formatTokenAmount } from "~~/lib/common";
@@ -43,7 +43,7 @@ export function MainTokenSwapping() {
       <div className="flex gap-8 items-center justify-center w-full max-w-[450px] md:w-[450px] mx-auto rounded-3xl drop-shadow-xl">
         <Card className="rounded-[inherit] w-full max-w-[450px] bg-background/60 border-component-stroke backdrop-blur-xs">
           <ConnectOverlay />
-          <NetworkOverlay />
+          <SupportedChainsOverlay />
           <CofhejsInitializedOverlay />
 
           <CardHeader>
@@ -83,43 +83,33 @@ const ConnectOverlay = () => {
   );
 };
 
-const NetworkOverlay = () => {
-  const { switchChain } = useSwitchChain();
+const SupportedChainsOverlay = () => {
   const { isConnected } = useAccount();
-  const chainId = useChainId();
-  const [showOverlay, setShowOverlay] = useState(false);
-  const [targetChain, setTargetChain] = useState<typeof sepolia | typeof arbitrumSepolia | null>(null);
+  const { switchChain } = useSwitchChain();
+  const isChainSupported = useIsConnectedChainSupported();
 
-  useEffect(() => {
-    if (isConnected) {
-      if (chainId === mainnet.id) {
-        setShowOverlay(true);
-        setTargetChain(sepolia);
-      } else if (chainId === arbitrum.id) {
-        setShowOverlay(true);
-        setTargetChain(arbitrumSepolia);
-      } else {
-        setShowOverlay(false);
-        setTargetChain(null);
-      }
-    } else {
-      setShowOverlay(false);
-      setTargetChain(null);
-    }
-  }, [chainId, isConnected]);
-
-  if (!showOverlay || !targetChain) return null;
+  if (!isConnected) return null;
+  if (isChainSupported) return null;
 
   return (
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
       <div className="flex flex-col gap-4 items-center">
-        <div className="text-lg font-semibold text-theme-black">Please switch to {targetChain.name} network</div>
-        <Button
-          onClick={() => switchChain({ chainId: targetChain.id })}
-          className="bg-primary-accent text-white hover:bg-primary-accent/90"
-        >
-          Switch to {targetChain.name}
-        </Button>
+        <div className="text-md text-theme-black px-8 text-center font-bold">
+          Redact is in testnet, and is only available on the following chains
+        </div>
+        <div className="text-md text-theme-black px-8 text-center font-bold">Click to switch chain:</div>
+        <div className="flex flex-row gap-2 items-center justify-center flex-wrap">
+          {targetNetworksNoHardhat.map((network: Chain) => (
+            <Button
+              key={network.id}
+              onClick={() => switchChain({ chainId: network.id })}
+              className="bg-primary-accent text-white hover:bg-primary-accent/90"
+              size="md"
+            >
+              {network.name}
+            </Button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -128,12 +118,13 @@ const NetworkOverlay = () => {
 const CofhejsInitializedOverlay = () => {
   const { theme } = useTheme();
   const { isConnected } = useAccount();
+  const isChainSupported = useIsConnectedChainSupported();
   const { isInitialized } = useCofhe({
     // coFheUrl: "https://testnet-cofhe.fhenix.zone",
     // verifierUrl: "https://testnet-cofhe-vrf.fhenix.zone",
     // thresholdNetworkUrl: "https://testnet-cofhe-tn.fhenix.zone",
   });
-  if (!isConnected) return null;
+  if (!isConnected || !isChainSupported) return null;
   if (isInitialized) return null;
 
   return (
@@ -539,7 +530,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       cta: pair == null ? "Select a token" : `WAIT FOR DECRYPTION`,
       hint: "Wait for the token to be decrypted",
       state: waitForDecryptState,
-      //errorMessage: sharedErrMessage,
+      errorMessage: sharedErrMessage,
       userInteraction: false,
     },
     {
@@ -549,7 +540,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       state: claimState,
       action: handleClaim,
       disabled: pair == null || isClaiming,
-      //errorMessage: sharedErrMessage, // Current sharedErrMessage is not relevant for claim
+      errorMessage: sharedErrMessage,
     },
   ];
   return <TransactionGuide title="Decryption steps:" steps={steps} />;
