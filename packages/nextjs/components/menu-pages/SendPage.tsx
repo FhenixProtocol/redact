@@ -23,7 +23,7 @@ import {
   useUpdateSendValue,
   useUpdateSendValueByPercent,
 } from "~~/services/store/sendStore";
-import { useSendInputValue } from "~~/services/store/sendStore";
+import { useSendInputString } from "~~/services/store/sendStore";
 import { useSendIsPublic } from "~~/services/store/sendStore";
 
 export function SendPage() {
@@ -78,7 +78,7 @@ const PublicConfidentialSelectRow = () => {
 
 const AmountInputRow = () => {
   const isPublic = useSendIsPublic();
-  const inputValue = useSendInputValue();
+  const inputValue = useSendInputString();
   const setInputValue = useUpdateSendValue();
   const pair = useSendPair();
   const balances = useSendBalances();
@@ -91,7 +91,8 @@ const AmountInputRow = () => {
         <div className="text-sm text-[#336699] font-semibold">You Send:</div>
         <input
           type="number"
-          value={inputValue}
+          min="0"
+          value={inputValue === "" ? "0" : inputValue}
           onChange={e => setInputValue(e.target.value)}
           className="w-30 text-lg text-primary-accent font-bold outline-none no-spinner"
         />
@@ -172,7 +173,7 @@ const SendButtonRow = () => {
   const isPublic = useSendIsPublic();
   const pair = useSendPair();
   const valueError = useSendValueError();
-  const amount = useSendInputValue();
+  const amount = useSendInputString();
   const recipient = useSendRecipient();
   const recipientError = useSendRecipientError();
 

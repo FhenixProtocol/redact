@@ -13,6 +13,7 @@ type SendStore = {
   confidentialSendValue: bigint | null;
   isPublic: boolean;
   recipient: Address | null;
+  inputString: string;
 };
 
 export const useSendStore = create<SendStore>()(
@@ -22,6 +23,7 @@ export const useSendStore = create<SendStore>()(
     confidentialSendValue: null,
     isPublic: true,
     recipient: null,
+    inputString: "",
   })),
 );
 
@@ -76,16 +78,35 @@ export const useUpdateSendValue = () => {
     (value: string) => {
       useSendStore.setState(state => {
         if (pair == null) return;
-        const amount = value ? parseUnits(value, pair.publicToken.decimals) : 0n;
-        if (state.isPublic) {
-          state.publicSendValue = amount;
-        } else {
-          state.confidentialSendValue = amount;
+        // Disallow negative numbers
+        if (value.startsWith("-")) return;
+
+        // If empty, treat as "0"
+        const sanitized = value === "" ? "0" : value;
+
+        state.inputString = sanitized;
+
+        // Allow only numbers and optional single decimal point, no negatives
+        if (/^\d*\.?\d*$/.test(sanitized)) {
+          try {
+            const amount = sanitized ? parseUnits(sanitized, pair.publicToken.decimals) : 0n;
+            if (state.isPublic) {
+              state.publicSendValue = amount;
+            } else {
+              state.confidentialSendValue = amount;
+            }
+          } catch {
+            // Ignore parse errors for in-progress input
+          }
         }
       });
     },
     [pair],
   );
+};
+
+export const useSendInputString = () => {
+  return useSendStore(state => state.inputString);
 };
 
 export const useSendRawInputValue = () => {
@@ -126,6 +147,8 @@ export const useUpdateSendValueByPercent = () => {
         } else {
           state.confidentialSendValue = amount;
         }
+        // Update the input string with the formatted amount
+        state.inputString = formatUnits(amount, pair.publicToken.decimals);
       });
     },
     [pair, balances],

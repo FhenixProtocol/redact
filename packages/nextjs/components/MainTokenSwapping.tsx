@@ -21,7 +21,7 @@ import { usePairClaims } from "~~/services/store/claim";
 import {
   useEncryptDecryptBalances,
   useEncryptDecryptFormattedAllowance,
-  useEncryptDecryptInputValue,
+  useEncryptDecryptInputString,
   useEncryptDecryptIsEncrypt,
   useEncryptDecryptPair,
   useEncryptDecryptPercentValue,
@@ -159,7 +159,7 @@ const EncryptDecryptActionSelectionRow = () => {
 
 const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
   const isEncrypt = useEncryptDecryptIsEncrypt();
-  const inputValue = useEncryptDecryptInputValue();
+  const inputValueRaw = useEncryptDecryptInputString();
   const setInputValue = useUpdateEncryptDecryptValue();
   const pair = useEncryptDecryptPair();
   const balances = useEncryptDecryptBalances();
@@ -170,10 +170,12 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
     <div className="mb-5 w-full flex content-stretch rounded-2xl border border-[#3399FF] p-4">
       <div className="flex flex-col items-start flex-1">
         <div className="text-sm text-[#336699] font-semibold">{isEncrypt ? "You Deposit" : "You Withdraw"}</div>
+
         <input
           disabled={disabled}
           type="number"
-          value={inputValue}
+          min="0"
+          value={inputValueRaw === "" ? "0" : inputValueRaw}
           onChange={e => setInputValue(e.target.value)}
           className="w-30 text-lg text-primary-accent font-bold outline-none no-spinner"
         />
