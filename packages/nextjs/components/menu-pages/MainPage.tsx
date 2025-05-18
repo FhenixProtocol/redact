@@ -143,10 +143,11 @@ const BalanceBarKey = () => {
       <div className="text-sm font-semibold">Balance Legend:</div>
       <div className="flex flex-row gap-1 items-center text-sm font-semibold">
         <div className="w-3 h-3 bg-blue-200 rounded-[3px]" />
+        <div className="w-3 h-3 bg-info-500 rounded-[3px]" />
         <span>Public</span>
       </div>
       <div className="flex flex-row gap-1 items-center text-sm font-semibold">
-        <div className="w-3 h-3 bg-primary-accent rounded-[3px]" />
+        <div className="w-3 h-3 bg-success-500 rounded-[3px]" />
         <span>Claimable</span>
       </div>
       <div className="flex flex-row gap-1 items-center text-sm font-semibold">
@@ -160,6 +161,8 @@ const BalanceBarKey = () => {
 const TokenRowItem = ({ pairAddress }: { pairAddress: string }) => {
   const pair = useConfidentialTokenPair(pairAddress);
   const balances = useConfidentialTokenPairBalances(pairAddress);
+  const fragmentedPair = useConfidentialTokenPair(pair?.fragmentedPair);
+  const fragmentedBalances = useConfidentialTokenPairBalances(fragmentedPair?.publicToken.address);
   const pushPage = useDrawerPushPage();
   const pairClaims = usePairClaims(pair?.publicToken.address);
 
@@ -170,6 +173,9 @@ const TokenRowItem = ({ pairAddress }: { pairAddress: string }) => {
   }, [decryptedBalance, balances?.publicBalance, pairClaims?.totalDecryptedAmount]);
 
   if (pair == null) return null;
+  if (pair.isWETH) return null;
+
+  const fragmentedBalance = fragmentedBalances?.publicBalance ?? 0n;
 
   return (
     <Button
@@ -188,7 +194,9 @@ const TokenRowItem = ({ pairAddress }: { pairAddress: string }) => {
     >
       <div className="flex flex-row flex-grow gap-2 w-full items-center text-md font-bold p-2">
         <TokenIcon size={24} publicToken={pair.publicToken} />
-        <div className="flex-grow text-start">{pair.publicToken.symbol}</div>
+        <div className="flex-grow text-start">
+          {pair.publicToken.symbol} {fragmentedPair && ` / ${fragmentedPair.publicToken.symbol}`}
+        </div>
         <div className="items-end">
           {totalBalance < 0 ? "N/A" : formatTokenAmount(totalBalance, pair.publicToken.decimals)}
         </div>
@@ -199,7 +207,8 @@ const TokenRowItem = ({ pairAddress }: { pairAddress: string }) => {
           confidentialBalance={balances?.confidentialBalance ?? 0n}
           claimableAmount={pairClaims?.totalDecryptedAmount ?? 0n}
           decimals={pair.publicToken.decimals}
-          showBalance={true}
+          showBalance={false}
+          fragmentedBalance={fragmentedBalance}
         />
       </div>
     </Button>

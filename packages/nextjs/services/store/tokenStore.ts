@@ -42,6 +42,7 @@ export interface ConfidentialTokenPair {
   confidentialTokenDeployed: boolean;
   isStablecoin: boolean;
   isWETH: boolean;
+  fragmentedPair?: string | undefined;
 }
 
 export interface ConfidentialTokenPairBalances {

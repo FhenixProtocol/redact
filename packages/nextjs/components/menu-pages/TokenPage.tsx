@@ -37,6 +37,8 @@ import {
 export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) {
   const pair = useConfidentialTokenPair(pairAddress);
   const balances = useConfidentialTokenPairBalances(pairAddress);
+  const fragmentedPair = useConfidentialTokenPair(pair?.fragmentedPair);
+  const fragmentedBalances = useConfidentialTokenPairBalances(pair?.fragmentedPair);
 
   if (pair == null || pairAddress == null)
     return (
@@ -48,9 +50,9 @@ export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) 
   return (
     <div className="flex flex-col gap-6 h-full">
       <div className="bg-surface-alt p-sm rounded-xl ">
-        <TokenHeader pair={pair} balances={balances} className="mb-4" />
+        <TokenHeader pair={pair} balances={balances} fragmentedBalances={fragmentedBalances} className="mb-4" />
         {/* <TokenTotalBalanceRow pair={pair} balances={balances} /> */}
-        <TokenBalancesSection pair={pair} balances={balances} />
+        <TokenBalancesSection pair={pair} fragmentedPair={fragmentedPair} balances={balances} />
       </div>
       <TokenSendReceiveRow pair={pair} />
       <TokenHistory pair={pair} />
@@ -61,10 +63,12 @@ export function TokenPage({ pairAddress }: { pairAddress: string | undefined }) 
 const TokenHeader = ({
   pair,
   balances,
+  fragmentedBalances,
   className,
 }: {
   pair: ConfidentialTokenPair;
   balances: ConfidentialTokenPairBalances;
+  fragmentedBalances: ConfidentialTokenPairBalances | undefined;
   className?: string;
 }) => {
   const pairClaims = usePairClaims(pair?.publicToken.address ?? "");
@@ -80,6 +84,7 @@ const TokenHeader = ({
         decimals={pair.publicToken.decimals}
         showBalance={false}
         infoRowPosition="bottom"
+        fragmentedBalance={fragmentedBalances?.publicBalance ?? 0n}
       />
     </div>
   );
@@ -183,15 +188,18 @@ const TokenBalanceRow = ({
 
 const TokenBalancesSection = ({
   pair,
+  fragmentedPair,
   balances,
 }: {
   pair: ConfidentialTokenPair;
+  fragmentedPair: ConfidentialTokenPair | undefined;
   balances: ConfidentialTokenPairBalances;
 }) => {
   const setIsEncrypt = useEncryptDecryptSetIsEncrypt();
   const setToken = useSelectEncryptDecryptToken();
   const setDrawerOpen = useSetDrawerOpen();
   const decryptedBalance = useDecryptValue(FheTypes.Uint128, balances.confidentialBalance);
+  const fragmentedBalances = useConfidentialTokenPairBalances(fragmentedPair?.publicToken.address);
 
   const handleEncryptDecrypt = (isEncrypt: boolean) => {
     setIsEncrypt(isEncrypt);
@@ -209,6 +217,17 @@ const TokenBalancesSection = ({
         actionLabel="ENCRYPT"
         actionDisabled={balances.publicBalance == 0n}
       />
+      {fragmentedPair && (
+        <TokenBalanceRow
+          pair={fragmentedPair}
+          balance={fragmentedBalances?.publicBalance ?? 0n}
+          isConfidential={false}
+          onAction={() => handleEncryptDecrypt(true)}
+          actionLabel="ENCRYPT"
+          actionDisabled={fragmentedBalances?.publicBalance == 0n}
+        />
+      )}
+
       <TokenBalanceRow
         pair={pair}
         balance={balances.confidentialBalance}

@@ -27,6 +27,7 @@ const InfoRow = ({
   fragmentedPercentage,
   displayPublic,
   displayConfidential,
+  displayFragmented,
   showBalance,
   claimableAmount,
   className,
@@ -37,20 +38,27 @@ const InfoRow = ({
   fragmentedPercentage: number;
   displayPublic: string;
   displayConfidential: string;
+  displayFragmented: string;
   showBalance: boolean;
   claimableAmount: bigint;
   className?: string;
 }) => {
   return (
     <div className={cn("flex flex-row justify-between text-xs mb-1", className)}>
-      <div className="flex flex-row items-center gap-2">
-        <Eye className="w-4 h-4" /> {publicPercentage}% {showBalance && <div>({displayPublic})</div>}
+      <div className="flex flex-row items-center gap-1">
+        <Eye className="w-4 h-4" /> 
+        {publicPercentage}% {showBalance && <div>({displayPublic})</div>}
+        {fragmentedPercentage > 0 && (
+          <div className="flex flex-row items-center">
+            + {fragmentedPercentage}% {showBalance && <div>({displayFragmented})</div>}
+          </div>
+        )}
       </div>
       {fragmentedPercentage > 0 && (
         <div className="flex flex-row flex-grow justify-center items-center gap-2">
           <div className="group relative">
             <div className="flex flex-row items-center gap-1">
-              <Ticket className="w-4 h-4" /> {fragmentedPercentage}%
+              {/* TBD: Show the fragmented token icon here if needed */}
             </div>
           </div>
         </div>
@@ -133,7 +141,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
             name: "Fragmented",
             percentage: fragmentedPercentage,
             balance: displayFragmented,
-            color: "bg-info-900", //"bg-[#eb90f5]"
+            color: "bg-info-500", //"bg-[#eb90f5]"
           },
         ]
       : []),
@@ -176,6 +184,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
           displayConfidential={displayConfidential}
           showBalance={showBalance}
           claimableAmount={claimableAmount}
+          displayFragmented={displayFragmented}
         />
       )}
       <div
@@ -208,6 +217,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
           showBalance={showBalance}
           claimableAmount={claimableAmount}
           className="mt-1"
+          displayFragmented={displayFragmented}
         />
       )}
     </div>
