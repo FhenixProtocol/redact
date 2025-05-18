@@ -125,6 +125,7 @@ const TokenBalanceRow = ({
   onAction,
   actionLabel,
   actionDisabled,
+  legendColor,
 }: {
   pair: ConfidentialTokenPair;
   balance: bigint | undefined;
@@ -132,59 +133,63 @@ const TokenBalanceRow = ({
   onAction: () => void;
   actionLabel: string;
   actionDisabled: boolean;
+  legendColor: string;
 }) => {
   const pairClaims = usePairClaims(pair?.publicToken.address ?? "");
   const tokenAddress = isConfidential ? pair.confidentialToken?.address : pair.publicToken.address;
   const isEth = tokenAddress === ETH_ADDRESS.toLowerCase();
   return (
-    <div className="flex flex-col gap-0">
-      <div className="flex flex-row flex-1 gap-2">
-        <TokenIconSymbol
-          className="flex-grow"
-          publicToken={pair.publicToken}
-          confidentialToken={isConfidential ? pair.confidentialToken : undefined}
-          isConfidential={isConfidential}
-        />
-        <div className="flex flex-row justify-end">
-          {isConfidential ? (
-            <EncryptedBalance
-              ctHash={balance}
-              decimals={pair.confidentialToken?.decimals}
-              className="text-left min-w-[10px] text-lg"
-              showIcon={false}
-            />
-          ) : (
-            <div className="flex flex-row gap-1 items-center">
-              {pairClaims && (pairClaims?.totalDecryptedAmount ?? 0n) > 0n && (
-                <>
-                  <CleartextBalance
-                    balance={pairClaims.totalDecryptedAmount}
-                    decimals={pair.publicToken.decimals}
-                    className="text-left min-w-[10px] text-lg text-success-500"
-                    showIcon={false}
-                  />
-                  <span>/</span>
-                </>
-              )}
-              <CleartextBalance
-                balance={balance}
-                decimals={pair.publicToken.decimals}
+    <div className="flex flex-row gap-2 w-full">
+      <div className={cn("w-1 rounded-full", legendColor)}></div>
+      <div className="flex flex-col flex-1 gap-0">
+        <div className="flex flex-row flex-1 gap-2">
+          <TokenIconSymbol
+            className="flex-grow"
+            publicToken={pair.publicToken}
+            confidentialToken={isConfidential ? pair.confidentialToken : undefined}
+            isConfidential={isConfidential}
+          />
+          <div className="flex flex-row justify-end">
+            {isConfidential ? (
+              <EncryptedBalance
+                ctHash={balance}
+                decimals={pair.confidentialToken?.decimals}
                 className="text-left min-w-[10px] text-lg"
                 showIcon={false}
               />
-            </div>
-          )}
+            ) : (
+              <div className="flex flex-row gap-1 items-center">
+                {pairClaims && (pairClaims?.totalDecryptedAmount ?? 0n) > 0n && (
+                  <>
+                    <CleartextBalance
+                      balance={pairClaims.totalDecryptedAmount}
+                      decimals={pair.publicToken.decimals}
+                      className="text-left min-w-[10px] text-lg text-success-500"
+                      showIcon={false}
+                    />
+                    <span>/</span>
+                  </>
+                )}
+                <CleartextBalance
+                  balance={balance}
+                  decimals={pair.publicToken.decimals}
+                  className="text-left min-w-[10px] text-lg"
+                  showIcon={false}
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="flex flex-row flex-1 items-center gap-2">
-        <div className="flex-grow">
-          {!isEth && <HashLink extraShort type="token" hash={tokenAddress ?? ""} copyable />}
-        </div>
-        <div className="flex flex-row gap-2">
-          {!isConfidential && <TokenClaimButton pair={pair} />}
-          <Button variant="outline" size="sm" className="w-min" disabled={actionDisabled} onClick={onAction}>
-            {actionLabel}
-          </Button>
+        <div className="flex flex-row flex-1 items-center gap-2">
+          <div className="flex-grow">
+            {!isEth && <HashLink extraShort type="token" hash={tokenAddress ?? ""} copyable />}
+          </div>
+          <div className="flex flex-row gap-2">
+            {!isConfidential && <TokenClaimButton pair={pair} />}
+            <Button variant="outline" size="sm" className="w-min" disabled={actionDisabled} onClick={onAction}>
+              {actionLabel}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -221,6 +226,7 @@ const TokenBalancesSection = ({
         onAction={() => handleEncryptDecrypt(true)}
         actionLabel="ENCRYPT"
         actionDisabled={balances.publicBalance == 0n}
+        legendColor="bg-blue-200"
       />
       {fragmentedPair && (
         <TokenBalanceRow
@@ -230,6 +236,7 @@ const TokenBalancesSection = ({
           onAction={() => handleEncryptDecrypt(true)}
           actionLabel="ENCRYPT"
           actionDisabled={fragmentedBalances?.publicBalance == 0n}
+          legendColor="bg-info-500"
         />
       )}
 
@@ -240,6 +247,7 @@ const TokenBalancesSection = ({
         onAction={() => handleEncryptDecrypt(false)}
         actionLabel="DECRYPT"
         actionDisabled={pair.confidentialToken == null || decryptedBalance.value == 0n}
+        legendColor="bg-info-900"
       />
     </div>
   );
