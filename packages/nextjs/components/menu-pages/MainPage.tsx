@@ -142,8 +142,7 @@ const BalanceBarKey = () => {
       {/* Optional: sticky top-0 bg-background */}
       <div className="text-sm font-semibold">Balance Legend:</div>
       <div className="flex flex-row gap-1 items-center text-sm font-semibold">
-        <div className="w-3 h-3 bg-blue-200 rounded-[3px]" />
-        <div className="w-3 h-3 bg-info-500 rounded-[3px]" />
+        <div className="w-3 h-3 rounded-[3px] bg-[linear-gradient(to_right,var(--color-blue-200)_50%,var(--color-info-500)_50%)]"></div>
         <span>Public</span>
       </div>
       <div className="flex flex-row gap-1 items-center text-sm font-semibold">
