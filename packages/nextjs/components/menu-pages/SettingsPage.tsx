@@ -1,14 +1,14 @@
 import React from "react";
 import { AddModeratorOutlined, DescriptionOutlined } from "@mui/icons-material";
 import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Button } from "~~/components/ui/Button";
 import { Switcher } from "~~/components/ui/Switcher";
-import { useTheme } from "~~/hooks/useTheme";
 import scaffoldConfig from "~~/scaffold.config";
 import { DrawerPageName, useDrawerPushPage } from "~~/services/store/drawerStore";
 
 export function SettingsPage() {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const pushPage = useDrawerPushPage();
 
   const handleThemeChange = (value: number) => {
@@ -37,7 +37,7 @@ export function SettingsPage() {
           { description: "Light", icon: Sun },
           { description: "Dark", icon: Moon },
         ]}
-        value={theme === "light" ? 0 : 1}
+        value={resolvedTheme === "light" ? 0 : 1}
         onValueChange={handleThemeChange}
         className="w-full"
       />
