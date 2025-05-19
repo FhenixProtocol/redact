@@ -105,7 +105,7 @@ export const useUpdateEncryptDecryptValue = () => {
         // Allow only numbers and optional single decimal point, no negatives
         if (/^\d*\.?\d*$/.test(sanitized)) {
           try {
-            const amount = sanitized ? parseUnits(sanitized, pair.publicToken.decimals) : 0n;
+            const amount = parseUnits(sanitized, pair.publicToken.decimals);
             if (state.isEncrypt) {
               state.encryptValue = amount;
             } else {

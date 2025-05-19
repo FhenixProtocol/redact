@@ -93,7 +93,7 @@ export const useUpdateSendValue = () => {
         // Allow only numbers and optional single decimal point, no negatives
         if (/^\d*\.?\d*$/.test(sanitized)) {
           try {
-            const amount = sanitized ? parseUnits(sanitized, pair.publicToken.decimals) : 0n;
+            const amount = parseUnits(sanitized, pair.publicToken.decimals);
             if (state.isPublic) {
               state.publicSendValue = amount;
             } else {
