@@ -21,7 +21,8 @@ import { usePairClaims } from "~~/services/store/claim";
 import {
   useEncryptDecryptBalances,
   useEncryptDecryptFormattedAllowance,
-  useEncryptDecryptInputValue,
+  useEncryptDecryptHasInteracted,
+  useEncryptDecryptInputString,
   useEncryptDecryptIsEncrypt,
   useEncryptDecryptPair,
   useEncryptDecryptPercentValue,
@@ -30,6 +31,7 @@ import {
   useEncryptDecryptSetIsEncrypt,
   useEncryptDecryptValueError,
   useSelectEncryptDecryptToken,
+  useSetEncryptDecryptHasInteracted,
   useUpdateEncryptDecryptValue,
   useUpdateEncryptDecryptValueByPercent,
 } from "~~/services/store/encryptDecrypt";
@@ -41,7 +43,7 @@ export function MainTokenSwapping() {
   return (
     <div className="text-center inline-block w-full">
       <div className="flex gap-8 items-center justify-center w-full max-w-[450px] md:w-[450px] mx-auto rounded-3xl drop-shadow-xl">
-        <Card className="rounded-[inherit] w-full max-w-[450px] bg-background/60 border-component-stroke backdrop-blur-xs">
+        <Card className="rounded-[inherit] w-full max-w-[450px] bg-background/60 border-component-stroke firefox-compatible-backdrop-blur-xs">
           <ConnectOverlay />
           <SupportedChainsOverlay />
           <CofhejsInitializedOverlay />
@@ -77,7 +79,7 @@ const ConnectOverlay = () => {
   if (isConnected) return null;
 
   return (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 firefox-compatible-backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
       <div className="text-lg font-semibold text-theme-black">Connect your wallet to start swapping</div>
     </div>
   );
@@ -92,7 +94,7 @@ const SupportedChainsOverlay = () => {
   if (isChainSupported) return null;
 
   return (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 firefox-compatible-backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
       <div className="flex flex-col gap-4 items-center">
         <div className="text-md text-theme-black px-8 text-center font-bold">
           Redact is in testnet, and is only available on the following chains
@@ -128,7 +130,7 @@ const CofhejsInitializedOverlay = () => {
   if (isInitialized) return null;
 
   return (
-    <div className="absolute flex-col gap-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
+    <div className="absolute flex-col gap-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 firefox-compatible-backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
       <div className="text-lg font-semibold text-theme-black">Waiting for Cofhe to initialize...</div>
       <div>
         <DotLottieReact
@@ -159,22 +161,40 @@ const EncryptDecryptActionSelectionRow = () => {
 
 const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
   const isEncrypt = useEncryptDecryptIsEncrypt();
-  const inputValue = useEncryptDecryptInputValue();
+  const inputValueRaw = useEncryptDecryptInputString();
   const setInputValue = useUpdateEncryptDecryptValue();
   const pair = useEncryptDecryptPair();
   const balances = useEncryptDecryptBalances();
   const setToken = useSelectEncryptDecryptToken();
   const setSliderValue = useUpdateEncryptDecryptValueByPercent();
+  const setHasInteracted = useSetEncryptDecryptHasInteracted();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHasInteracted(true);
+    setInputValue(e.target.value);
+  };
+
+  const handleTokenChange = (val: string, isEncrypt?: boolean) => {
+    setHasInteracted(true);
+    setToken(val, isEncrypt);
+  };
+
+  const handleMaxClick = () => {
+    setHasInteracted(true);
+    setSliderValue(100);
+  };
 
   return (
     <div className="mb-5 w-full flex content-stretch rounded-2xl border border-[#3399FF] p-4">
       <div className="flex flex-col items-start flex-1">
         <div className="text-sm text-[#336699] font-semibold">{isEncrypt ? "You Deposit" : "You Withdraw"}</div>
+
         <input
           disabled={disabled}
           type="number"
-          value={inputValue}
-          onChange={e => setInputValue(e.target.value)}
+          min="0"
+          value={inputValueRaw === "" ? "0" : inputValueRaw}
+          onChange={handleInputChange}
           className="w-30 text-lg text-primary-accent font-bold outline-none no-spinner"
         />
         {/* TODO: add fiat amount */}
@@ -185,7 +205,7 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
           disabled={disabled}
           value={pair?.publicToken.address}
           isEncrypt={isEncrypt}
-          onChange={(val: string, isEncrypt?: boolean) => setToken(val, isEncrypt)}
+          onChange={handleTokenChange}
           className="z-100 text-sm w-[130px]"
         />
         <div className="flex justify-between items-center w-full">
@@ -195,7 +215,7 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
           </div>
           <Button
             disabled={disabled}
-            onClick={() => setSliderValue(100)}
+            onClick={handleMaxClick}
             uppercase={true}
             noOutline={true}
             className="py-[1px] ml-1"
@@ -212,16 +232,20 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
 const AmountSliderRow = ({ disabled }: { disabled: boolean }) => {
   const sliderValue = useEncryptDecryptPercentValue();
   const setSliderValue = useUpdateEncryptDecryptValueByPercent();
+  const setHasInteracted = useSetEncryptDecryptHasInteracted();
+
+  const handleSliderChange = (val: number[]) => {
+    setHasInteracted(true);
+    if (val[0] !== undefined) {
+      setSliderValue(val[0]);
+    }
+  };
 
   return (
     <Slider
       disabled={disabled}
       value={[sliderValue]}
-      onValueChange={val => {
-        if (val[0] !== undefined) {
-          setSliderValue(val[0]);
-        }
-      }}
+      onValueChange={handleSliderChange}
       max={100}
       step={1}
       showMarkers={true}
@@ -233,6 +257,9 @@ const AmountSliderRow = ({ disabled }: { disabled: boolean }) => {
 const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisabled: (disabled: boolean) => void }) => {
   const pair = useEncryptDecryptPair();
   const valueError = useEncryptDecryptValueError();
+  const setInputValue = useUpdateEncryptDecryptValue();
+  const hasInteracted = useEncryptDecryptHasInteracted();
+  const setHasInteracted = useSetEncryptDecryptHasInteracted();
 
   // Deploy
 
@@ -290,6 +317,8 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       timer = setTimeout(() => {
         setEncryptState(TxGuideStepState.Ready);
         setIsControlsDisabled(false);
+        setInputValue("0");
+        setHasInteracted(false);
       }, 5_000);
     }
     // update ref for next run
@@ -297,7 +326,7 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
 
     // cleanup if the component unmounts or `isEncrypting` flips again
     return () => timer && clearTimeout(timer);
-  }, [isEncrypting, isEncryptError, setIsControlsDisabled]);
+  }, [isEncrypting, isEncryptError, setIsControlsDisabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Approve
 
@@ -350,9 +379,10 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   const stablecoinErrMessage = isStablecoin
     ? "Stablecoin encryption disabled until FHED (FHE Dollar) release"
     : undefined;
-  const valueErrMessage = valueError != null ? `Invalid amount:\n${valueError}` : undefined;
-  const encryptErrMessage = isEncryptError ? `Encryption failed` : undefined;
-  const sharedErrMessage = missingPairErrMessage ?? valueErrMessage ?? encryptErrMessage;
+
+  const valueErrMessage = hasInteracted && valueError != null ? `Invalid amount:\n${valueError}` : undefined;
+  const encryptErrMessage = hasInteracted && isEncryptError ? `Encryption failed` : undefined;
+  const sharedErrMessage = hasInteracted ? (missingPairErrMessage ?? valueErrMessage ?? encryptErrMessage) : undefined;
 
   // Steps
 
@@ -360,7 +390,9 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
     {
       title: "Deploy",
       cta: pair == null ? "ENCRYPT" : `DEPLOY`,
-      hint: `e${pair?.publicToken.symbol} has not been deployed yet (1 time tx)`,
+      hint: pair?.publicToken.symbol
+        ? `e${pair.publicToken.symbol} has not been deployed yet (1 time tx)`
+        : "Please select a token",
       state: deployState,
       action: handleDeploy,
       disabled: pair == null || isDeploying || isStablecoin,
@@ -393,14 +425,17 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   const valueError = useEncryptDecryptValueError();
   const rawInputValue = useEncryptDecryptRawInputValue();
   const pairClaims = usePairClaims(pair?.publicToken.address);
+  const setInputValue = useUpdateEncryptDecryptValue();
+  const hasInteracted = useEncryptDecryptHasInteracted();
+  const setHasInteracted = useSetEncryptDecryptHasInteracted();
 
   const { onDecryptFherc20, isDecrypting, isDecryptError } = useDecryptFherc20Action();
   const prevDecrypting = useRef(isDecrypting);
   const [decryptState, setDecryptState] = useState<TxGuideStepState>(TxGuideStepState.Ready);
 
-  const valueErrMessage = valueError != null ? `Invalid amount:\n${valueError}` : undefined;
-  const decryptErrMessage = isDecryptError ? `Decryption failed` : undefined;
-  const sharedErrMessage = valueErrMessage ?? decryptErrMessage;
+  const valueErrMessage = hasInteracted && valueError != null ? `Invalid amount:\n${valueError}` : undefined;
+  const decryptErrMessage = hasInteracted && isDecryptError ? `Decryption failed` : undefined;
+  const sharedErrMessage = hasInteracted ? (valueErrMessage ?? decryptErrMessage) : undefined;
 
   useEffect(() => {
     if (isDecryptError) {
@@ -454,11 +489,13 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
         setWaitForDecryptState(TxGuideStepState.Loading);
       } else if (isClaimable) {
         setWaitForDecryptState(TxGuideStepState.Success);
+        setInputValue("0");
+        setHasInteracted(false);
       }
     } else {
       setWaitForDecryptState(TxGuideStepState.Ready);
     }
-  }, [isDecrypting, decryptState, pairClaims]);
+  }, [isDecrypting, decryptState, pairClaims]); // eslint-disable-line react-hooks/exhaustive-deps
   // Claim
 
   const { onClaimAll, isClaiming, isClaimError } = useClaimAllAction();

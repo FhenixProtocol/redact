@@ -13,6 +13,8 @@ type EncryptDecryptStore = {
   encryptValue: bigint | null;
   decryptValue: bigint | null;
   isEncrypt: boolean;
+  inputString: string;
+  hasInteracted: boolean;
 };
 
 export const useEncryptDecryptStore = create<EncryptDecryptStore>()(
@@ -22,6 +24,8 @@ export const useEncryptDecryptStore = create<EncryptDecryptStore>()(
     encryptValue: null,
     decryptValue: null,
     isEncrypt: true,
+    inputString: "",
+    hasInteracted: false,
   })),
 );
 
@@ -90,11 +94,26 @@ export const useUpdateEncryptDecryptValue = () => {
     (value: string) => {
       useEncryptDecryptStore.setState(state => {
         if (pair == null) return;
-        const amount = value ? parseUnits(value, pair.publicToken.decimals) : 0n;
-        if (state.isEncrypt) {
-          state.encryptValue = amount;
-        } else {
-          state.decryptValue = amount;
+        // Disallow negative numbers
+        if (value.startsWith("-")) return;
+
+        // If empty, treat as "0"
+        const sanitized = value === "" ? "0" : value;
+
+        state.inputString = sanitized;
+
+        // Allow only numbers and optional single decimal point, no negatives
+        if (/^\d*\.?\d*$/.test(sanitized)) {
+          try {
+            const amount = parseUnits(sanitized, pair.publicToken.decimals);
+            if (state.isEncrypt) {
+              state.encryptValue = amount;
+            } else {
+              state.decryptValue = amount;
+            }
+          } catch {
+            // Ignore parse errors for in-progress input
+          }
         }
       });
     },
@@ -122,6 +141,10 @@ export const useEncryptDecryptInputValue = () => {
   }, [pair, rawInputValue]);
 };
 
+export const useEncryptDecryptInputString = () => {
+  return useEncryptDecryptStore(state => state.inputString);
+};
+
 export const useUpdateEncryptDecryptValueByPercent = () => {
   const pair = useEncryptDecryptPair();
   const balances = useEncryptDecryptBalances();
@@ -140,6 +163,8 @@ export const useUpdateEncryptDecryptValueByPercent = () => {
         } else {
           state.decryptValue = amount;
         }
+        // Update the input string with the formatted amount
+        state.inputString = formatUnits(amount, pair.publicToken.decimals);
       });
     },
     [pair, balances],
@@ -224,4 +249,16 @@ export const useEncryptDecryptRequiresApproval = () => {
     if (rawInputValue > 0n && balances.fherc20Allowance < rawInputValue) return true;
     return false;
   }, [isEncrypt, balances, rawInputValue]);
+};
+
+export const useEncryptDecryptHasInteracted = () => {
+  return useEncryptDecryptStore(state => state.hasInteracted);
+};
+
+export const useSetEncryptDecryptHasInteracted = () => {
+  return useCallback((value: boolean) => {
+    useEncryptDecryptStore.setState(state => {
+      state.hasInteracted = value;
+    });
+  }, []);
 };

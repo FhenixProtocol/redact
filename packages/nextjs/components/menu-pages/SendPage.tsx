@@ -6,12 +6,15 @@ import { Slider } from "../ui/FnxSlider";
 import { Switcher } from "../ui/Switcher";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import { Address } from "viem";
 import { useSendConfidentialTokenAction, useSendPublicTokenAction } from "~~/hooks/useSendActions";
 import { formatTokenAmount } from "~~/lib/common";
 import { getConfidentialSymbol, truncateAddress } from "~~/lib/common";
 import {
   useSelectSendToken,
+  useSendAddressHistory,
   useSendBalances,
+  useSendHasInteracted,
   useSendPair,
   useSendPercentValue,
   useSendRawInputValue,
@@ -19,11 +22,12 @@ import {
   useSendRecipientError,
   useSendSetIsPublic,
   useSendValueError,
+  useSetSendHasInteracted,
   useUpdateSendRecipient,
   useUpdateSendValue,
   useUpdateSendValueByPercent,
 } from "~~/services/store/sendStore";
-import { useSendInputValue } from "~~/services/store/sendStore";
+import { useSendInputString } from "~~/services/store/sendStore";
 import { useSendIsPublic } from "~~/services/store/sendStore";
 
 export function SendPage() {
@@ -78,7 +82,7 @@ const PublicConfidentialSelectRow = () => {
 
 const AmountInputRow = () => {
   const isPublic = useSendIsPublic();
-  const inputValue = useSendInputValue();
+  const inputValue = useSendInputString();
   const setInputValue = useUpdateSendValue();
   const pair = useSendPair();
   const balances = useSendBalances();
@@ -91,7 +95,8 @@ const AmountInputRow = () => {
         <div className="text-sm text-[#336699] font-semibold">You Send:</div>
         <input
           type="number"
-          value={inputValue}
+          min="0"
+          value={inputValue === "" ? "0" : inputValue}
           onChange={e => setInputValue(e.target.value)}
           className="w-30 text-lg text-primary-accent font-bold outline-none no-spinner"
         />
@@ -149,22 +154,80 @@ const RecipientInputRow = () => {
   const recipient = useSendRecipient();
   const setRecipient = useUpdateSendRecipient();
   const recipientError = useSendRecipientError();
+  const hasInteracted = useSendHasInteracted();
+  const setHasInteracted = useSetSendHasInteracted();
+  const addressHistory = useSendAddressHistory();
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const isValidInput = recipientError == null;
+  const isValidInput = !hasInteracted || recipientError == null;
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHasInteracted(true);
+    setRecipient(e.target.value as Address);
+  };
+
+  const handleSelectHistory = (address: Address) => {
+    setHasInteracted(true);
+    setRecipient(address);
+    setIsDropdownOpen(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      setIsDropdownOpen(false);
+    }
+  };
+
+  const handleInputClick = () => {
+    if (recipient === "" && addressHistory.length > 0) {
+      setIsDropdownOpen(true);
+    }
+  };
 
   return (
-    <FnxInput
-      bgColor="theme-white"
-      variant="md"
-      noOutline={true}
-      placeholder="0x..."
-      value={recipient ?? ""}
-      onChange={e => setRecipient(e.target.value)}
-      className={`w-full   ${!isValidInput ? "border-red-500" : ""}`}
-      error={!isValidInput ? "Invalid address format" : undefined}
-      fades={true}
-      leftElement={<span className="px-4 text-primary text-sm font-normal">To:</span>}
-    />
+    <div className="relative w-full" ref={containerRef}>
+      <FnxInput
+        bgColor="theme-white"
+        variant="md"
+        noOutline={true}
+        placeholder="0x..."
+        value={recipient ?? ""}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        onClick={handleInputClick}
+        className={`w-full ${!isValidInput ? "border-red-500" : ""}`}
+        error={!isValidInput ? "Invalid address format" : undefined}
+        fades={true}
+        leftElement={<span className="px-4 text-primary text-sm font-normal">To:</span>}
+      />
+      {isDropdownOpen && recipient === "" && addressHistory.length > 0 && (
+        <div className="absolute z-10 w-full mt-1 bg-surface border border-primary-accent rounded-lg shadow-lg">
+          {addressHistory.map((address, index) => (
+            <div
+              key={address}
+              className="px-4 py-2 hover:bg-primary-accent/10 cursor-pointer rounded-lg text-sm"
+              onClick={() => handleSelectHistory(address)}
+            >
+              {truncateAddress(address, 10, 10)}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -172,7 +235,7 @@ const SendButtonRow = () => {
   const isPublic = useSendIsPublic();
   const pair = useSendPair();
   const valueError = useSendValueError();
-  const amount = useSendInputValue();
+  const amount = useSendInputString();
   const recipient = useSendRecipient();
   const recipientError = useSendRecipientError();
 
@@ -235,7 +298,7 @@ const PublicSendButton = () => {
 };
 
 const ConfidentialSendButton = () => {
-  const { onSend, isSending } = useSendConfidentialTokenAction();
+  const { onSend, isSending, isEncrypting } = useSendConfidentialTokenAction();
   const pair = useSendPair();
   const rawAmount = useSendRawInputValue();
   const recipient = useSendRecipient();
@@ -272,7 +335,7 @@ const ConfidentialSendButton = () => {
       disabled={disabled || isSending}
       onClick={handleSend}
     >
-      {isSending ? "Sending..." : "Send"}
+      {isSending ? (isEncrypting ? "Encrypting..." : "Sending...") : "Send"}
     </Button>
   );
 };

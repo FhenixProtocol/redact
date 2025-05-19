@@ -13,6 +13,9 @@ type SendStore = {
   confidentialSendValue: bigint | null;
   isPublic: boolean;
   recipient: Address | null;
+  inputString: string;
+  hasInteracted: boolean;
+  addressHistory: Address[];
 };
 
 export const useSendStore = create<SendStore>()(
@@ -22,6 +25,9 @@ export const useSendStore = create<SendStore>()(
     confidentialSendValue: null,
     isPublic: true,
     recipient: null,
+    inputString: "",
+    hasInteracted: false,
+    addressHistory: [],
   })),
 );
 
@@ -76,16 +82,35 @@ export const useUpdateSendValue = () => {
     (value: string) => {
       useSendStore.setState(state => {
         if (pair == null) return;
-        const amount = value ? parseUnits(value, pair.publicToken.decimals) : 0n;
-        if (state.isPublic) {
-          state.publicSendValue = amount;
-        } else {
-          state.confidentialSendValue = amount;
+        // Disallow negative numbers
+        if (value.startsWith("-")) return;
+
+        // If empty, treat as "0"
+        const sanitized = value === "" ? "0" : value;
+
+        state.inputString = sanitized;
+
+        // Allow only numbers and optional single decimal point, no negatives
+        if (/^\d*\.?\d*$/.test(sanitized)) {
+          try {
+            const amount = parseUnits(sanitized, pair.publicToken.decimals);
+            if (state.isPublic) {
+              state.publicSendValue = amount;
+            } else {
+              state.confidentialSendValue = amount;
+            }
+          } catch {
+            // Ignore parse errors for in-progress input
+          }
         }
       });
     },
     [pair],
   );
+};
+
+export const useSendInputString = () => {
+  return useSendStore(state => state.inputString);
 };
 
 export const useSendRawInputValue = () => {
@@ -126,6 +151,8 @@ export const useUpdateSendValueByPercent = () => {
         } else {
           state.confidentialSendValue = amount;
         }
+        // Update the input string with the formatted amount
+        state.inputString = formatUnits(amount, pair.publicToken.decimals);
       });
     },
     [pair, balances],
@@ -233,4 +260,51 @@ export const useSendRequiresApproval = () => {
     if (rawInputValue > 0n && balances.fherc20Allowance < rawInputValue) return true;
     return false;
   }, [isPublic, balances, rawInputValue]);
+};
+
+export const useSendHasInteracted = () => {
+  return useSendStore(state => state.hasInteracted);
+};
+
+export const useSetSendHasInteracted = () => {
+  return useCallback((value: boolean) => {
+    useSendStore.setState(state => {
+      state.hasInteracted = value;
+    });
+  }, []);
+};
+
+export const useSendAddressHistory = () => {
+  return useSendStore(state => state.addressHistory);
+};
+
+export const useAddToAddressHistory = () => {
+  return useCallback((address: Address) => {
+    useSendStore.setState(state => {
+      // Remove the address if it already exists
+      state.addressHistory = state.addressHistory.filter(addr => addr !== address);
+      // Add the address to the beginning of the array
+      state.addressHistory.unshift(address);
+      // Keep only the last 5 addresses
+      state.addressHistory = state.addressHistory.slice(0, 5);
+    });
+  }, []);
+};
+
+export const useResetSendForm = () => {
+  const addToHistory = useAddToAddressHistory();
+  const recipient = useSendRecipient();
+
+  return useCallback(() => {
+    if (recipient) {
+      addToHistory(recipient);
+    }
+    useSendStore.setState(state => {
+      state.publicSendValue = null;
+      state.confidentialSendValue = null;
+      state.inputString = "";
+      state.recipient = null;
+      state.hasInteracted = false;
+    });
+  }, [recipient, addToHistory]);
 };
