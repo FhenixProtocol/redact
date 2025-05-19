@@ -43,7 +43,7 @@ export function MainTokenSwapping() {
   return (
     <div className="text-center inline-block w-full">
       <div className="flex gap-8 items-center justify-center w-full max-w-[450px] md:w-[450px] mx-auto rounded-3xl drop-shadow-xl">
-        <Card className="rounded-[inherit] w-full max-w-[450px] bg-background/60 border-component-stroke backdrop-blur-xs">
+        <Card className="rounded-[inherit] w-full max-w-[450px] bg-background/60 border-component-stroke firefox-compatible-backdrop-blur-xs">
           <ConnectOverlay />
           <SupportedChainsOverlay />
           <CofhejsInitializedOverlay />
@@ -79,7 +79,7 @@ const ConnectOverlay = () => {
   if (isConnected) return null;
 
   return (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 firefox-compatible-backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
       <div className="text-lg font-semibold text-theme-black">Connect your wallet to start swapping</div>
     </div>
   );
@@ -94,7 +94,7 @@ const SupportedChainsOverlay = () => {
   if (isChainSupported) return null;
 
   return (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 firefox-compatible-backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
       <div className="flex flex-col gap-4 items-center">
         <div className="text-md text-theme-black px-8 text-center font-bold">
           Redact is in testnet, and is only available on the following chains
@@ -130,7 +130,7 @@ const CofhejsInitializedOverlay = () => {
   if (isInitialized) return null;
 
   return (
-    <div className="absolute flex-col gap-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
+    <div className="absolute flex-col gap-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 firefox-compatible-backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
       <div className="text-lg font-semibold text-theme-black">Waiting for Cofhe to initialize...</div>
       <div>
         <DotLottieReact
