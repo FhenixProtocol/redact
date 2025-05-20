@@ -6,6 +6,12 @@ const deployWeth: DeployFunction = async function (hre: HardhatRuntimeEnvironmen
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
+  
+  if (process.env.weth) {
+    console.log("Skipping wETH deployment, using provided address:", process.env.weth);
+    return;
+  }
+
   await deploy("wETH", {
     contract: "WETH_Harness",
     from: deployer,

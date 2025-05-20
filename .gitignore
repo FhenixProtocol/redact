@@ -23,3 +23,7 @@ node_modules
 
 # cli
 dist
+packages/hardhat/deployments/arbitrumSepolia/.chainId
+packages/hardhat/deployments/arbitrumSepolia/eETH.json
+packages/hardhat/deployments/arbitrumSepolia/RedactCore.json
+packages/hardhat/deployments/arbitrumSepolia/solcInputs/35bcf27cf9f70da1835f03274fe6e465.json

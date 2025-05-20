@@ -7,12 +7,22 @@ const deployEeth: DeployFunction = async function (hre: HardhatRuntimeEnvironmen
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  const weth = await deployments.get("wETH");
+  if (process.env.eeth) {
+    console.log("Skipping eETH deployment due to --eeth flag");
+    return;
+  }
+ 
+  const wethAddress = process.env.weth;
+  const weth = wethAddress || (await deployments.get("wETH")).address;
+
+  if (!weth) {
+    throw new Error(`wETH address must be provided`);
+  }
 
   await deploy("eETH", {
     contract: "ConfidentialETH",
     from: deployer,
-    args: [weth.address],
+    args: [weth],
     log: true,
     autoMine: true,
   });

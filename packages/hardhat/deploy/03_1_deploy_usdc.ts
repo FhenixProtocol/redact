@@ -6,6 +6,12 @@ const deployErc20s: DeployFunction = async function (hre: HardhatRuntimeEnvironm
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
+
+  if (process.env.skipTokens) {
+    console.log("Skipping token deployment due to --skip-tokens flag");
+    return;
+  }
+
   await deploy("wBTC", {
     contract: "ERC20_Harness",
     from: deployer,

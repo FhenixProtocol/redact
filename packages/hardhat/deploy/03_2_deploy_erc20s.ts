@@ -6,6 +6,12 @@ const deployUsdc: DeployFunction = async function (hre: HardhatRuntimeEnvironmen
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
+  if (process.env.skipTokens) {
+    console.log("Skipping token deployment due to --skip-tokens flag");
+    return;
+  }
+
+
   await deploy("USDC", {
     contract: "ERC20_Harness",
     from: deployer,
