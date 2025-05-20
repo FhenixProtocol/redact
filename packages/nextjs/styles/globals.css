@@ -407,12 +407,12 @@
 @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
   .firefox-compatible-backdrop-blur-xs {
     -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px); 
+    /* backdrop-filter: blur(2px);  */
   }
 
   .firefox-compatible-backdrop-blur-sm {
     -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
+    /* backdrop-filter: blur(4px); */
   }
 }
 
@@ -420,12 +420,12 @@
 @-moz-document url-prefix() {
   .firefox-compatible-backdrop-blur-xs {
     backdrop-filter: none !important;
-    -webkit-backdrop-filter: blur(2px) !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   .firefox-compatible-backdrop-blur-sm {
     backdrop-filter: none !important;
-    -webkit-backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: none !important;
   }  
 }
 
