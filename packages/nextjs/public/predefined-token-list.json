@@ -83,6 +83,52 @@
         "isWETH": false,
         "fragmentedPair": ""
       }
-    }
+    },
+    "421614": {
+      "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee": {
+        "publicToken": {
+          "name": "Ether",
+          "symbol": "ETH",
+          "decimals": 18,
+          "error": null,
+          "address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "loading": false
+        },
+        "confidentialToken": {
+          "name": "Confidential Wrapped ETHER",
+          "symbol": "eETH",
+          "decimals": 18,
+          "error": null,
+          "address": "0xec958EcBD30a8874503ee6C39AB6C4881018C265",
+          "loading": false
+        },
+        "confidentialTokenDeployed": true,
+        "isStablecoin": false,
+        "isWETH": false,
+        "fragmentedPair": "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73"
+      },
+      "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73": {
+        "publicToken": {
+          "name": "Wrapped Ether",
+          "symbol": "WETH",
+          "decimals": 18,
+          "error": null,
+          "address": "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
+          "loading": false
+        },
+        "confidentialToken": {
+          "name": "Confidential Wrapped ETHER",
+          "symbol": "eETH",
+          "decimals": 18,
+          "error": null,
+          "address": "0xec958EcBD30a8874503ee6C39AB6C4881018C265",
+          "loading": false
+        },
+        "confidentialTokenDeployed": true,
+        "isStablecoin": false,
+        "isWETH": true,
+        "fragmentedPair": ""
+      }
+    }    
   }
 }
