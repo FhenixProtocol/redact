@@ -247,6 +247,8 @@ abstract contract FHERC20Upgradeable is
     /**
      * @dev See {IERC20-transfer}.
      *
+     * Intended to be used as a EOA call with an encrypted input `InEuint128 inValue`.
+     *
      * Requirements:
      *
      * - `to` cannot be the zero address.
@@ -254,7 +256,22 @@ abstract contract FHERC20Upgradeable is
      * - `inValue` must be a `InEuint128` to preserve confidentiality.
      */
     function encTransfer(address to, InEuint128 memory inValue) public virtual returns (euint128 transferred) {
-        euint128 value = FHE.asEuint128(inValue);
+        return encTransfer(to, FHE.asEuint128(inValue));
+    }
+
+    /**
+     * @dev See {IERC20-transfer}.
+     *
+     * Intended to be used as part of a contract call.
+     * Ensure that `value` is allowed to be used by using `FHE.allow` with this contracts address.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - the caller must have a balance of at least `value`.
+     * - `value` must be a `euint128` to preserve confidentiality.
+     */
+    function encTransfer(address to, euint128 value) public virtual returns (euint128 transferred) {
         address owner = _msgSender();
         transferred = _transfer(owner, to, value);
     }
