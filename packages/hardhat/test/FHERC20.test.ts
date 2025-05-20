@@ -240,7 +240,9 @@ describe("FHERC20", function () {
       await prepExpectFHERC20BalancesChange(XFHE, bob.address);
       await prepExpectFHERC20BalancesChange(XFHE, alice.address);
 
-      await expect(XFHE.connect(bob).encTransfer(alice.address, encTransferInput))
+      await expect(
+        XFHE.connect(bob)["encTransfer(address,(uint256,uint8,uint8,bytes))"](alice.address, encTransferInput),
+      )
         .to.emit(XFHE, "Transfer")
         .withArgs(bob.address, alice.address, await tick(XFHE));
 
@@ -267,10 +269,9 @@ describe("FHERC20", function () {
       const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
 
       // encTransfer (reverts)
-      await expect(XFHE.connect(bob).encTransfer(ZeroAddress, encTransferInput)).to.be.revertedWithCustomError(
-        XFHE,
-        "ERC20InvalidReceiver",
-      );
+      await expect(
+        XFHE.connect(bob)["encTransfer(address,(uint256,uint8,uint8,bytes))"](ZeroAddress, encTransferInput),
+      ).to.be.revertedWithCustomError(XFHE, "ERC20InvalidReceiver");
     });
   });
 
