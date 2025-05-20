@@ -4,13 +4,39 @@ import { Wallet } from "ethers";
 import password from "@inquirer/password";
 import { spawn } from "child_process";
 import { config } from "hardhat";
+import yargs from "yargs"
+import { hideBin } from "yargs/helpers";
 
 /**
  * Unencrypts the private key and runs the hardhat deploy command
  */
 async function main() {
-  const networkIndex = process.argv.indexOf("--network");
-  const networkName = networkIndex !== -1 ? process.argv[networkIndex + 1] : config.defaultNetwork;
+
+  const argv = yargs(hideBin(process.argv))
+    .option("skipTokens", {
+      type: "boolean",
+      description: "Skip token deployment",
+    })
+    .option("weth", {
+      type: "string",
+      description: "WETH  contract address",
+    })    
+    .option("eeth", {
+      type: "string",
+      description: "eETH contract address",
+    })
+    .option("network", {
+      type: "string",
+      description: "Hardhat network to deploy to",
+    })
+    // you can add more options here that your Node script uses...
+    .help()
+    .parseSync();
+
+  const networkName = argv.network ?? config.defaultNetwork;
+
+  // const networkIndex = process.argv.indexOf("--network");
+  // const networkName = networkIndex !== -1 ? process.argv[networkIndex + 1] : config.defaultNetwork;
 
   if (networkName === "localhost" || networkName === "hardhat") {
     // Deploy command on the localhost network
@@ -38,8 +64,30 @@ async function main() {
   try {
     const wallet = await Wallet.fromEncryptedJson(encryptedKey, pass);
     process.env.__RUNTIME_DEPLOYER_PRIVATE_KEY = wallet.privateKey;
+    
+    const hhArgs = ["deploy"];
+    if (networkName) {
+      hhArgs.push("--network", networkName);
+    }
 
-    const hardhat = spawn("hardhat", ["deploy", ...process.argv.slice(2)], {
+    if (argv.skipTokens) {
+      process.env.skipTokens = "1";
+    }
+
+    if (argv.weth) {
+      process.env.weth = argv.weth;
+    }
+
+    if (argv.eeth) {
+      process.env.eeth = argv.eeth;
+    }
+
+    if (argv.reset) {
+      process.env.reset = "1";
+    }
+    
+    
+    const hardhat = spawn("hardhat", hhArgs, {
       stdio: "inherit",
       env: process.env,
       shell: process.platform === "win32",

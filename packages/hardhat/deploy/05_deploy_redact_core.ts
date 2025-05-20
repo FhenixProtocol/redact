@@ -6,14 +6,21 @@ import { deployments } from "hardhat";
 const deployRedactCore: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
+ 
+  const skipTokens = process.env.skipTokens == "1";
+  const wethAddress = process.env.weth;
+  const eethAddress = process.env.eeth;
 
-  const weth = await deployments.get("wETH");
-  const eeth = await deployments.get("eETH");
-  const usdc = await deployments.get("USDC");
+  const weth = wethAddress || (await deployments.get("wETH")).address;
+  const eeth = eethAddress || (await deployments.get("eETH")).address;
+
+  if (!weth || !eeth) {
+    throw new Error(`${!weth ? "wETH" : "eETH"} address must be provided`);
+  }
 
   await deploy("RedactCore", {
     from: deployer,
-    args: [weth.address, eeth.address],
+    args: [weth, eeth],
     log: true,
     autoMine: true,
   });
@@ -21,8 +28,11 @@ const deployRedactCore: DeployFunction = async function (hre: HardhatRuntimeEnvi
   const redactCore = await hre.ethers.getContract<Contract>("RedactCore", deployer);
   console.log("RedactCore deployed at:", redactCore.target);
 
-  await redactCore.updateStablecoin(usdc.address, true);
-  console.log("USDC updated as stablecoin");
+  if (!skipTokens) {
+    const usdc = await deployments.get("USDC");    
+    await redactCore.updateStablecoin(usdc.address, true);
+    console.log("USDC updated as stablecoin");
+  }
 };
 
 export default deployRedactCore;
