@@ -190,7 +190,19 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setHasInteracted(true);
-    setInputValue(e.target.value);
+    let value = e.target.value;
+
+    const currentTokenDecimals = pair?.publicToken.decimals ?? 18;
+
+    if (value.includes(".")) {
+      const parts = value.split(".");
+      // parts[0] is the integer part, parts[1] is the fractional part
+      if (parts[1] && parts[1].length > currentTokenDecimals) {
+        parts[1] = parts[1].substring(0, currentTokenDecimals);
+        value = parts.join(".");
+      }
+    }
+    setInputValue(value);
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
