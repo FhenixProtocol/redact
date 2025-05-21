@@ -193,6 +193,12 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
     setInputValue(e.target.value);
   };
 
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value === "0") {
+      e.target.select();
+    }
+  };
+
   const handleTokenChange = (val: string, isEncrypt?: boolean) => {
     setHasInteracted(true);
     setToken(val, isEncrypt);
@@ -214,6 +220,7 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
           min="0"
           value={inputValueRaw === "" ? "0" : inputValueRaw}
           onChange={handleInputChange}
+          onFocus={handleInputFocus}
           className="w-30 text-lg text-primary-accent font-bold outline-none no-spinner"
         />
         {/* TODO: add fiat amount */}
