@@ -39,6 +39,25 @@ import {
 export function MainTokenSwapping() {
   const isEncrypt = useEncryptDecryptIsEncrypt();
   const [isControlsDisabled, setIsControlsDisabled] = useState(false);
+  const setInputValue = useUpdateEncryptDecryptValue();
+  const currentRawInputValue = useEncryptDecryptInputString();
+  const prevIsEncryptRef = useRef(isEncrypt);
+  const preservedInputValueRef = useRef(currentRawInputValue);
+
+  useEffect(() => {
+    if (prevIsEncryptRef.current !== isEncrypt) {
+      preservedInputValueRef.current = currentRawInputValue;
+    } else {
+      preservedInputValueRef.current = currentRawInputValue;
+    }
+  }, [isEncrypt, currentRawInputValue]);
+
+  useEffect(() => {
+    if (prevIsEncryptRef.current !== isEncrypt) {
+      setInputValue(preservedInputValueRef.current);
+      prevIsEncryptRef.current = isEncrypt;
+    }
+  }, [isEncrypt, setInputValue]);
 
   return (
     <div className="text-center inline-block w-full">
