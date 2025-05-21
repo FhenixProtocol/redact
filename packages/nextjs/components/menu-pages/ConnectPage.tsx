@@ -7,6 +7,19 @@ import { Button } from "~~/components/ui/Button";
 
 const excludeConnectors = ["keplr"];
 
+const walletIconMap = {
+  metamask: { src: "/icons/wallets/metamask.svg", alt: "MetaMask" },
+  walletconnect: { src: "/icons/wallets/walletconnect.svg", alt: "WalletConnect" },
+  coinbase: { src: "/icons/wallets/coinbase.svg", alt: "Coinbase" },
+  safe: { src: "/icons/wallets/safe.svg", alt: "Safe" },
+  rabby: { src: "/icons/wallets/rabby.svg", alt: "Rabby" }, // Assuming Rabby is the intended alt for ledger icon
+};
+
+const defaultWalletIcon = {
+  src: "/icons/wallets/default.svg",
+  alt: "Default Wallet",
+};
+
 export const ConnectPage = () => {
   const { connect, connectors } = useConnect();
 
@@ -23,11 +36,10 @@ export const ConnectPage = () => {
 
   const getConnectorType = (id: string) => {
     const lower = id.toLowerCase();
-    if (lower.includes("metamask")) return "metamask";
-    if (lower.includes("walletconnect")) return "walletconnect";
-    if (lower.includes("coinbase")) return "coinbase";
-    if (lower.includes("safe")) return "safe";
-    return id; // fallback to original id
+    for (const key in walletIconMap) {
+      if (lower.includes(key)) return key;
+    }
+    return id; 
   };
 
   const uniqueConnectors = connectors.filter((connector, index, self) => {
@@ -45,6 +57,17 @@ export const ConnectPage = () => {
           }
 
           const iconSize = 4;
+          let iconInfo = defaultWalletIcon;
+          let altText = connector.name; // Default alt text to connector name
+
+          const connectorIdLower = connector.id.toLowerCase();
+          for (const key in walletIconMap) {
+            if (connectorIdLower.includes(key)) {
+              iconInfo = walletIconMap[key as keyof typeof walletIconMap];
+              altText = walletIconMap[key as keyof typeof walletIconMap].alt;
+              break;
+            }
+          }
 
           return (
             <Button
@@ -53,54 +76,13 @@ export const ConnectPage = () => {
               variant="outline"
               className="flex items-center gap-2 w-full mr-1 px-4 py-2"
             >
-              {connector.id.toLowerCase().includes("metamask") && (
-                <Image
-                  src="/icons/wallets/metamask.svg"
-                  alt="MetaMask"
-                  width={24}
-                  height={24}
-                  className={`w-${iconSize} h-${iconSize}`}
-                />
-              )}
-              {connector.id.toLowerCase().includes("walletconnect") && (
-                <Image
-                  src="/icons/wallets/walletconnect.svg"
-                  alt="WalletConnect"
-                  width={24}
-                  height={24}
-                  className={`w-${iconSize} h-${iconSize}`}
-                />
-              )}
-              {connector.id.toLowerCase().includes("coinbase") && (
-                <Image
-                  src="/icons/wallets/coinbase.svg"
-                  alt="Coinbase"
-                  width={24}
-                  height={24}
-                  className={`w-${iconSize} h-${iconSize}`}
-                />
-              )}
-              {connector.id.toLowerCase().includes("safe") && (
-                <Image
-                  src="/icons/wallets/safe.svg"
-                  alt="Safe"
-                  width={24}
-                  height={24}
-                  className={`w-${iconSize} h-${iconSize}`}
-                />
-              )}
-              {!connector.id.toLowerCase().includes("metamask") &&
-                !connector.id.toLowerCase().includes("walletconnect") &&
-                !connector.id.toLowerCase().includes("coinbase") &&
-                !connector.id.toLowerCase().includes("safe") && (
-                  <Image
-                    src="/default-wallet-icon.png"
-                    alt={connector.name}
-                    width={24}
-                    height={24}
-                    className={`w-${iconSize} h-${iconSize}`}
-                  />
-                )}
+              <Image
+                src={iconInfo.src}
+                alt={altText}
+                width={24}
+                height={24}
+                className={`w-${iconSize} h-${iconSize}`}
+              />
               {connector.name}
             </Button>
           );
