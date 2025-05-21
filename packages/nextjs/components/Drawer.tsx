@@ -106,7 +106,7 @@ const DrawerContentHeader = () => {
     case DrawerPageName.Receive:
       return <DrawerConnectedHeader />;
     case DrawerPageName.Connect:
-      return <h2 className="text-3xl text-primary">Connect</h2>;
+      return <h2 className="text-3xl text-primary">Connect Wallet</h2>;
   }
 };
 

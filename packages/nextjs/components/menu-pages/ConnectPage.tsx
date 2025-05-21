@@ -49,7 +49,6 @@ export const ConnectPage = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Connect your wallet</h2>
       <div className="flex flex-wrap gap-4">
         {uniqueConnectors.map((connector, index) => {
           if (excludeConnectors.includes(connector.name.toLocaleLowerCase())) {
