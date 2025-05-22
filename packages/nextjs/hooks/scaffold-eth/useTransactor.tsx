@@ -89,14 +89,31 @@ export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => 
       }
       notification.remove(notificationId);
 
-      // Add tx to store
+      // Add the 'e' to the token symbol for encrypted transactions
+      // We can do it here instead of passing the confidential token symbol because in
+      // the Deploy ection, the confidential token symbol is not yet set.
+      let finalStoreTxOptions = storeTxOptions;
+      if (storeTxOptions) {
+        let newTokenSymbol = storeTxOptions.tokenSymbol; // Default to existing symbol
+        switch (storeTxOptions.actionType) {
+          case TransactionActionType.Decrypt:
+          case TransactionActionType.EncSend:
+          case TransactionActionType.Deploy:
+            newTokenSymbol = `e${newTokenSymbol}`;
+        }
+        finalStoreTxOptions = {
+          ...storeTxOptions,
+          tokenSymbol: newTokenSymbol,
+        };
+      }
+
       const redactTx =
-        storeTxOptions && walletClient.account?.address
+        finalStoreTxOptions && walletClient.account?.address
           ? {
               hash: transactionHash,
               chainId: network,
               account: walletClient.account.address,
-              ...storeTxOptions,
+              ...finalStoreTxOptions,
             }
           : undefined;
       txString = redactTx ? transactionToString(redactTx) : "Transaction";
