@@ -28,7 +28,13 @@ export function SettingsPage() {
       >
         Manage Permits
       </Button>
-      <Button size="md" iconSize="lg" variant="surface" icon={DescriptionOutlined}>
+      <Button
+        size="md"
+        iconSize="lg"
+        variant="surface"
+        icon={DescriptionOutlined}
+        onClick={() => window.open("https://docs.redact.money/", "_blank")}
+      >
         Documentation
       </Button>
       <Switcher

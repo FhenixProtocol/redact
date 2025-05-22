@@ -36,7 +36,7 @@ export const Footer = () => {
       <a href="https://fhenix.io" target="_blank" rel="noopener noreferrer" className="dark:text-white">
         <PiGlobe title="Fhenix Website" size={iconSize} />
       </a>
-      <a href="https://docs.fhenix.zone" target="_blank" rel="noopener noreferrer" className="dark:text-white">
+      <a href="https://docs.redact.money" target="_blank" rel="noopener noreferrer" className="dark:text-white">
         <TbLibrary title="Documents" size={iconSize} />
       </a>
       <span className="ml-2">Powered by Fhenix</span>
