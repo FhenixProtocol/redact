@@ -216,13 +216,34 @@ export const useCofhejsActivePermit = () => {
 export const useCofhejsAllPermits = () => {
   const account = useCofhejsAccount();
   const initialized = useCofhejsInitialized();
-  const activePermitHashes = useCofhejsActivePermitHashes();
+  const [allPermits, setAllPermits] = useState<Permit[] | undefined>(undefined);
 
-  return useMemo(() => {
-    if (!account || !initialized) return undefined;
-    return Object.values(cofhejs.getAllPermits()?.data ?? {});
+  useEffect(() => {
+    if (!account || !initialized) {
+      setAllPermits(undefined);
+      return;
+    }
+
+    const updatePermits = () => {
+      // Use cofhejs.getAllPermits() here as it's the correct API
+      const permitsFromStore = cofhejs.getAllPermits();
+      setAllPermits(Object.values(permitsFromStore?.data ?? {}));
+    };
+
+    // Initial state
+    updatePermits();
+
+    // Subscribe to store changes
+    // Assuming permitStore.store.subscribe will be triggered by permitStore.removePermit
+    const unsubscribe = permitStore.store.subscribe(updatePermits);
+
+    return () => {
+      unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account, initialized, activePermitHashes]);
+  }, [account, initialized]); // Dependencies: re-run when account or initialized status changes.
+
+  return allPermits;
 };
 
 // Export FheTypes directly for convenience
