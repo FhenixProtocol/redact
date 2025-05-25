@@ -5606,7 +5606,7 @@ const deployedContracts = {
   },
   11155111: {
     RedactCore: {
-      address: "0x6502aC12e864592c457cFb0F9EEc26501622b92e",
+      address: "0xD4892f80ECC518572996b1965448fd28D6795c4d",
       abi: [
         {
           inputs: [
@@ -6000,7 +6000,7 @@ const deployedContracts = {
       },
     },
     eETH: {
-      address: "0x60e8F2b6f4AE6CB53B034cA892E520B32eC129cf",
+      address: "0x87A3effB84CBE1E4caB6Ab430139eC41d156D55A",
       abi: [
         {
           inputs: [
@@ -6790,6 +6790,30 @@ const deployedContracts = {
               internalType: "struct InEuint128",
               name: "inValue",
               type: "tuple",
+            },
+          ],
+          name: "encTransfer",
+          outputs: [
+            {
+              internalType: "euint128",
+              name: "transferred",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "euint128",
+              name: "value",
+              type: "uint256",
             },
           ],
           name: "encTransfer",
