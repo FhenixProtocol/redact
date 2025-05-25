@@ -10,12 +10,14 @@ import { Switcher } from "~~/components/ui/Switcher";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 import { truncateAddress } from "~~/lib/common";
 import { useSetDrawerOpen } from "~~/services/store/drawerStore";
+import { useGlobalState } from "~~/services/store/store";
 
 export const Header = () => {
   const { address, isConnected } = useAccount();
   const setDrawerOpen = useSetDrawerOpen();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const isMaintenanceMode = useGlobalState(state => state.isMaintenanceMode);
 
   useEffect(() => {
     setMounted(true);
@@ -60,6 +62,7 @@ export const Header = () => {
           className="rounded-md button-shadow px-2 md:px-4 py-1 md:py-2 h-[28px] md:h-[50px]"
           noOutline={true}
           onClick={() => setDrawerOpen(true)}
+          disabled={isMaintenanceMode}
         >
           <Wallet className="w-4 h-4" />
           <span className="text-sm md:text-lg">

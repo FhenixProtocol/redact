@@ -1,12 +1,24 @@
 "use client";
 
+import { useEffect } from "react";
 import FAQPage from "./FAQPage";
+import MaintenancePage from "./MaintenancePage";
 import type { NextPage } from "next";
 import { MainTokenSwapping } from "~~/components/MainTokenSwapping";
 import { useGlobalState } from "~~/services/store/store";
 
 const Home: NextPage = () => {
   const isFAQOpen = useGlobalState(state => state.isFAQOpen);
+  const isMaintenanceMode = useGlobalState(state => state.isMaintenanceMode);
+  const fetchMaintenanceMode = useGlobalState(state => state.fetchMaintenanceMode);
+
+  useEffect(() => {
+    fetchMaintenanceMode();
+  }, [fetchMaintenanceMode]);
+
+  if (isMaintenanceMode) {
+    return <MaintenancePage />;
+  }
 
   if (isFAQOpen) {
     return <FAQPage />;
