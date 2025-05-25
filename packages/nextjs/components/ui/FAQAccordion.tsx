@@ -39,7 +39,7 @@ export function FAQAccordion() {
             >
               {faq.question}
             </AccordionTrigger>
-            <AccordionContent className="text-primary text-sm w-full min-w-0 pl-8">
+            <AccordionContent className="text-primary text-md w-full min-w-0 pl-8">
               <div className="w-full min-w-0 break-words overflow-x-hidden">{faq.answer}</div>
             </AccordionContent>
           </AccordionItem>
