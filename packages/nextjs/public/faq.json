@@ -1,0 +1,30 @@
+[
+  {
+    "question": "What are confidential tokens?",
+    "answer": "A confidential token contract with an encrypted balance. All ConfidentialERC20s have an underlying ERC20 that they are paired with. (eETH / ewBTC / ePEPE)."
+  },
+  {
+    "question": "What is a confidential tx?",
+    "answer": "A confidential transaction in the context of token transfers ensures that the amount of tokens sent remains private, visible only to the sender and receiver, while remaining hidden from anyone observing on-chain data."
+  },
+  {
+    "question": "Why can't I see my confidential balance?",
+    "answer": "Redact keeps all balances encrypted and only shows them once you've decrypted with a valid self-permit. If you haven't created or loaded your Cofhejs \"self\" permit (or it's expired after 24 hours)."
+  },
+  {
+    "question": "Why does my balance in my wallet look like this: \"0.5001\"?",
+    "answer": "Wallets and block explorers can't display encrypted balances without CoFHE integration. Instead, they show an \"indicated\" balance between 0 and 1, increasing or decreasing by 0.0001 with every transfer (e.g., 0.5005 → 0.5006 when receiving tokens). This counter shows balance changes and their direction without exposing the actual value or amount transferred. As FHE adoption grows, wallets and explorers are expected to integrate and display true encrypted balances."
+  },
+  {
+    "question": "What are Permits?",
+    "answer": "Fhenix Permits are signed EIP712s (via Cofhejs) that authorize off-chain decrypt and seal operations on encrypted balances. Available in \"self,\" \"sharing,\" and \"recipient\" types, they're network-specific, expire after 24 hours by default, and require signature checks to prevent misuse. In Redact, permits let you—and only those you authorize—query and decrypt your confidential token balance (with future support for transaction history and DeFi actions)."
+  },
+  {
+    "question": "When will I need to \"Deploy\" a Confidential token?",
+    "answer": "Redact can wrap any arbitrary ERC20 token into a confidential fhERC20 token (ConfidentialERC20.sol smart contract). Every ERC20 must have a matching ConfidentialERC20 deployed before any ERC20 balance can be encrypted. Once the matching confidential token is deployed, it can be used by anyone to encrypt their underlying token balances."
+  },
+  {
+    "question": "Why do I need to provide an allowance every time I want to encrypt?",
+    "answer": "Many applications allow users to request approval for a large amount in advance, eliminating the need to provide approval every time they execute a transaction. While this approach improves user experience, it also exposes you to unnecessary risks. To ensure security, we request approval for the exact amount needed each time you encrypt tokens."
+  }
+]

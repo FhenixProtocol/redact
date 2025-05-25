@@ -1,9 +1,17 @@
 "use client";
 
+import FAQPage from "./FAQPage";
 import type { NextPage } from "next";
 import { MainTokenSwapping } from "~~/components/MainTokenSwapping";
+import { useGlobalState } from "~~/services/store/store";
 
 const Home: NextPage = () => {
+  const isFAQOpen = useGlobalState(state => state.isFAQOpen);
+
+  if (isFAQOpen) {
+    return <FAQPage />;
+  }
+
   return (
     <>
       <div className="flex flex-col md:flex-row gap-8 md:gap-20 md:p-8">

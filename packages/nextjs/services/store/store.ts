@@ -24,6 +24,9 @@ type GlobalState = {
     isOpen: boolean,
     onSelectToken?: ((tokenPair: ConfidentialTokenPair, isEncrypt?: boolean) => void) | null,
   ) => void;
+
+  isFAQOpen: boolean;
+  setFAQOpen: (isOpen: boolean) => void;
 };
 
 export const useGlobalState = create<GlobalState>(set => ({
@@ -50,4 +53,7 @@ export const useGlobalState = create<GlobalState>(set => ({
       isSelectTokenModalOpen: isOpen,
       onSelectTokenCallback: onSelectToken,
     })),
+
+  isFAQOpen: false,
+  setFAQOpen: (isOpen: boolean) => set(() => ({ isFAQOpen: isOpen })),
 }));

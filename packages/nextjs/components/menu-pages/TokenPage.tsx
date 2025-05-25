@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { HashLink } from "../HashLink";
 import { TransactionHistory } from "../TransactionHistory";
 import { BalanceBar } from "../ui/BalanceBar";
@@ -25,6 +25,7 @@ import {
   useSetDrawerOpen,
 } from "~~/services/store/drawerStore";
 import { useEncryptDecryptSetIsEncrypt, useSelectEncryptDecryptToken } from "~~/services/store/encryptDecrypt";
+import { useGlobalState } from "~~/services/store/store";
 import {
   ConfidentialTokenPair,
   ConfidentialTokenPairBalances,
@@ -212,6 +213,9 @@ const TokenBalancesSection = ({
   const fragmentedBalances = useConfidentialTokenPairBalances(fragmentedPair?.publicToken.address);
 
   const handleEncryptDecrypt = (isEncrypt: boolean) => {
+    // Close FAQ page if open
+    const setFAQOpen = useGlobalState.getState().setFAQOpen;
+    setFAQOpen(false);
     setIsEncrypt(isEncrypt);
     setToken(pair.publicToken.address);
     setDrawerOpen(false);

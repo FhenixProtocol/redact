@@ -28,7 +28,9 @@ import {
   useDrawerPage,
   useDrawerPagesCount,
   useDrawerPushPage,
+  useSetDrawerOpen,
 } from "~~/services/store/drawerStore";
+import { useGlobalState } from "~~/services/store/store";
 
 export interface DrawerChildProps {
   pushPage?: (page: DrawerPage) => void;
@@ -88,7 +90,11 @@ const Drawer: React.FC = () => {
       <DrawerContentFooter />
 
       <div className="p-4 flex flex-row justify-between">
-        <SettingsButton />
+        <div className="flex flex-row">
+          <SettingsButton />
+          <Separator className="bg-gray-200 ml-2" orientation="vertical" />
+          <FAQButton />
+        </div>
         <LogoutButton />
       </div>
     </div>
@@ -234,6 +240,24 @@ const SettingsButton = () => {
         });
       }}
     />
+  );
+};
+
+const FAQButton = () => {
+  const setDrawerOpen = useSetDrawerOpen();
+  const setFAQOpen = useGlobalState(state => state.setFAQOpen);
+  return (
+    <Button
+      variant="ghost2"
+      size="sm"
+      className="font-reddit-sans text-xs font-normal text-primary"
+      onClick={() => {
+        setDrawerOpen(false);
+        setFAQOpen(true);
+      }}
+    >
+      F.A.Q
+    </Button>
   );
 };
 
