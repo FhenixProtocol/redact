@@ -18,7 +18,7 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
         <meta name="viewport" content="width=device-width, initial-scale=0.9" />
       </head>
       <body className="min-h-screen bg-background text-foreground">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <ScaffoldEthAppWithProviders>
             {children}
             <TokenStoreFetcher />
