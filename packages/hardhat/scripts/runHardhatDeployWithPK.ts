@@ -9,8 +9,12 @@ import { config } from "hardhat";
  * Unencrypts the private key and runs the hardhat deploy command
  */
 async function main() {
+
   const networkIndex = process.argv.indexOf("--network");
   const networkName = networkIndex !== -1 ? process.argv[networkIndex + 1] : config.defaultNetwork;
+
+  // const networkIndex = process.argv.indexOf("--network");
+  // const networkName = networkIndex !== -1 ? process.argv[networkIndex + 1] : config.defaultNetwork;
 
   if (networkName === "localhost" || networkName === "hardhat") {
     // Deploy command on the localhost network
@@ -38,8 +42,13 @@ async function main() {
   try {
     const wallet = await Wallet.fromEncryptedJson(encryptedKey, pass);
     process.env.__RUNTIME_DEPLOYER_PRIVATE_KEY = wallet.privateKey;
-
-    const hardhat = spawn("hardhat", ["deploy", ...process.argv.slice(2)], {
+    
+    const hhArgs = ["deploy"];
+    if (networkName) {
+      hhArgs.push("--network", networkName);
+    }
+    
+    const hardhat = spawn("hardhat", hhArgs, {
       stdio: "inherit",
       env: process.env,
       shell: process.platform === "win32",

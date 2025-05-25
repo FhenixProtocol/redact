@@ -4,7 +4,7 @@ import { Contract } from "ethers";
 
 const deployMulticall3: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const chainId = await hre.getChainId();
-
+  console.log("chainId:", chainId);
   if (chainId !== "31337") {
     console.log("Skipping Multicall3 deployment on non-Hardhat chain", chainId);
     return;
