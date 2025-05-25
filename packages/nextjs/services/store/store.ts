@@ -27,6 +27,10 @@ type GlobalState = {
 
   isFAQOpen: boolean;
   setFAQOpen: (isOpen: boolean) => void;
+
+  isMaintenanceMode: boolean;
+  setMaintenanceMode: (isOn: boolean) => void;
+  fetchMaintenanceMode: () => Promise<void>;
 };
 
 export const useGlobalState = create<GlobalState>(set => ({
@@ -56,4 +60,18 @@ export const useGlobalState = create<GlobalState>(set => ({
 
   isFAQOpen: false,
   setFAQOpen: (isOpen: boolean) => set(() => ({ isFAQOpen: isOpen })),
+
+  isMaintenanceMode: false,
+  setMaintenanceMode: (isOn: boolean) => set(() => ({ isMaintenanceMode: isOn })),
+  fetchMaintenanceMode: async () => {
+    try {
+      const res = await fetch("https://redact-resources.s3.eu-west-1.amazonaws.com/config.json");
+      const data = await res.json();
+      set(() => ({ isMaintenanceMode: !!data.isMaintenanceMode }));
+    } catch (e) {
+      // Optionally handle error, e.g., set to false or log
+      console.error("Error fetching maintenance mode", e);
+      set(() => ({ isMaintenanceMode: false }));
+    }
+  },
 }));
