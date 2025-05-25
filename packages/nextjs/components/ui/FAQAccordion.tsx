@@ -27,7 +27,7 @@ export function FAQAccordion() {
       <Accordion
         type="single"
         collapsible
-        className="w-full sm:w-[750px] flex-shrink-0 mx-auto rounded-2xl border border-blue-200 bg-blue-50 p-4"
+        className="w-full sm:w-[750px] flex-shrink-0 mx-auto rounded-2xl border border-blue-200 bg-background p-4"
       >
         {faqs.map((faq, idx) => (
           <AccordionItem key={idx} value={String(idx)}>
@@ -39,7 +39,7 @@ export function FAQAccordion() {
             >
               {faq.question}
             </AccordionTrigger>
-            <AccordionContent className="text-primary text-sm w-full min-w-0">
+            <AccordionContent className="text-primary text-sm w-full min-w-0 pl-8">
               <div className="w-full min-w-0 break-words overflow-x-hidden">{faq.answer}</div>
             </AccordionContent>
           </AccordionItem>
