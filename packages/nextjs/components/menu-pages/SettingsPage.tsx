@@ -37,7 +37,7 @@ export function SettingsPage() {
       >
         Documentation
       </Button>
-      <Switcher
+      {/* <Switcher
         label="Theme"
         options={[
           { description: "Light", icon: Sun },
@@ -46,7 +46,7 @@ export function SettingsPage() {
         value={resolvedTheme === "light" ? 0 : 1}
         onValueChange={handleThemeChange}
         className="w-full"
-      />
+      /> */}
       <div className="flex justify-between flex-1"></div>
       <div className="text-xs text-primary">Version: {scaffoldConfig.version}</div>
     </div>
