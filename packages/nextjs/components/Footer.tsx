@@ -17,7 +17,7 @@ export const Footer = () => {
         >
           <FaDiscord title="Discord" size={iconSize} />
         </a>
-        <a href="https://x.com/FhenixIO" target="_blank" rel="noopener noreferrer" className="dark:text-white">
+        <a href="https://x.com/RedactMoney" target="_blank" rel="noopener noreferrer" className="dark:text-white">
           <FaXTwitter title="X (Twitter)" size={iconSize} />
         </a>
         <a href="https://t.me/+Cpn0CAifhUYwNTMx" target="_blank" rel="noopener noreferrer" className="dark:text-white">
