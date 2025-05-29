@@ -39,7 +39,7 @@ export const ConnectPage = () => {
     for (const key in walletIconMap) {
       if (lower.includes(key)) return key;
     }
-    return id; 
+    return id;
   };
 
   const uniqueConnectors = connectors.filter((connector, index, self) => {
@@ -47,10 +47,16 @@ export const ConnectPage = () => {
     return index === self.findIndex(c => getConnectorType(c.id) === type);
   });
 
+  // Manual ordering: MetaMask first, others in original order
+  const metaMaskConnector = uniqueConnectors.find(c => c.id.toLowerCase().includes("metamask"));
+  const otherConnectors = uniqueConnectors.filter(c => !c.id.toLowerCase().includes("metamask"));
+
+  const orderedConnectors = [...(metaMaskConnector ? [metaMaskConnector] : []), ...otherConnectors];
+
   return (
     <div className="p-4">
       <div className="flex flex-wrap gap-4">
-        {uniqueConnectors.map((connector, index) => {
+        {orderedConnectors.map((connector, index) => {
           if (excludeConnectors.includes(connector.name.toLocaleLowerCase())) {
             return null;
           }
