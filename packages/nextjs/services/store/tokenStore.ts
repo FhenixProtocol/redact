@@ -638,10 +638,19 @@ export const useConfidentialTokenPair = (address: string | undefined) => {
   const chain = useChainId();
   return useTokenStore(state => (address ? state.pairs[chain]?.[address] : undefined));
 };
+
 export const useDefaultConfidentialTokenPair = (): ConfidentialTokenPair | undefined => {
   const chain = useChainId();
-  return useTokenStore(state => Object.values(state.pairs[chain])[0]);
+  return useTokenStore(state => {
+    const pairs = state.pairs[chain];
+    if (!pairs) return undefined;
+    for (const key in pairs) {
+      return pairs[key]; // Return first pair immediately
+    }
+    return undefined;
+  });
 };
+
 export const useConfidentialTokenPairBalances = (address: string | undefined) => {
   const chain = useChainId();
   const balances = useTokenStore(state => (address ? state.balances[chain]?.[address] : undefined));

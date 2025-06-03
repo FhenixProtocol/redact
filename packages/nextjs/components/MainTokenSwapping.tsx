@@ -35,6 +35,7 @@ import {
   useUpdateEncryptDecryptValue,
   useUpdateEncryptDecryptValueByPercent,
 } from "~~/services/store/encryptDecrypt";
+import { useDefaultConfidentialTokenPair } from "~~/services/store/tokenStore";
 
 export function MainTokenSwapping() {
   const isEncrypt = useEncryptDecryptIsEncrypt();
@@ -43,6 +44,18 @@ export function MainTokenSwapping() {
   const currentRawInputValue = useEncryptDecryptInputString();
   const prevIsEncryptRef = useRef(isEncrypt);
   const preservedInputValueRef = useRef(currentRawInputValue);
+
+  // Auto-select first pair if none is selected
+  const pair = useEncryptDecryptPair();
+  const defaultPair = useDefaultConfidentialTokenPair();
+  const selectToken = useSelectEncryptDecryptToken();
+
+  useEffect(() => {
+    // If no pair is selected but we have a default pair available, select it
+    if (!pair && defaultPair) {
+      selectToken(defaultPair.publicToken.address, true); // Default to encrypt mode
+    }
+  }, [pair, defaultPair, selectToken]);
 
   useEffect(() => {
     if (prevIsEncryptRef.current !== isEncrypt) {
@@ -99,7 +112,7 @@ const ConnectOverlay = () => {
 
   return (
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background/80 firefox-compatible-backdrop-blur-sm w-[99%] h-[99%] z-200 rounded-[inherit] flex items-center justify-center [background-image:repeating-linear-gradient(45deg,#FFFFFF15,#FFFFFF15_10px,transparent_10px,transparent_25px)]">
-      <div className="text-lg font-semibold text-theme-black">Connect your wallet to start swapping</div>
+      <div className="text-lg font-semibold text-theme-black">Connect your wallet to start encrypting</div>
     </div>
   );
 };

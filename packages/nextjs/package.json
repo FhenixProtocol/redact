@@ -37,7 +37,7 @@
     "blo": "~1.2.0",
     "burner-connector": "0.0.9",
     "class-variance-authority": "^0.7.1",
-    "cofhejs": "^0.2.1-alpha.1",
+    "cofhejs": "0.2.1-alpha.3",
     "daisyui": "4.12.10",
     "framer-motion": "^12.4.7",
     "kubo-rpc-client": "~5.0.2",
