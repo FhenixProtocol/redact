@@ -35,6 +35,7 @@ import {
   useUpdateEncryptDecryptValue,
   useUpdateEncryptDecryptValueByPercent,
 } from "~~/services/store/encryptDecrypt";
+import { useDefaultConfidentialTokenPair } from "~~/services/store/tokenStore";
 
 export function MainTokenSwapping() {
   const isEncrypt = useEncryptDecryptIsEncrypt();
@@ -43,6 +44,18 @@ export function MainTokenSwapping() {
   const currentRawInputValue = useEncryptDecryptInputString();
   const prevIsEncryptRef = useRef(isEncrypt);
   const preservedInputValueRef = useRef(currentRawInputValue);
+
+  // Auto-select first pair if none is selected
+  const pair = useEncryptDecryptPair();
+  const defaultPair = useDefaultConfidentialTokenPair();
+  const selectToken = useSelectEncryptDecryptToken();
+
+  useEffect(() => {
+    // If no pair is selected but we have a default pair available, select it
+    if (!pair && defaultPair) {
+      selectToken(defaultPair.publicToken.address, true); // Default to encrypt mode
+    }
+  }, [pair, defaultPair, selectToken]);
 
   useEffect(() => {
     if (prevIsEncryptRef.current !== isEncrypt) {
