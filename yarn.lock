@@ -5213,7 +5213,7 @@ __metadata:
     blo: ~1.2.0
     burner-connector: 0.0.9
     class-variance-authority: ^0.7.1
-    cofhejs: ^0.2.1-alpha.1
+    cofhejs: 0.2.1-alpha.3
     daisyui: 4.12.10
     eslint: ~8.57.1
     eslint-config-next: 15.2.2
@@ -9419,6 +9419,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cofhejs@npm:0.2.1-alpha.3":
+  version: 0.2.1-alpha.3
+  resolution: "cofhejs@npm:0.2.1-alpha.3"
+  dependencies:
+    "@types/node": ^20.0.0
+    idb-keyval: ^6.2.1
+    immer: ^10.1.1
+    node-tfhe: 0.11.1
+    tfhe: 0.11.1
+    tweetnacl: ^1.0.3
+    tweetnacl-util: ^0.15.1
+    type-fest: ^4.26.1
+    zod: ^3.23.8
+    zustand: ^5.0.1
+  checksum: 682fd33010a76b187c33b773512d24f8860cc26878485b5fad059960416547373fae8091f6d5c53447efba5b202d3e5d33221a651bbc85035b37119afa9cc061
+  languageName: node
+  linkType: hard
+
 "cofhejs@npm:^0.2.1-alpha.0":
   version: 0.2.1-alpha.0
   resolution: "cofhejs@npm:0.2.1-alpha.0"
@@ -9434,24 +9452,6 @@ __metadata:
     zod: ^3.23.8
     zustand: ^5.0.1
   checksum: c7043703523b99902013f95cb5ca49227e186b3e95111ef27c9e531a326c22ddd694f7a83cc713af8b1e362889e6a827632f8b20c26843575517fe7f4a3d8206
-  languageName: node
-  linkType: hard
-
-"cofhejs@npm:^0.2.1-alpha.1":
-  version: 0.2.1-alpha.1
-  resolution: "cofhejs@npm:0.2.1-alpha.1"
-  dependencies:
-    "@types/node": ^20.0.0
-    idb-keyval: ^6.2.1
-    immer: ^10.1.1
-    node-tfhe: 0.11.1
-    tfhe: 0.11.1
-    tweetnacl: ^1.0.3
-    tweetnacl-util: ^0.15.1
-    type-fest: ^4.26.1
-    zod: ^3.23.8
-    zustand: ^5.0.1
-  checksum: 41679ef80bc9e5a298bc1dab0e6c2de679e6dac763b8a3b88e850a97f48cd7c649ddbcb383ba17028613506e5edc5cef67e40956056851c46600bef2b6e56bc6
   languageName: node
   linkType: hard
 
