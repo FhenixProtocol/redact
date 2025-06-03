@@ -7,6 +7,7 @@ import { Abi, Address, erc20Abi } from "viem";
 import { Config, useAccount, useWriteContract } from "wagmi";
 import { WriteContractVariables } from "wagmi/query";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
+import { ETH_ADDRESS } from "~~/lib/common";
 import { useResetSendForm } from "~~/services/store/sendStore";
 import { refetchSingleTokenPairBalances } from "~~/services/store/tokenStore";
 import { TransactionActionType } from "~~/services/store/transactionStore";
@@ -39,42 +40,71 @@ export const useSendPublicTokenAction = () => {
         return;
       }
 
-      if (!writeContractAsync) {
-        toast.error("Could not initialize contract write");
-        return;
-      }
-
       try {
         setIsPending(true);
 
-        const writeContractObject = {
-          abi: erc20Abi,
-          address: publicTokenAddress,
-          functionName: "transfer",
-          args: [recipient, amount],
-        } as WriteContractVariables<Abi, string, any[], Config, number>;
+        // Check if this is a native ETH transfer
+        if (publicTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
+          // Native ETH transfer
+          const sendTransactionParams = {
+            to: recipient,
+            value: amount,
+          };
 
-        await simulateContractWriteAndNotifyError({ wagmiConfig, writeContractParams: writeContractObject });
-        const makeWriteWithParams = () => writeContractAsync(writeContractObject);
-
-        const writeTxResult = await writeTx(
-          makeWriteWithParams,
-          {
-            tokenSymbol: publicTokenSymbol,
-            tokenAddress: publicTokenAddress,
-            tokenDecimals,
-            tokenAmount: amount,
-            actionType: TransactionActionType.Send,
-          },
-          {
-            onBlockConfirmation: () => {
-              refetchSingleTokenPairBalances(publicTokenAddress);
-              resetForm();
+          const writeTxResult = await writeTx(
+            sendTransactionParams,
+            {
+              tokenSymbol: publicTokenSymbol,
+              tokenAddress: publicTokenAddress,
+              tokenDecimals,
+              tokenAmount: amount,
+              actionType: TransactionActionType.Send,
             },
-          },
-        );
+            {
+              onBlockConfirmation: () => {
+                refetchSingleTokenPairBalances(publicTokenAddress);
+                resetForm();
+              },
+            },
+          );
 
-        return writeTxResult;
+          return writeTxResult;
+        } else {
+          // ERC20 token transfer
+          if (!writeContractAsync) {
+            toast.error("Could not initialize contract write");
+            return;
+          }
+
+          const writeContractObject = {
+            abi: erc20Abi,
+            address: publicTokenAddress,
+            functionName: "transfer",
+            args: [recipient, amount],
+          } as WriteContractVariables<Abi, string, any[], Config, number>;
+
+          await simulateContractWriteAndNotifyError({ wagmiConfig, writeContractParams: writeContractObject });
+          const makeWriteWithParams = () => writeContractAsync(writeContractObject);
+
+          const writeTxResult = await writeTx(
+            makeWriteWithParams,
+            {
+              tokenSymbol: publicTokenSymbol,
+              tokenAddress: publicTokenAddress,
+              tokenDecimals,
+              tokenAmount: amount,
+              actionType: TransactionActionType.Send,
+            },
+            {
+              onBlockConfirmation: () => {
+                refetchSingleTokenPairBalances(publicTokenAddress);
+                resetForm();
+              },
+            },
+          );
+
+          return writeTxResult;
+        }
       } catch (error) {
         throw error;
       } finally {
