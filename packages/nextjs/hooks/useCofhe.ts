@@ -7,6 +7,10 @@ import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia } from "viem/chain
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import scaffoldConfig from "~~/scaffold.config";
 
+// Define types based on the store structure
+type AccountRecord<T> = Record<Address, T>;
+type ChainRecord<T> = Record<number, T>;
+
 // Track initialization state globally
 let isInitializedGlobally = false;
 
@@ -174,12 +178,11 @@ export const useCofhejsAccount = () => {
 };
 
 export const useCofhejsActivePermitHashes = () => {
-  const [activePermitHash, setActivePermitHash] = useState<Record<Address, string | undefined>>({});
+  const [activePermitHash, setActivePermitHash] = useState<ChainRecord<AccountRecord<string | undefined>>>({});
 
   useEffect(() => {
     const unsubscribe = permitStore.store.subscribe(state => {
-      const hash = state.activePermitHash;
-      setActivePermitHash(hash);
+      setActivePermitHash(state.activePermitHash);
     });
 
     setActivePermitHash(permitStore.store.getState().activePermitHash);
@@ -195,22 +198,24 @@ export const useCofhejsActivePermitHashes = () => {
 export const useCofhejsActivePermitHash = () => {
   const account = useCofhejsAccount();
   const activePermitHashes = useCofhejsActivePermitHashes();
+  const { chainId } = useAccount();
 
   return useMemo(() => {
-    if (!account) return undefined;
-    return activePermitHashes[account];
-  }, [account, activePermitHashes]);
+    if (!account || !chainId) return undefined;
+    return activePermitHashes[chainId]?.[account];
+  }, [account, activePermitHashes, chainId]);
 };
 
 export const useCofhejsActivePermit = () => {
   const account = useCofhejsAccount();
   const initialized = useCofhejsInitialized();
   const activePermitHash = useCofhejsActivePermitHash();
+  const { chainId } = useAccount();
 
   return useMemo(() => {
-    if (!account || !initialized) return undefined;
-    return permitStore.getPermit(account, activePermitHash);
-  }, [account, initialized, activePermitHash]);
+    if (!account || !initialized || !chainId) return undefined;
+    return permitStore.getPermit(chainId.toString(), account, activePermitHash);
+  }, [account, initialized, activePermitHash, chainId]);
 };
 
 export const useCofhejsAllPermits = () => {

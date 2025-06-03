@@ -50,8 +50,8 @@ export function PermitsPage() {
                 cofhejs.selectActivePermit(permit.getHash());
               }}
               onDelete={() => {
-                if (!account) return;
-                permitStore.removePermit(account, permit.getHash());
+                if (!account || !permit._signedDomain?.chainId) return;
+                permitStore.removePermit(permit._signedDomain.chainId.toString(), account, permit.getHash());
               }}
             />
           );
