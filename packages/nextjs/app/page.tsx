@@ -32,16 +32,16 @@ const Home: NextPage = () => {
             <div>
               <h1 className="text-primary-accent text-5xl font-bold">Redact Money.</h1>
               <h2 className="text-primary text-5xl font-bold leading-tight">
-                Encrypt Your Tokens
+                Shield Your Tokens
                 <br />
-                To Discover FHE
+                for Unbreakable Privacy
               </h2>
             </div>
 
             <p className="text-primary text-lg">
-              Confidential transaction amounts & wallet balances
+              The gateway to confidential DeFi.
               <br />
-              through the power of Fully Homomorphic Encryption (FHE)
+              Experience private transactions and shielded balances
             </p>
           </div>
         </div>
