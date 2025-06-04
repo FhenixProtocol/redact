@@ -31,18 +31,10 @@ const Home: NextPage = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h1 className="text-primary-accent text-5xl font-bold">Redact Money.</h1>
-              <h2 className="text-primary text-5xl font-bold leading-tight">
-                Shield Your Tokens
-                <br />
-                for Unbreakable Privacy
-              </h2>
+              <h2 className="text-primary text-5xl font-bold leading-tight">Shield Your Assets</h2>
             </div>
 
-            <p className="text-primary text-lg">
-              The gateway to confidential DeFi.
-              <br />
-              Experience private transactions and shielded balances
-            </p>
+            <p className="text-primary text-lg">Discover confidential assets and transactions</p>
           </div>
         </div>
         <div className="">
