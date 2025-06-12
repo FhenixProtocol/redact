@@ -1,4 +1,5 @@
 import { TokenStoreFetcher } from "./TokenStoreFetcher";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "@rainbow-me/rainbowkit/styles.css";
 import { GlobalModals } from "~~/components/GlobalModals";
 import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
@@ -26,6 +27,7 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
           </ScaffoldEthAppWithProviders>
         </ThemeProvider>
       </body>
+      <GoogleAnalytics gaId="G-DSS4E3M9Q1" />
     </html>
   );
 };
