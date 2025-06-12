@@ -3432,6 +3432,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/third-parties@npm:^15.3.3":
+  version: 15.3.3
+  resolution: "@next/third-parties@npm:15.3.3"
+  dependencies:
+    third-party-capital: 1.0.20
+  peerDependencies:
+    next: ^13.0.0 || ^14.0.0 || ^15.0.0
+    react: ^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0
+  checksum: 372379d0c5b2ba27226742761248e294d59f1149a2f0c686bb4ca54e5379e887af2edf3a68fd22bdb988a9ba3371525ce9b0e6174e1e5287e38b3fea893193e8
+  languageName: node
+  linkType: hard
+
 "@noble/ciphers@npm:^1.0.0":
   version: 1.2.1
   resolution: "@noble/ciphers@npm:1.2.1"
@@ -5192,6 +5204,7 @@ __metadata:
     "@lottiefiles/dotlottie-react": ^0.13.5
     "@mui/icons-material": ^6.4.6
     "@mui/material": ^6.4.6
+    "@next/third-parties": ^15.3.3
     "@radix-ui/react-accordion": ^1.2.3
     "@radix-ui/react-label": ^2.1.2
     "@radix-ui/react-radio-group": ^1.2.3
@@ -18893,6 +18906,13 @@ __metadata:
   version: 0.11.1
   resolution: "tfhe@npm:0.11.1"
   checksum: a47a5bf43b576bc5ac462af197726c64c7e5f36c8009e7818d75798273e1bc61f87cb910139dd7fa476d57bfee4575421543991f14d7863f70ef14e70976b72c
+  languageName: node
+  linkType: hard
+
+"third-party-capital@npm:1.0.20":
+  version: 1.0.20
+  resolution: "third-party-capital@npm:1.0.20"
+  checksum: ef5eae00bdb82b538b9f628a011fc294cd6f4bafdbb46d88f3d1a72e8c3b9e2cc2a547fdb62bc16bdd847e9da3dac2df676b154c64914f6c90ea15aac6ce0a6a
   languageName: node
   linkType: hard
 
