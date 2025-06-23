@@ -30,11 +30,11 @@ const Home: NextPage = () => {
         <div className="hidden md:flex flex-col items-center justify-center">
           <div className="flex flex-col gap-4">
             <div>
-              <h1 className="text-primary-accent text-5xl font-bold">Redact Money.</h1>
-              <h2 className="text-primary text-5xl font-bold leading-tight">Shield Your Assets</h2>
+              <h1 className="redact-text-primary-accent text-5xl font-bold">Redact Money.</h1>
+              <h2 className="redact-text-primary text-5xl font-bold leading-tight">Shield Your Assets</h2>
             </div>
 
-            <p className="text-primary text-lg">Discover confidential assets and transactions</p>
+            <p className="redact-text-primary text-lg">Discover confidential assets and transactions</p>
           </div>
         </div>
         <div className="">

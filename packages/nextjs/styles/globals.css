@@ -622,59 +622,23 @@ body {
 }
 
 /* 
-  Protection against zkPass and other browser extension CSS overrides
-  These rules use high specificity and !important to prevent external CSS from changing our text colors
+  Custom Redact-specific text color classes to avoid browser extension conflicts
+  Using unique class names that extensions are unlikely to target
 */
 @layer components {
-  /* Protect main heading and subtitle text from external overrides */
-  .text-primary,
-  div .text-primary,
-  html .text-primary,
-  body .text-primary {
-    color: var(--default-text-color) !important;
+  .redact-text-primary {
+    color: var(--default-text-color);
   }
 
-  .dark .text-primary,
-  .dark div .text-primary,
-  html.dark .text-primary,
-  body.dark .text-primary {
-    color: var(--default-text-color) !important;
+  .dark .redact-text-primary {
+    color: var(--default-text-color);
   }
 
-  /* Protect primary accent text from external overrides */
-  .text-primary-accent,
-  div .text-primary-accent,
-  html .text-primary-accent,
-  body .text-primary-accent {
-    color: var(--primary-accent) !important;
+  .redact-text-primary-accent {
+    color: var(--primary-accent);
   }
 
-  .dark .text-primary-accent,
-  .dark div .text-primary-accent,
-  html.dark .text-primary-accent,
-  body.dark .text-primary-accent {
-    color: var(--primary-accent) !important;
-  }
-
-  /* Specific protection for transaction guide titles */
-  .bg-primary-foreground .text-primary span,
-  .bg-primary-foreground div .text-primary span,
-  html .bg-primary-foreground .text-primary span {
-    color: var(--default-text-color) !important;
-  }
-
-  .dark .bg-primary-foreground .text-primary span,
-  .dark .bg-primary-foreground div .text-primary span,
-  html.dark .bg-primary-foreground .text-primary span {
-    color: var(--default-text-color) !important;
-  }
-
-  /* Extra protection for specific text content */
-  [class*="text-primary"]:not([class*="text-primary-accent"]) {
-    color: var(--default-text-color) !important;
-  }
-
-  .dark [class*="text-primary"]:not([class*="text-primary-accent"]) {
-    color: var(--default-text-color) !important;
+  .dark .redact-text-primary-accent {
+    color: var(--primary-accent);
   }
 }
