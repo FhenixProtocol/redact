@@ -21,7 +21,7 @@ module.exports = {
           "base-300": "#DAE8FF",
           "base-content": "#212638",
           info: "#93BBFB",
-          success: "#22c55e",
+          success: "#34EEB6",
           warning: "#FFCF72",
           error: "#FF8863",
           "--rounded-btn": "9999rem",
