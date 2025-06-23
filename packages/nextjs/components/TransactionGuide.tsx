@@ -42,7 +42,7 @@ export const TransactionGuide: React.FC<TxGuideProps> = ({ title, steps }) => {
 
   return (
     <div className="flex flex-col gap-2 bg-primary-foreground rounded-2xl p-4 w-full">
-      <div className="flex flex-row justify-start items-center gap-2 redact-text-primary">
+      <div className="flex flex-row justify-start items-center gap-2 text-primary">
         <CircleAlert />
         <span className="font-semibold">{title}</span>
       </div>
