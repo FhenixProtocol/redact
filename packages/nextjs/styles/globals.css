@@ -623,7 +623,7 @@ body {
 
 /* 
   Protection against zkPass and other browser extension CSS overrides
-  These rules use high specificity and !important to prevent external CSS from changing our text colors
+  These rules use hard-coded colors and high specificity to prevent external CSS from changing our text colors
 */
 @layer components {
   /* Protect main heading and subtitle text from external overrides */
@@ -631,14 +631,14 @@ body {
   div .text-primary,
   html .text-primary,
   body .text-primary {
-    color: var(--color-primary) !important;
+    color: #003366 !important;
   }
 
   .dark .text-primary,
   .dark div .text-primary,
   html.dark .text-primary,
   body.dark .text-primary {
-    color: var(--color-primary) !important;
+    color: #e6f7ff !important;
   }
 
   /* Protect primary accent text from external overrides */
@@ -646,35 +646,35 @@ body {
   div .text-primary-accent,
   html .text-primary-accent,
   body .text-primary-accent {
-    color: var(--primary-accent) !important;
+    color: #0073e6 !important;
   }
 
   .dark .text-primary-accent,
   .dark div .text-primary-accent,
   html.dark .text-primary-accent,
   body.dark .text-primary-accent {
-    color: var(--primary-accent) !important;
+    color: #3399ff !important;
   }
 
   /* Specific protection for transaction guide titles */
   .bg-primary-foreground .text-primary span,
   .bg-primary-foreground div .text-primary span,
   html .bg-primary-foreground .text-primary span {
-    color: var(--color-primary) !important;
+    color: #003366 !important;
   }
 
   .dark .bg-primary-foreground .text-primary span,
   .dark .bg-primary-foreground div .text-primary span,
   html.dark .bg-primary-foreground .text-primary span {
-    color: var(--color-primary) !important;
+    color: #e6f7ff !important;
   }
 
   /* Extra protection for specific text content */
   [class*="text-primary"]:not([class*="text-primary-accent"]) {
-    color: var(--color-primary) !important;
+    color: #003366 !important;
   }
 
   .dark [class*="text-primary"]:not([class*="text-primary-accent"]) {
-    color: var(--color-primary) !important;
+    color: #e6f7ff !important;
   }
 }
