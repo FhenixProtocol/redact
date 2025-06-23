@@ -236,7 +236,7 @@ function TokenListItem({ tokenPair, onSelect }: { tokenPair: ConfidentialTokenPa
           </div>
           <div className="flex flex-col">
             <span className="text-primary font-semibold">{publicToken.symbol}</span>
-            <span className="text-sm text-gray-500">{getConfidentialSymbol(tokenPair)}</span>
+            <span className="text-sm text-base-content/60 dark:text-white/70">{getConfidentialSymbol(tokenPair)}</span>
           </div>
         </div>
         <div className="flex flex-col items-end">
