@@ -45,7 +45,7 @@ const TransactionItem = ({ tx }: { tx: RedactTransaction }) => {
           >
             {statusToString(tx.status)}
           </div>
-          <div className="text-xs text-gray-500">{formatDistanceToNow(tx.timestamp, { addSuffix: true })}</div>
+          <div className="text-xs text-base-content/60 dark:text-white/70">{formatDistanceToNow(tx.timestamp, { addSuffix: true })}</div>
         </div>
 
         <div className="flex flex-col justify-between items-stretch">
@@ -53,7 +53,7 @@ const TransactionItem = ({ tx }: { tx: RedactTransaction }) => {
             {formatTokenAmount(tx.tokenAmount, tx.tokenDecimals)} {tx.tokenSymbol}
           </div>
           <HashLink
-            className="text-xs text-gray-500"
+            className="text-xs text-base-content/60 dark:text-white/70"
             buttonSize={3}
             copyStrokeWidth={1.0}
             type="tx"
@@ -79,7 +79,7 @@ export const TransactionHistory = ({ pair }: TransactionHistoryProps) => {
   if (!transactions.length) {
     return (
       <div className="p-4 text-center">
-        <p className="text-gray-500">No transactions found</p>
+        <p className="text-base-content/60 dark:text-white/70">No transactions found</p>
       </div>
     );
   }

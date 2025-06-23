@@ -151,7 +151,7 @@ export const PublicTokenDetails = ({
           <TokenIconSymbol publicToken={tokenDetails} className="text-primary-accent bg-button-hover p-1.5 pr-3" />
           <div className="flex flex-col flex-1 gap-2">
             <span className="text-primary font-semibold font-reddit-mono">{name}</span>
-            <div className="flex flex-row justify-between gap-4 text-sm text-gray-500">
+            <div className="flex flex-row justify-between gap-4 text-sm text-base-content/60 dark:text-white/70">
               <span>
                 Decimals: <span className="font-semibold font-reddit-mono">{decimals}</span>
               </span>
@@ -210,7 +210,7 @@ export const ConfidentialTokenDetails = ({
           {!requiresDeployment && (
             <div className="flex flex-col flex-1 gap-2">
               <span className="text-primary font-semibold font-reddit-mono">{name}</span>
-              <div className="flex flex-row justify-between gap-4 text-sm text-gray-500">
+              <div className="flex flex-row justify-between gap-4 text-sm text-base-content/60 dark:text-white/70">
                 <span>
                   Decimals: <span className="font-semibold font-reddit-mono">{decimals}</span>
                 </span>
