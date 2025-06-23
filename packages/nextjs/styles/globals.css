@@ -631,14 +631,14 @@ body {
   div .text-primary,
   html .text-primary,
   body .text-primary {
-    color: var(--default-text-color) !important;
+    color: hsl(var(--primary)) !important;
   }
 
   .dark .text-primary,
   .dark div .text-primary,
   html.dark .text-primary,
   body.dark .text-primary {
-    color: var(--default-text-color) !important;
+    color: hsl(var(--primary)) !important;
   }
 
   /* Protect primary accent text from external overrides */
@@ -660,21 +660,21 @@ body {
   .bg-primary-foreground .text-primary span,
   .bg-primary-foreground div .text-primary span,
   html .bg-primary-foreground .text-primary span {
-    color: var(--default-text-color) !important;
+    color: hsl(var(--primary)) !important;
   }
 
   .dark .bg-primary-foreground .text-primary span,
   .dark .bg-primary-foreground div .text-primary span,
   html.dark .bg-primary-foreground .text-primary span {
-    color: var(--default-text-color) !important;
+    color: hsl(var(--primary)) !important;
   }
 
   /* Extra protection for specific text content */
   [class*="text-primary"]:not([class*="text-primary-accent"]) {
-    color: var(--default-text-color) !important;
+    color: hsl(var(--primary)) !important;
   }
 
   .dark [class*="text-primary"]:not([class*="text-primary-accent"]) {
-    color: var(--default-text-color) !important;
+    color: hsl(var(--primary)) !important;
   }
 }
