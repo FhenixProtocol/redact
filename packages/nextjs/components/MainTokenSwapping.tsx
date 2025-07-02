@@ -623,7 +623,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
     },
     {
       title: "Claim",
-      cta: pair == null ? "Select a token" : `CLAIM ${getConfidentialSymbol(pair)}`,
+      cta: pair == null ? "Select a token" : `CLAIM ${pair.publicToken.symbol}`,
       hint: claimAmountHint !== "" ? `Claim ${claimAmountHint} tokens` : "",
       state: claimState,
       action: handleClaim,
