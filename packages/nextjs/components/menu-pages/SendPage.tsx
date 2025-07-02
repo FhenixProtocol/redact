@@ -89,6 +89,24 @@ const AmountInputRow = () => {
   const setToken = useSelectSendToken();
   const setSliderValue = useUpdateSendValueByPercent();
 
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // If the input shows "0", select all text so typing replaces it entirely
+    if (e.target.value === "0") {
+      e.target.select();
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // If user is typing and the current value is "0", replace it entirely
+    if ((inputValue === "0" || inputValue === "") && value.length > 1 && value.startsWith("0") && value[1] !== ".") {
+      // Remove the leading zero unless it's a decimal (like "0.5")
+      setInputValue(value.substring(1));
+    } else {
+      setInputValue(value);
+    }
+  };
+
   return (
     <div className="mb-5 w-full flex content-stretch rounded-2xl border border-[#3399FF] p-4">
       <div className="flex flex-col items-start flex-1">
@@ -97,7 +115,8 @@ const AmountInputRow = () => {
           type="number"
           min="0"
           value={inputValue === "" ? "0" : inputValue}
-          onChange={e => setInputValue(e.target.value)}
+          onChange={handleChange}
+          onFocus={handleFocus}
           className="w-30 text-lg text-primary-accent font-bold outline-none no-spinner"
         />
         {/* TODO: add fiat amount */}

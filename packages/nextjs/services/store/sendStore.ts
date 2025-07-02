@@ -85,10 +85,11 @@ export const useUpdateSendValue = () => {
         // Disallow negative numbers
         if (value.startsWith("-")) return;
 
-        // If empty, treat as "0"
-        const sanitized = value === "" ? "0" : value;
+        // Store the actual input string (can be empty)
+        state.inputString = value;
 
-        state.inputString = sanitized;
+        // For calculations, treat empty as "0"
+        const sanitized = value === "" ? "0" : value;
 
         // Allow only numbers and optional single decimal point, no negatives
         if (/^\d*\.?\d*$/.test(sanitized)) {
