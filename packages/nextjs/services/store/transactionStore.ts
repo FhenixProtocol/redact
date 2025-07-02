@@ -91,6 +91,117 @@ const statusToStringMap: Record<TransactionStatus, TransactionStatusString> = {
 
 export const statusToString = (a: TransactionStatus): TransactionStatusString => statusToStringMap[a];
 
+// Export function to check pending transactions - to be called after wagmi is initialized
+// Global reference to store the polling interval
+let pendingTransactionInterval: NodeJS.Timeout | null = null;
+
+// Function to check specific pending transactions
+const checkSpecificPendingTransactions = async (transactions: RedactTransaction[]) => {
+  const { getPublicClient } = await import("wagmi/actions");
+  const { wagmiConfig } = await import("../web3/wagmiConfig");
+
+  const stillPending: RedactTransaction[] = [];
+
+  for (const tx of transactions) {
+    try {
+      const publicClient = getPublicClient(wagmiConfig, { chainId: tx.chainId as any });
+      if (!publicClient) continue;
+
+      // Get transaction receipt
+      const receipt = await publicClient.getTransactionReceipt({ hash: tx.hash as `0x${string}` });
+      
+      if (receipt && receipt.status === "success") {
+        // Get current block number
+        const currentBlock = await publicClient.getBlockNumber();
+        const confirmations = Number(currentBlock - receipt.blockNumber);
+
+        if (confirmations >= 2) {
+          console.log(`✅ ${actionToString(tx.actionType)} transaction ${tx.hash} confirmed with ${confirmations} confirmations`);
+          
+          // Update transaction status to confirmed
+          useTransactionStore.getState().updateTransactionStatus(tx.chainId, tx.hash, TransactionStatus.Confirmed);
+        } else {
+          console.log(`⏳ ${actionToString(tx.actionType)} transaction ${tx.hash} has ${confirmations} confirmations (need 2)`);
+          stillPending.push(tx);
+        }
+      } else {
+        // Transaction not found or still pending
+        stillPending.push(tx);
+      }
+    } catch (error) {
+      console.error(`❌ Error checking ${actionToString(tx.actionType)} transaction ${tx.hash}:`, error);
+      // Keep checking this transaction
+      stillPending.push(tx);
+    }
+  }
+
+  return stillPending;
+};
+
+// Function to check all pending transactions - gets them from store and checks blockchain status
+export const checkAllPendingTransactions = async () => {
+  // Clear any existing interval
+  if (pendingTransactionInterval) {
+    clearInterval(pendingTransactionInterval);
+    pendingTransactionInterval = null;
+  }
+
+  // Get all pending transactions from store
+  const state = useTransactionStore.getState();
+  const pendingTransactions: RedactTransaction[] = [];
+
+  Object.values(state.transactions).forEach(chainTxs => {
+    Object.values(chainTxs).forEach(tx => {
+      if (tx.status === TransactionStatus.Pending) {
+        pendingTransactions.push(tx);
+      }
+    });
+  });
+
+  if (pendingTransactions.length === 0) {
+    console.log("📭 No pending transactions to check");
+    return;
+  }
+
+  console.log(`🔍 Checking ${pendingTransactions.length} pending transactions...`);
+  
+  // Check transactions initially
+  const stillPending = await checkSpecificPendingTransactions(pendingTransactions);
+
+  // Set up 10-second polling for remaining pending transactions
+  if (stillPending.length > 0) {
+    console.log(`⏰ Setting up 10-second polling for ${stillPending.length} pending transactions`);
+    
+    pendingTransactionInterval = setInterval(async () => {
+      console.log(`🔄 Rechecking ${stillPending.length} pending transactions...`);
+      
+      const newStillPending = await checkSpecificPendingTransactions(stillPending);
+      
+      // Update the array for next iteration
+      stillPending.length = 0;
+      stillPending.push(...newStillPending);
+      
+      // If no more pending transactions, clear the interval
+      if (stillPending.length === 0) {
+        console.log("✅ All transactions confirmed - stopping polling");
+        if (pendingTransactionInterval) {
+          clearInterval(pendingTransactionInterval);
+          pendingTransactionInterval = null;
+        }
+      }
+    }, 10000); // 10 seconds
+  }
+};
+
+// Function to stop pending transaction polling (useful for cleanup)
+export const stopPendingTransactionPolling = () => {
+  if (pendingTransactionInterval) {
+    clearInterval(pendingTransactionInterval);
+    pendingTransactionInterval = null;
+    console.log("🛑 Stopped pending transaction polling");
+  }
+};
+
 export const useTransactionStore = create<TransactionStore>()(
   persist(
     immer((set, get) => ({
@@ -144,7 +255,7 @@ export const useTransactionStore = create<TransactionStore>()(
           : [];
       },
     })),
-    {
+        {
       name: "transaction-store",
       storage: superjsonStorage,
     },

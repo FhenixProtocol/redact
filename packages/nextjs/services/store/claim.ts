@@ -108,7 +108,6 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
 
 const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
   const publicClient = getPublicClient(wagmiConfig);
-
   const results = await publicClient?.multicall({
     contracts: pendingClaims.map(({ fherc20Address, ctHash }) => ({
       address: fherc20Address,
@@ -282,4 +281,119 @@ export const useAllClaims = () => {
   return useMemo(() => {
     return Object.values(claims ?? {}).flatMap(claims => Object.values(claims));
   }, [claims]);
+};
+
+// Function to check and cleanup claims - validates ALL claims against on-chain data
+export const checkAndCleanupClaims = async () => {
+  const chain = await getChainId();
+  const { address: account } = await getAccount(wagmiConfig);
+
+  if (chain == null || account == null) {
+    console.log("📭 Cannot check claims - no chain or account");
+    return;
+  }
+
+  // Get all claims from the store for current chain
+  const state = useClaimStore.getState();
+  const chainClaims = state.claims[chain];
+
+  if (!chainClaims) {
+    console.log("📭 No claims to check");
+    return;
+  }
+
+  // Collect ALL claims from the store
+  const allClaims: ClaimWithAddresses[] = [];
+
+  Object.values(chainClaims).forEach(addressClaims => {
+    Object.values(addressClaims).forEach(claim => {
+      allClaims.push(claim);
+    });
+  });
+
+  if (allClaims.length === 0) {
+    console.log("📭 No claims to check");
+    return;
+  }
+
+  console.log(`🔍 Validating ${allClaims.length} claims against on-chain data...`);
+
+  // Check ALL claims against blockchain data
+  const publicClient = getPublicClient(wagmiConfig);
+  if (!publicClient) {
+    console.error("❌ No public client available");
+    return;
+  }
+
+  try {
+    // Call getClaim for each claim to get current on-chain status
+    const results = await publicClient.multicall({
+      contracts: allClaims.map(claim => ({
+        address: claim.fherc20Address,
+        abi: confidentialErc20Abi,
+        functionName: "getClaim",
+        args: [claim.ctHash],
+      })),
+    });
+
+    let updatedCount = 0;
+    let removedCount = 0;
+
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      const storedClaim = allClaims[i];
+
+      try {
+        if (result.status === "failure") {
+          // If the call failed, the claim might no longer exist on-chain
+          console.log(`🗑️ Removing invalid claim: ${storedClaim.ctHash.toString()} (on-chain call failed)`);
+          await removeClaimedClaim(storedClaim);
+          removedCount++;
+          continue;
+        }
+
+        // Get the current on-chain claim data
+        const onChainClaim = result.result as unknown as Claim;
+
+        // Compare stored claim with on-chain data
+        const hasChanged =
+          storedClaim.decrypted !== onChainClaim.decrypted ||
+          storedClaim.claimed !== onChainClaim.claimed ||
+          storedClaim.decryptedAmount !== onChainClaim.decryptedAmount;
+
+        if (hasChanged) {
+          console.log(
+            `🔄 Updating claim ${storedClaim.ctHash.toString()}: decrypted=${onChainClaim.decrypted}, claimed=${onChainClaim.claimed}`,
+          );
+
+          // Update the claim in the store with current on-chain data
+          useClaimStore.setState(state => {
+            const claimKey = storedClaim.ctHash.toString();
+            if (state.claims[chain]?.[storedClaim.erc20Address]?.[claimKey]) {
+              state.claims[chain][storedClaim.erc20Address][claimKey] = {
+                ...storedClaim,
+                decrypted: onChainClaim.decrypted,
+                claimed: onChainClaim.claimed,
+                decryptedAmount: onChainClaim.decryptedAmount,
+              };
+            }
+          });
+          updatedCount++;
+        }
+
+        // Remove claim if it's been claimed
+        if (onChainClaim.claimed) {
+          console.log(`🗑️ Removing claimed claim: ${storedClaim.ctHash.toString()}`);
+          await removeClaimedClaim(storedClaim);
+          removedCount++;
+        }
+      } catch (error) {
+        console.error(`❌ Error processing claim ${storedClaim.ctHash.toString()}:`, error);
+      }
+    }
+
+    console.log(`✅ Claim validation complete: ${updatedCount} updated, ${removedCount} removed`);
+  } catch (error) {
+    console.error("❌ Error validating claims against on-chain data:", error);
+  }
 };
