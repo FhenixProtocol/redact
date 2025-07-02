@@ -620,3 +620,77 @@ body {
 .styled-scrollbar:hover {
   scrollbar-color: #666 transparent; /* shows on hover   */
 }
+
+/* 
+  Protected color variables - using unique names to avoid browser extension conflicts
+  These mirror our main theme colors but with names that extensions won't target
+*/
+@layer base {
+  :root {
+    --redact-text-primary-color: #003366;
+    --redact-text-accent-color: #0073e6;
+  }
+  
+  .dark {
+    --redact-text-primary-color: #e6f7ff;
+    --redact-text-accent-color: #3399ff;
+  }
+}
+
+/* 
+  Protection against zkPass and other browser extension CSS overrides
+  These rules use protected color variables and high specificity to prevent external CSS conflicts
+*/
+@layer components {
+  /* Protect main heading and subtitle text from external overrides */
+  .text-primary,
+  div .text-primary,
+  html .text-primary,
+  body .text-primary {
+    color: var(--redact-text-primary-color) !important;
+  }
+
+  .dark .text-primary,
+  .dark div .text-primary,
+  html.dark .text-primary,
+  body.dark .text-primary {
+    color: var(--redact-text-primary-color) !important;
+  }
+
+  /* Protect primary accent text from external overrides */
+  .text-primary-accent,
+  div .text-primary-accent,
+  html .text-primary-accent,
+  body .text-primary-accent {
+    color: var(--redact-text-accent-color) !important;
+  }
+
+  .dark .text-primary-accent,
+  .dark div .text-primary-accent,
+  html.dark .text-primary-accent,
+  body.dark .text-primary-accent {
+    color: var(--redact-text-accent-color) !important;
+  }
+
+  /* Specific protection for transaction guide titles */
+  .bg-primary-foreground .text-primary span,
+  .bg-primary-foreground div .text-primary span,
+  html .bg-primary-foreground .text-primary span {
+    color: var(--redact-text-primary-color) !important;
+  }
+
+  .dark .bg-primary-foreground .text-primary span,
+  .dark .bg-primary-foreground div .text-primary span,
+  html.dark .bg-primary-foreground .text-primary span {
+    color: var(--redact-text-primary-color) !important;
+  }
+
+  /* Extra protection for specific text content */
+  [class*="text-primary"]:not([class*="text-primary-accent"]) {
+    color: var(--redact-text-primary-color) !important;
+  }
+
+  .dark [class*="text-primary"]:not([class*="text-primary-accent"]) {
+    color: var(--redact-text-primary-color) !important;
+  }
+}
