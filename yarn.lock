@@ -5226,7 +5226,7 @@ __metadata:
     blo: ~1.2.0
     burner-connector: 0.0.9
     class-variance-authority: ^0.7.1
-    cofhejs: 0.2.1-alpha.3
+    cofhejs: 0.3.1-alpha.0
     daisyui: 4.12.10
     eslint: ~8.57.1
     eslint-config-next: 15.2.2
@@ -9432,9 +9432,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cofhejs@npm:0.2.1-alpha.3":
-  version: 0.2.1-alpha.3
-  resolution: "cofhejs@npm:0.2.1-alpha.3"
+"cofhejs@npm:0.3.1-alpha.0":
+  version: 0.3.1-alpha.0
+  resolution: "cofhejs@npm:0.3.1-alpha.0"
   dependencies:
     "@types/node": ^20.0.0
     idb-keyval: ^6.2.1
@@ -9446,7 +9446,7 @@ __metadata:
     type-fest: ^4.26.1
     zod: ^3.23.8
     zustand: ^5.0.1
-  checksum: 682fd33010a76b187c33b773512d24f8860cc26878485b5fad059960416547373fae8091f6d5c53447efba5b202d3e5d33221a651bbc85035b37119afa9cc061
+  checksum: b00e6a9a433ff991d56e2a4eaa292e25828d85b2f2a295c1fb7ea93709d18fb2c72432646239d82b5274fad8c60d5eb9e4d01869e0ac4605872eb2dc7871b473
   languageName: node
   linkType: hard
 
