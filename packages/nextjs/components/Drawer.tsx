@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { CopyButton } from "./HashLink";
 import { ConnectPage } from "./menu-pages/ConnectPage";
@@ -60,17 +60,40 @@ const NetworkIcon = () => {
   return <Image src={iconPath} alt={`Network ${chainId}`} width={16} height={16} className="w-5 h-5" />;
 };
 
+function useBodyScrollLock(locked: boolean) {
+  useEffect(() => {
+    const { body } = document;
+    if (!locked) return;
+
+    // remember scroll position so the page doesn’t jump when we unlock
+    const scrollY = window.scrollY;
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+
+    return () => {
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, [locked]);
+}
+
 const Drawer: React.FC = () => {
   const open = useDrawerOpen();
-
+  useBodyScrollLock(open);
   return (
     <div
       className={cn(
-        "fixed top-0 right-0 h-full w-[400px] max-w-[95vw] bg-background shadow-lg z-20 border-l border-blue-400",
+        "overscroll-contain fixed top-0 right-0 h-full w-[400px] max-w-[95vw] bg-background shadow-lg z-20 border-l border-blue-400",
         open ? "translate-x-0" : "translate-x-full",
         "transform transition-transform duration-300",
         "flex flex-col",
       )}
+      style={{ touchAction: "pan-y" }}
     >
       {/* --------------------------
           Header
@@ -159,7 +182,8 @@ const DrawerContentSlide = ({ page, pairAddress }: { page: DrawerPageName; pairA
       initial={animationDirection === "right" ? "enter-from-right" : "enter-from-left"}
       animate="center"
       exit={animationDirection === "right" ? "exit-to-right" : "exit-to-left"}
-      className="flex-1 overflow-hidden p-4 absolute top-0 left-0 w-full h-full"
+      className="flex-1 overflow-y-auto overflow-x-hidden p-4 absolute top-0 left-0 w-full h-full"
+      style={{ touchAction: "pan-y" }}
     >
       {page === DrawerPageName.Main && <WalletMainPanel />}
       {page === DrawerPageName.Settings && <SettingsPage />}
