@@ -1,10 +1,17 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
-
+import { chainConfig } from "../config/customDeploymentConfig";
 const deployErc20s: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
+  const chainId = await hre.getChainId();
+
+  const skipTokens = chainConfig[chainId]?.skipTokens;
+  if (skipTokens === true) {
+    console.log("Skipping token deployment due to skipTokens config");
+    return;
+  }
 
   await deploy("wBTC", {
     contract: "ERC20_Harness",
