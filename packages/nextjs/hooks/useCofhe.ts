@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Encryptable, Environment, FheTypes, Permit, cofhejs, permitStore } from "cofhejs/web";
 import { Address, Chain } from "viem";
-import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia } from "viem/chains";
+import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia, baseSepolia } from "viem/chains";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import scaffoldConfig from "~~/scaffold.config";
 
@@ -32,6 +32,8 @@ const ChainEnvironments = {
   [sepolia.id]: "TESTNET",
   // Arbitrum Sepolia
   [arbitrumSepolia.id]: "TESTNET",
+  // Base Sepolia
+  [baseSepolia.id]: "TESTNET",
   // Hardhat
   [hardhat.id]: "MOCK",
 } as const;

@@ -129,6 +129,71 @@
         "isWETH": true,
         "fragmentedPair": ""
       }
-    }    
+    },
+    "84532": {
+      "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee": {
+        "publicToken": {
+          "name": "Ether",
+          "symbol": "ETH",
+          "decimals": 18,
+          "error": null,
+          "address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "loading": false
+        },
+        "confidentialToken": {
+          "name": "Confidential Wrapped ETHER",
+          "symbol": "eETH",
+          "decimals": 18,
+          "error": null,
+          "address": "0xbED96aa98a49FeA71fcC55d755b915cF022a9159",
+          "loading": false
+        },
+        "confidentialTokenDeployed": true,
+        "isStablecoin": false,
+        "isWETH": false,
+        "fragmentedPair": "0x4200000000000000000000000000000000000006"
+      },
+      "0x4200000000000000000000000000000000000006": {
+        "publicToken": {
+          "name": "Wrapped Ether",
+          "symbol": "WETH",
+          "decimals": 18,
+          "error": null,
+          "address": "0x4200000000000000000000000000000000000006",
+          "loading": false
+        },
+        "confidentialToken": {
+          "name": "Confidential Wrapped ETHER",
+          "symbol": "eETH",
+          "decimals": 18,
+          "error": null,
+          "address": "0xbED96aa98a49FeA71fcC55d755b915cF022a9159",
+          "loading": false
+        },
+        "confidentialTokenDeployed": true,
+        "isStablecoin": false,
+        "isWETH": true,
+        "fragmentedPair": ""
+      },
+      "0x036CbD53842c5426634e7929541eC2318f3dCF7e": {
+        "publicToken": {
+          "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+          "name": "USD Coin",
+          "symbol": "USDC",
+          "decimals": 6,
+          "image": ""
+        },
+        "confidentialToken": {
+          "address": "0x2Cc89efb86FC8149077c79EB7c608338D210e649",
+          "name": "Confidential USD Coin",
+          "symbol": "eUSDC",
+          "decimals": 6
+        },
+        "confidentialTokenDeployed": true,
+        "isStablecoin": false,
+        "isWETH": false,
+        "fragmentedPair": ""
+      }      
+    }     
   }
 }

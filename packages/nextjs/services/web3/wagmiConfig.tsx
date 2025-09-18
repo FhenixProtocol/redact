@@ -2,7 +2,7 @@
 
 import { wagmiConnectors } from "./wagmiConnectors";
 import { Chain, createClient, fallback, http } from "viem";
-import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia } from "viem/chains";
+import { arbitrum, arbitrumSepolia, hardhat, mainnet, sepolia, baseSepolia } from "viem/chains";
 import { createConfig } from "wagmi";
 import deployedContracts from "~~/contracts/deployedContracts";
 import scaffoldConfig, { DEFAULT_ALCHEMY_API_KEY } from "~~/scaffold.config";
@@ -16,7 +16,7 @@ const HARDHAT_MULTICALL3_ADDRESS = deployedContracts["31337"].Multicall3.address
 // We always want to have mainnet enabled (ENS resolution, ETH price, etc). But only once.
 export const enabledChains = targetNetworks.find((network: Chain) => network.id === 1)
   ? targetNetworks
-  : ([...targetNetworks, sepolia, arbitrumSepolia, arbitrum, mainnet] as const);
+  : ([...targetNetworks, sepolia, arbitrumSepolia, arbitrum, mainnet, baseSepolia] as const);
 
 export const wagmiConfig = createConfig({
   chains: enabledChains,

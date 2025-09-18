@@ -20,4 +20,9 @@ export const chainConfig: ChainConfigMap = {
     eeth: "",
     skipTokens: true
   },
+  "84532": {
+    weth: "0x4200000000000000000000000000000000000006",
+    eeth: "",
+    skipTokens: true
+  },  
 };

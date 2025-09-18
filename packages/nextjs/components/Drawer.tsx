@@ -49,6 +49,7 @@ const NETWORK_ICONS: Record<number, string> = {
   1: "/icons/networks/ethereum.svg",
   42161: "/icons/networks/arbitrum.svg",
   421614: "/icons/networks/arbitrum.svg",
+  84532: "/icons/networks/base.svg",
   11155111: "/icons/networks/ethereum.svg",
   // Add more networks as needed
 };
