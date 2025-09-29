@@ -13,11 +13,13 @@ import { Button } from "./ui/Button";
 import { Separator } from "./ui/Separator";
 import { ArrowBack, Logout } from "@mui/icons-material";
 import { AnimatePresence, motion, usePresenceData } from "framer-motion";
-import { ChevronLeft, Settings, WalletIcon, X } from "lucide-react";
-import { zeroAddress } from "viem";
-import { useAccount, useChainId, useDisconnect } from "wagmi";
+import { ChevronDown, ChevronLeft, Settings, WalletIcon, X } from "lucide-react";
+import { Chain, zeroAddress } from "viem";
+import { useAccount, useChainId, useDisconnect, useSwitchChain } from "wagmi";
 import { SettingsPage } from "~~/components/menu-pages/SettingsPage";
 import { IconButton } from "~~/components/ui/IconButton";
+import { useOutsideClick } from "~~/hooks/scaffold-eth";
+import { targetNetworksNoHardhat } from "~~/hooks/useCofhe";
 import { truncateAddress } from "~~/lib/common";
 import { cn } from "~~/lib/utils";
 import {
@@ -54,11 +56,60 @@ const NETWORK_ICONS: Record<number, string> = {
   // Add more networks as needed
 };
 
-const NetworkIcon = () => {
+const NetworkDropdown = () => {
   const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
+  const [isOpen, setIsOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
   const iconPath = NETWORK_ICONS[chainId] || "/icons/networks/default.svg";
 
-  return <Image src={iconPath} alt={`Network ${chainId}`} width={16} height={16} className="w-5 h-5" />;
+  const closeDropdown = () => setIsOpen(false);
+  useOutsideClick(dropdownRef, closeDropdown);
+
+  const handleChainSwitch = (newChainId: number) => {
+    switchChain({ chainId: newChainId });
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1 p-1 rounded hover:bg-primary-accent/10 transition-colors"
+        aria-label="Switch network"
+      >
+        <Image src={iconPath} alt={`Network ${chainId}`} width={16} height={16} className="w-5 h-5" />
+        <ChevronDown className={cn("w-3 h-3 text-primary transition-transform", isOpen && "rotate-180")} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1 bg-surface border border-component-stroke rounded-lg shadow-lg z-50 min-w-[200px]">
+          <div className="py-1">
+            {targetNetworksNoHardhat.map((chain: Chain) => {
+              const chainIconPath = NETWORK_ICONS[chain.id] || "/icons/networks/default.svg";
+              const isCurrentChain = chain.id === chainId;
+
+              return (
+                <button
+                  key={chain.id}
+                  onClick={() => handleChainSwitch(chain.id)}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-primary-accent/10 transition-colors text-primary",
+                    isCurrentChain && "bg-primary-accent/20 text-primary-accent",
+                  )}
+                  disabled={isCurrentChain}
+                >
+                  <Image src={chainIconPath} alt={`${chain.name} icon`} width={16} height={16} className="w-4 h-4" />
+                  <span className="text-sm font-medium">{chain.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 function useBodyScrollLock(locked: boolean) {
@@ -237,7 +288,7 @@ const DrawerConnectedHeader = () => {
     <div className="flex flex-1 items-center justify-between h-full">
       <div className="flex h-full items-center justify-center">
         <div className="flex w-12 items-center justify-center">
-          <NetworkIcon />
+          <NetworkDropdown />
         </div>
         <Separator orientation="vertical" />
       </div>
