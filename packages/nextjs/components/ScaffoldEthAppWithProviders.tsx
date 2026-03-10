@@ -32,6 +32,9 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
       <div className="relative min-h-screen">
         <div className="grid grid-rows-[auto_1fr_auto] min-h-screen relative">
           <Header />
+          <div className="w-full h-[30px] flex justify-center align-middle items-center p-2 bg-red-700 opacity-60 text-white font-bold">
+          We are currently experiencing slower-than-usual decryption times. Our team is working to resolve the issue
+          </div>
           <main className="relative p-2 md:p-4 flex justify-center items-center">{children}</main>
           <Footer />
           <DrawerBlurOverlay />
