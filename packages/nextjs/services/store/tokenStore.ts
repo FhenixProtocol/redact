@@ -3,7 +3,7 @@ import { useCallback, useRef } from "react";
 import { wagmiConfig } from "../web3/wagmiConfig";
 import { decryptValue } from "./decrypted";
 import { superjsonStorage } from "./superjsonStorage";
-import { FheTypes } from "cofhejs/web";
+import { FheTypes } from "@cofhe/sdk";
 import { WritableDraft } from "immer";
 import { Address, erc20Abi, zeroAddress } from "viem";
 import { deepEqual, useChainId } from "wagmi";

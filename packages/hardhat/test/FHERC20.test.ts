@@ -1,7 +1,8 @@
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
 import { FHERC20_Harness } from "../typechain-types";
-import { cofhejs, Encryptable } from "cofhejs/node";
+import { Encryptable } from "@cofhe/sdk";
+import type { CofheClient } from "@cofhe/sdk";
 import {
   expectFHERC20BalancesChange,
   prepExpectFHERC20BalancesChange,
@@ -27,9 +28,9 @@ describe("FHERC20", function () {
     const [owner, bob, alice, eve] = await ethers.getSigners();
     const { XFHE } = await deployContracts();
 
-    await hre.cofhe.initializeWithHardhatSigner(owner);
+    const client = await hre.cofhe.createClientWithBatteries(owner);
 
-    return { owner, bob, alice, eve, XFHE };
+    return { owner, bob, alice, eve, XFHE, client };
   }
 
   describe("initialization", function () {
@@ -227,13 +228,12 @@ describe("FHERC20", function () {
       await XFHE.mint(bob, mintValue);
       await XFHE.mint(alice, mintValue);
 
-      // Initialize bob in cofhejs
-      await hre.cofhe.expectResultSuccess(await hre.cofhe.initializeWithHardhatSigner(bob));
+      // Initialize bob in cofhe
+      const bobClient = await hre.cofhe.createClientWithBatteries(bob);
 
       // Encrypt transfer value
       const transferValueRaw = ethers.parseEther("1");
-      const encTransferResult = await cofhejs.encrypt([Encryptable.uint128(transferValueRaw)] as const);
-      const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
+      const [encTransferInput] = await bobClient.encryptInputs([Encryptable.uint128(transferValueRaw)] as const).execute();
 
       // encTransfer
 
@@ -261,12 +261,11 @@ describe("FHERC20", function () {
     });
 
     it("Should revert on transfer to 0 address", async function () {
-      const { XFHE, bob } = await setupFixture();
+      const { XFHE, bob, client } = await setupFixture();
 
       // Encrypt transfer value
       const transferValueRaw = ethers.parseEther("1");
-      const encTransferResult = await cofhejs.encrypt([Encryptable.uint128(transferValueRaw)] as const);
-      const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
+      const [encTransferInput] = await client.encryptInputs([Encryptable.uint128(transferValueRaw)] as const).execute();
 
       // encTransfer (reverts)
       await expect(
@@ -277,7 +276,7 @@ describe("FHERC20", function () {
 
   describe("encTransferFrom", function () {
     const setupEncTransferFromFixture = async () => {
-      const { XFHE, bob, alice, eve } = await setupFixture();
+      const { XFHE, bob, alice, eve, client } = await setupFixture();
 
       const mintValue = ethers.parseEther("10");
       await XFHE.mint(bob, mintValue);
@@ -285,10 +284,9 @@ describe("FHERC20", function () {
 
       // Encrypt transfer value
       const transferValue = ethers.parseEther("1");
-      const encTransferResult = await cofhejs.encrypt([Encryptable.uint128(transferValue)] as const);
-      const [encTransferInput] = await hre.cofhe.expectResultSuccess(encTransferResult);
+      const [encTransferInput] = await client.encryptInputs([Encryptable.uint128(transferValue)] as const).execute();
 
-      return { XFHE, bob, alice, eve, encTransferInput, transferValue };
+      return { XFHE, bob, alice, eve, encTransferInput, transferValue, client };
     };
 
     it("Should transfer from bob to alice", async function () {

@@ -10,7 +10,7 @@ import { EncryptedBalance } from "../ui/EncryptedValue";
 import { Separator } from "../ui/Separator";
 import { TokenIconSymbol } from "../ui/TokenIconSymbol";
 import { ArrowBack } from "@mui/icons-material";
-import { FheTypes } from "cofhejs/web";
+import { FheTypes } from "@cofhe/sdk";
 import { MoveDownLeft, MoveUpRight, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useClaimAllAction } from "~~/hooks/useDecryptActions";

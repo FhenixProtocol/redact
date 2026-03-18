@@ -1,7 +1,8 @@
 import React from "react";
 import { Button } from "../ui/Button";
-import { Permit, cofhejs, permitStore } from "cofhejs/web";
+import type { Permit } from "@cofhe/sdk/permits";
 import { zeroAddress } from "viem";
+import { useAccount } from "wagmi";
 import {
   useCofhejsAccount,
   useCofhejsActivePermit,
@@ -9,13 +10,17 @@ import {
   useCofhejsInitialized,
 } from "~~/hooks/useCofhe";
 import { truncateAddress } from "~~/lib/common";
+import { getCofheClient } from "~~/services/cofhe/cofheClient";
 
 export function PermitsPage() {
   const account = useCofhejsAccount();
   const initialized = useCofhejsInitialized();
+  const { chainId } = useAccount();
 
   const activePermit = useCofhejsActivePermit();
   const allPermits = useCofhejsAllPermits();
+
+  const client = getCofheClient();
 
   return (
     <div className="p-4 pt-0 pb-0 flex flex-col gap-4 h-full items-start">
@@ -41,17 +46,22 @@ export function PermitsPage() {
 
       <div className="flex flex-col flex-grow overflow-x-hidden overflow-y-auto styled-scrollbar w-full gap-4">
         {allPermits?.map(permit => {
+          const permitHash = permit.hash;
+          const isActive = permitHash === activePermit?.hash;
           return (
             <DisplayPermit
-              key={permit.getHash()}
+              key={permitHash}
               permit={permit}
-              isActive={permit.getHash() === activePermit?.getHash()}
+              isActive={isActive}
               onSelect={() => {
-                cofhejs.selectActivePermit(permit.getHash());
+                if (!client || !chainId || !account) return;
+                client.permits.selectActivePermit(permitHash, chainId, account);
+
               }}
               onDelete={() => {
-                if (!account || !permit._signedDomain?.chainId) return;
-                permitStore.removePermit(permit._signedDomain.chainId.toString(), account, permit.getHash());
+                if (!client || !chainId || !account) return;
+                client.permits.removePermit(permitHash, chainId, account);
+
               }}
             />
           );
@@ -62,12 +72,11 @@ export function PermitsPage() {
       <Button
         variant="outline"
         size="sm"
-        onClick={() => {
-          if (!account) return;
-          cofhejs.createPermit({
-            type: "self",
-            name: "Test Permit",
+        onClick={async () => {
+          if (!account || !client) return;
+          await client.permits.createSelf({
             issuer: account,
+            name: "Test Permit",
             expiration: (activePermit?.expiration ?? 1000000000000) + 1,
           });
         }}
@@ -94,7 +103,7 @@ const DisplayPermit = ({
     <div className="flex flex-col items-center w-full bg-primary-foreground rounded-2xl p-2 gap-1">
       <div className="flex flex-row items-center w-full justify-between text-primary text-sm">
         <span>Hash</span>
-        <span>{truncateAddress(permit.getHash())}</span>
+        <span>{truncateAddress(permit.hash)}</span>
       </div>
       <div className="flex flex-row items-center w-full justify-between text-primary text-sm">
         <span>Issuer</span>

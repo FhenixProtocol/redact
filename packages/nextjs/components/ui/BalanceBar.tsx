@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useMemo } from "react";
-import { FheTypes } from "cofhejs/web";
+import { FheTypes } from "@cofhe/sdk";
 import { Eye, EyeOff, Ticket } from "lucide-react";
 import { formatTokenAmount } from "~~/lib/common";
 import { cn } from "~~/lib/utils";

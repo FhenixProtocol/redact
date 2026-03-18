@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useTransactor } from "./scaffold-eth";
-import { CoFheInUint128, Encryptable } from "cofhejs/web";
-import { cofhejs } from "cofhejs/web";
+import { Encryptable, type EncryptedItemInput } from "@cofhe/sdk";
+import { getCofheClient } from "~~/services/cofhe/cofheClient";
 import toast from "react-hot-toast";
 import { Abi, Address, erc20Abi } from "viem";
 import { Config, useAccount, useWriteContract } from "wagmi";
@@ -155,16 +155,14 @@ export const useSendConfidentialTokenAction = () => {
 
       setIsPending(true);
 
-      let encryptedAmount: CoFheInUint128;
+      let encryptedAmount: EncryptedItemInput;
       try {
         setIsEncrypting(true);
-        const encryptedAmountResult = await cofhejs.encrypt([Encryptable.uint128(amount)]);
-        if (encryptedAmountResult.error) {
-          setIsEncrypting(false);
-          throw encryptedAmountResult.error;
-        }
+        const client = getCofheClient();
+        if (!client) throw new Error("Cofhe client not initialized");
+        const encrypted = await client.encryptInputs([Encryptable.uint128(amount)]).execute();
         setIsEncrypting(false);
-        encryptedAmount = encryptedAmountResult.data[0];
+        encryptedAmount = encrypted[0];
       } catch (error) {
         setIsEncrypting(false);
         console.error("Failed to encrypt amount:", error);

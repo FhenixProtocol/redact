@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { superjsonStorage } from "./superjsonStorage";
-import { FheTypes, UnsealedItem } from "cofhejs/web";
-import { cofhejs } from "cofhejs/web";
+import { FheTypes, type UnsealedItem } from "@cofhe/sdk";
 import superjson from "superjson";
 import { zeroAddress } from "viem";
 import { useAccount } from "wagmi";
@@ -9,6 +8,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { useCofhejsAccount } from "~~/hooks/useCofhe";
+import { getCofheClient, isCofheInitialized } from "~~/services/cofhe/cofheClient";
 
 type DecryptionResult<T extends FheTypes> =
   | {
@@ -57,7 +57,6 @@ export const useDecryptedStore = create<DecryptedStore>()(
 const _decryptValue = async <T extends FheTypes>(
   fheType: T,
   value: bigint,
-  address: string,
 ): Promise<DecryptionResult<T>> => {
   if (value === 0n) {
     return {
@@ -69,34 +68,42 @@ const _decryptValue = async <T extends FheTypes>(
     } as DecryptionResult<T>;
   }
 
-  const result = await cofhejs.unseal(value, fheType, address);
-  if (result.success) {
+  const client = getCofheClient();
+  if (!client) {
     return {
       fheType,
       ctHash: value,
-      value: result.data,
+      value: null,
+      error: "Cofhe client not initialized",
+      state: "error",
+    } as DecryptionResult<T>;
+  }
+
+  try {
+    const result = await client.decryptForView(value, fheType).withPermit().execute();
+    return {
+      fheType,
+      ctHash: value,
+      value: result,
       error: null,
       state: "success",
     } as DecryptionResult<T>;
+  } catch (err: any) {
+    return {
+      fheType,
+      ctHash: value,
+      value: null,
+      error: err?.message ?? String(err),
+      state: "error",
+    } as DecryptionResult<T>;
   }
-  return {
-    fheType,
-    ctHash: value,
-    value: null,
-    error: result.error.message,
-    state: "error",
-  } as DecryptionResult<T>;
 };
 
 const _pendingIfCofhejsNotInitialized = <T extends FheTypes>(
   fheType: T,
   ctHash: bigint,
 ): DecryptionResult<T> | undefined => {
-  if (
-    !cofhejs.store.getState().fheKeysInitialized ||
-    !cofhejs.store.getState().providerInitialized ||
-    !cofhejs.store.getState().signerInitialized
-  ) {
+  if (!isCofheInitialized()) {
     return {
       fheType,
       ctHash,
@@ -139,7 +146,7 @@ export const decryptValue = async <T extends FheTypes>(
     };
   });
 
-  const result = await _decryptValue(fheType, ctHash, address);
+  const result = await _decryptValue(fheType, ctHash);
 
   useDecryptedStore.setState(state => {
     state.decryptions[ctHash.toString()] = result;

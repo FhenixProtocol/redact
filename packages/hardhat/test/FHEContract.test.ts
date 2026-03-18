@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
 import { FHEContract } from "../typechain-types";
-import { cofhejs, Encryptable, FheTypes } from "cofhejs/node";
+import { Encryptable, FheTypes } from "@cofhe/sdk";
 import { nullLogState } from "./utils";
 
 describe("FHEContract", function () {
@@ -23,22 +23,20 @@ describe("FHEContract", function () {
 
     it("Should allow setting and reading a value", async function () {
       const [owner] = await ethers.getSigners();
-      await hre.cofhe.initializeWithHardhatSigner(owner);
+      const client = await hre.cofhe.createClientWithBatteries(owner);
 
       // Select target value
       const targetValue = 10n;
 
       // Encrypt target value, and pass it to the contract
-      const encryptedInputResult = await cofhejs.encrypt([Encryptable.uint32(targetValue)] as const);
-      const [inputValue] = await hre.cofhe.expectResultSuccess(encryptedInputResult);
+      const [inputValue] = await client.encryptInputs([Encryptable.uint32(targetValue)] as const).execute();
       await fheContract.setVal(inputValue);
 
       // Fetch the encrypted value ctHash from the contract
       const valCtHash = await fheContract.val();
 
       // Unseal the value
-      const unsealResult = await cofhejs.unseal(valCtHash, FheTypes.Uint32);
-      const valUnsealed = await hre.cofhe.expectResultSuccess(unsealResult);
+      const valUnsealed = await client.decryptForView(valCtHash, FheTypes.Uint32).withPermit().execute();
 
       // Compare the unsealed value to the target value
       expect(valUnsealed).to.equal(targetValue);
@@ -46,17 +44,16 @@ describe("FHEContract", function () {
 
     it("Should allow performing operations on the value", async function () {
       const [owner] = await ethers.getSigners();
-      await hre.cofhe.initializeWithHardhatSigner(owner);
+      const client = await hre.cofhe.createClientWithBatteries(owner);
 
       const targetValue = 10n;
       const operandValue = 2n;
 
       // Encrypt target value, and pass it to the contract
-      const encryptedInputResult = await cofhejs.encrypt([
+      const [inputValue, operandInputValue] = await client.encryptInputs([
         Encryptable.uint32(targetValue),
         Encryptable.uint32(operandValue),
-      ] as const);
-      const [inputValue, operandInputValue] = await hre.cofhe.expectResultSuccess(encryptedInputResult);
+      ] as const).execute();
       await fheContract.setVal(inputValue);
 
       // Use the mocks to peek at the value

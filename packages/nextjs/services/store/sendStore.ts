@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useDecryptValue } from "./decrypted";
 import { setDrawerPairAddress, useDrawerPairAddress } from "./drawerStore";
 import { useConfidentialTokenPair, useConfidentialTokenPairBalances } from "./tokenStore";
-import { FheTypes } from "cofhejs/web";
+import { FheTypes } from "@cofhe/sdk";
 import { Address, formatUnits, isAddress, parseUnits, zeroAddress } from "viem";
 import { useAccount, useChainId } from "wagmi";
 import { create } from "zustand";
