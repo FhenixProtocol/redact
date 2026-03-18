@@ -1,20 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DrawerBlurOverlay } from "./DrawerBlurOverlay";
+import { CofheProvider, createCofheConfig } from "@cofhe/react";
+import { baseSepolia, sepolia, arbSepolia, hardhat } from "@cofhe/sdk/chains";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { useTheme } from "next-themes";
 import { Toaster } from "react-hot-toast";
-import { WagmiProvider, useAccount } from "wagmi";
+import { WagmiProvider, useAccount, usePublicClient, useWalletClient } from "wagmi";
 import Drawer from "~~/components/Drawer";
 import { Footer } from "~~/components/Footer";
 import { Header } from "~~/components/Header";
 import { BlockieAvatar } from "~~/components/scaffold-eth";
 import { useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
-import { CofheWrapper } from "~~/components/CofheWrapper";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
@@ -55,6 +56,31 @@ export const queryClient = new QueryClient({
   },
 });
 
+/**
+ * Inner component that sets up CofheProvider.
+ * Must be inside WagmiProvider to access usePublicClient/useWalletClient.
+ */
+const CofheProviderWrapper = ({ children }: { children: React.ReactNode }) => {
+  const publicClient = usePublicClient();
+  const { data: walletClient } = useWalletClient();
+
+  const cofheConfig = useMemo(
+    () =>
+      createCofheConfig({
+        supportedChains: [sepolia, arbSepolia, baseSepolia, hardhat],
+        // SSR guard: iframe-shared-storage accesses `document` at construction time.
+        fheKeyStorage: typeof window === "undefined" ? null : undefined,
+      }),
+    [],
+  );
+
+  return (
+    <CofheProvider config={cofheConfig} publicClient={publicClient} walletClient={walletClient ?? undefined}>
+      {children}
+    </CofheProvider>
+  );
+};
+
 export const ScaffoldEthAppWithProviders = ({ children }: { children: React.ReactNode }) => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -68,14 +94,14 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <ProgressBar height="3px" color="#2299dd" />
-        <CofheWrapper>
+        <CofheProviderWrapper>
           <RainbowKitProvider
             avatar={BlockieAvatar}
             theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
           >
-            <ScaffoldEthApp>{children}</ScaffoldEthApp> {/* INFO: This is the main page */}
+            <ScaffoldEthApp>{children}</ScaffoldEthApp>
           </RainbowKitProvider>
-        </CofheWrapper>
+        </CofheProviderWrapper>
       </QueryClientProvider>
     </WagmiProvider>
   );
