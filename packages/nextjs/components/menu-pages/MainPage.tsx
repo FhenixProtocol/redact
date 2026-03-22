@@ -166,7 +166,7 @@ const TokenRowItem = ({ pairAddress }: { pairAddress: string }) => {
   const pairClaims = usePairClaims(pair?.publicToken.address);
   const fragmentedBalance = fragmentedBalances?.publicBalance ?? 0n;
 
-  const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint128, balances?.confidentialBalance);
+  const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint64, balances?.confidentialBalance);
   const totalBalance = useMemo(() => {
     if (decryptedBalance == null) return -1n;
     return (

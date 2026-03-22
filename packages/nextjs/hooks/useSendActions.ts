@@ -160,7 +160,7 @@ export const useSendConfidentialTokenAction = () => {
         setIsEncrypting(true);
         const client = getCofheClient();
         if (!client) throw new Error("Cofhe client not initialized");
-        const encrypted = await client.encryptInputs([Encryptable.uint128(amount)]).execute();
+        const encrypted = await client.encryptInputs([Encryptable.uint64(amount)]).execute();
         setIsEncrypting(false);
         encryptedAmount = encrypted[0];
       } catch (error) {
@@ -174,7 +174,7 @@ export const useSendConfidentialTokenAction = () => {
         const writeContractObject = {
           abi: confidentialErc20Abi,
           address: confidentialTokenAddress,
-          functionName: "encTransfer",
+          functionName: "confidentialTransfer",
           args: [recipient, encryptedAmount],
         } as WriteContractVariables<Abi, string, any[], Config, number>;
 

@@ -4712,7 +4712,7 @@ __metadata:
     "@cofhe/sdk": 0.4.0
     "@ethersproject/abi": ~5.7.0
     "@ethersproject/providers": ~5.7.2
-    "@fhenixprotocol/cofhe-contracts": 0.0.13
+    "@fhenixprotocol/cofhe-contracts": 0.1.0
     "@fhenixprotocol/cofhe-mock-contracts": ^0.2.1-alpha.0
     "@inquirer/password": ^4.0.2
     "@nomicfoundation/hardhat-chai-matchers": ~2.0.7
@@ -4743,6 +4743,7 @@ __metadata:
     eslint-config-prettier: ~8.10.0
     eslint-plugin-prettier: ~5.2.1
     ethers: ~6.13.2
+    fhenix-confidential-contracts: 0.2.0
     hardhat: ~2.22.10
     hardhat-deploy: ~0.12.4
     hardhat-deploy-ethers: ~0.4.2
@@ -11125,6 +11126,19 @@ __metadata:
     picomatch:
       optional: true
   checksum: bd537daa9d3cd53887eed35efa0eab2dbb1ca408790e10e024120e7a36c6e9ae2b33710cb8381e35def01bc9c1d7eaba746f886338413e68ff6ebaee07b9a6e8
+  languageName: node
+  linkType: hard
+
+"fhenix-confidential-contracts@npm:0.2.0":
+  version: 0.2.0
+  resolution: "fhenix-confidential-contracts@npm:0.2.0"
+  dependencies:
+    "@openzeppelin/contracts": ^5.2.0
+    "@typechain/ethers-v6": ~0.5.1
+    dotenv: ~16.4.5
+    envfile: ~7.1.0
+    qrcode: ~1.5.4
+  checksum: a0d0d56f4e7433288db81253997e6722898056d50a130ec2d9e357483675eaa00f7ad8f6f016125914522a0b76e36095fc58e41657c710b96853340092d57d16
   languageName: node
   linkType: hard
 

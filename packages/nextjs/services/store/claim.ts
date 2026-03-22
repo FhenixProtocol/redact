@@ -11,12 +11,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
+import { getCofheClient } from "~~/services/cofhe/cofheClient";
 import { useRefresh } from "~~/hooks/useRefresh";
 import { getChainId } from "~~/lib/common";
 
-// Types
+// On-chain claim struct returned by getUserClaims/getClaim
 export type Claim = {
-  ctHash: bigint;
+  ctHash: string; // bytes32
   requestedAmount: bigint;
   decryptedAmount: bigint;
   decrypted: boolean;
@@ -24,9 +25,17 @@ export type Claim = {
   claimed: boolean;
 };
 
+// Off-chain decryption result from decryptForTx (Threshold Network)
+export type DecryptionResult = {
+  decryptedValue: bigint;
+  signature: string;
+};
+
 export type ClaimWithAddresses = Claim & {
   erc20Address: Address;
   fherc20Address: Address;
+  // Stored locally after calling decryptForTx — needed to submit claimUnshielded
+  decryptionResult?: DecryptionResult;
 };
 
 export interface AddressPair {
@@ -66,10 +75,18 @@ const _addClaimsToStore = (
   if (state.claims[chain] == null) state.claims[chain] = {};
 
   Object.entries(claimsMap).forEach(([erc20Address, claims]) => {
-    if (state.claims[chain][erc20Address] == null) state.claims[chain][erc20Address] = {};
+    // Replace all claims for this pair — removes stale claims that no longer exist on-chain
+    // but preserve locally-stored decryptionResult from previous decryptForTx calls
+    const existing = state.claims[chain][erc20Address] ?? {};
+    const newClaims: StringRecord<ClaimWithAddresses> = {};
     claims.forEach(claim => {
-      state.claims[chain][erc20Address][claim.ctHash.toString()] = claim;
+      const key = claim.ctHash.toString();
+      const existingDecryptionResult = existing[key]?.decryptionResult;
+      newClaims[key] = existingDecryptionResult
+        ? { ...claim, decryptionResult: existingDecryptionResult }
+        : claim;
     });
+    state.claims[chain][erc20Address] = newClaims;
   });
 };
 
@@ -90,9 +107,18 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
   const erc20Claims = {} as Record<Address, ClaimWithAddresses[]>;
 
   results.forEach(({ status, result }, index) => {
-    if (status === "failure") return;
+    if (status === "failure") {
+      console.log("[Claims] getUserClaims failed for", pairsWithFherc20[index].fherc20Address);
+      return;
+    }
 
-    const claimsWithAddresses = (result as unknown as Claim[]).map(claim => ({
+    const rawClaims = result as unknown as Claim[];
+    console.log("[Claims] getUserClaims returned", rawClaims.length, "claims for", pairsWithFherc20[index].erc20Address);
+    rawClaims.forEach((claim, i) => {
+      console.log(`[Claims]   [${i}] ctHash=${claim.ctHash} decrypted=${claim.decrypted} claimed=${claim.claimed} requestedAmount=${claim.requestedAmount} decryptedAmount=${claim.decryptedAmount}`);
+    });
+
+    const claimsWithAddresses = rawClaims.map(claim => ({
       ...claim,
       ...pairsWithFherc20[index],
     })) as ClaimWithAddresses[];
@@ -107,6 +133,7 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
 };
 
 const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
+  console.log("[Claims] Refetching", pendingClaims.length, "pending claims...");
   const publicClient = getPublicClient(wagmiConfig);
   const results = await publicClient?.multicall({
     contracts: pendingClaims.map(({ fherc20Address, ctHash }) => ({
@@ -120,12 +147,17 @@ const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
   const erc20Claims = {} as Record<Address, ClaimWithAddresses[]>;
 
   results.forEach(({ status, result }, index) => {
-    if (status === "failure") return;
+    if (status === "failure") {
+      console.log("[Claims] getClaim failed for ctHash", pendingClaims[index].ctHash);
+      return;
+    }
 
     const { erc20Address, fherc20Address } = pendingClaims[index];
+    const onChainClaim = result as unknown as Claim;
+    console.log(`[Claims] getClaim ctHash=${onChainClaim.ctHash} decrypted=${onChainClaim.decrypted} claimed=${onChainClaim.claimed} decryptedAmount=${onChainClaim.decryptedAmount}`);
 
     const claimWithAddresses = {
-      ...(result as unknown as Claim),
+      ...onChainClaim,
       erc20Address,
       fherc20Address,
     } as ClaimWithAddresses;
@@ -176,13 +208,70 @@ export const removePairClaimableClaims = async (pairAddress: Address) => {
     Object.keys(state.claims[chain][pairAddress]).forEach(ctHash => {
       const claim = state.claims[chain][pairAddress][ctHash];
 
-      // Dont remove claims that are pending
-      if (!claim.decrypted) return;
+      // Only remove claims that have been decrypted off-chain (have decryptionResult)
+      if (!claim.decryptionResult) return;
 
-      // Delete the claim
       delete state.claims[chain][pairAddress][ctHash];
     });
   });
+};
+
+/**
+ * Attempts to call decryptForTx for claims that don't have a decryptionResult yet.
+ * Stores the result locally so it can be passed to claimUnshielded later.
+ */
+export const decryptPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
+  const client = getCofheClient();
+  if (!client) return;
+
+  const chain = await getChainId();
+  if (chain == null) return;
+
+  for (const claim of pendingClaims) {
+    if (claim.decryptionResult) continue; // Already decrypted off-chain
+
+    try {
+      console.log("--- decryptForTx ---");
+      console.log("[Claims] Calling decryptForTx for ctHash", claim.ctHash);
+      const result = await client.decryptForTx(claim.ctHash).withoutPermit().execute();
+      console.log("[Claims] decryptForTx result:", result.decryptedValue, result.signature);
+      console.log("--- decryptForTx done ---");
+
+      const decryptionResult = {
+        decryptedValue: result.decryptedValue,
+        signature: result.signature,
+      };
+      useClaimStore.setState(state => {
+        const key = claim.ctHash.toString();
+        const stored = state.claims[chain]?.[claim.erc20Address]?.[key];
+        if (stored) {
+          // Replace the entire claim object to ensure immer detects the change
+          state.claims[chain][claim.erc20Address][key] = { ...stored, decryptionResult };
+          console.log("[Claims] Stored decryptionResult for", claim.ctHash, "value:", result.decryptedValue);
+        } else {
+          console.log("[Claims] WARNING: claim not found in store for", claim.ctHash, "erc20:", claim.erc20Address, "chain:", chain);
+        }
+      });
+    } catch (err) {
+      // Threshold Network may not have the result yet — this is expected, will retry on next poll
+      console.log("[Claims] decryptForTx not ready yet for ctHash", claim.ctHash, err);
+    }
+  }
+};
+
+/**
+ * Fetches pending claims for a pair from the store and immediately attempts decryptForTx.
+ * Called after unshield TX confirms so the user doesn't have to wait for the 10s poll.
+ */
+export const fetchAndDecryptPendingClaims = async (erc20Address: Address) => {
+  const chain = await getChainId();
+  if (chain == null) return;
+
+  const pairClaims = Object.values(useClaimStore.getState().claims[chain]?.[erc20Address] ?? {});
+  const pending = pairClaims.filter(c => !c.claimed && !c.decryptionResult);
+  if (pending.length > 0) {
+    await decryptPendingClaims(pending);
+  }
 };
 
 // HOOKS
@@ -206,13 +295,16 @@ export const useClaimFetcher = () => {
   }, [chain, account, addressPairs]);
 };
 
+// "Pending" = claim exists on-chain but we don't have the off-chain decryptForTx result yet
 const usePendingClaims = () => {
   const chain = useChainId();
   const { address: account } = useAccount();
   const claims = useClaimStore(state => state.claims[chain]);
 
   return useMemo(() => {
-    return Object.values(claims ?? {}).flatMap(claims => Object.values(claims).filter(claim => !claim.decrypted));
+    return Object.values(claims ?? {}).flatMap(claims =>
+      Object.values(claims).filter(claim => !claim.claimed && !claim.decryptionResult),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claims, account]);
 };
@@ -226,15 +318,20 @@ export const usePairClaims = (pairAddress?: Address) => {
       if (account == null || pairAddress == null) return null;
       const claims = state.claims[chain]?.[pairAddress];
 
-      // Collect the total requested amount, decrypted amount, and pending amount for the pair
+      // Collect totals based on off-chain decryption state:
+      // - pending: claim exists but no decryptForTx result yet
+      // - claimable: has decryptForTx result, ready to submit claimUnshielded
       return Object.values(claims ?? {}).reduce(
         (acc, claim) => {
           if (claim.claimed) return acc;
           if (claim.to.toLowerCase() !== account.toLowerCase()) return acc;
 
+          const hasDecryptionResult = !!claim.decryptionResult;
+          const decryptedValue = claim.decryptionResult?.decryptedValue ?? 0n;
+
           const totalRequestedAmount = acc.totalRequestedAmount + claim.requestedAmount;
-          const totalDecryptedAmount = acc.totalDecryptedAmount + (claim.decrypted ? claim.decryptedAmount : 0n);
-          const totalPendingAmount = acc.totalPendingAmount + (claim.decrypted ? 0n : claim.requestedAmount);
+          const totalDecryptedAmount = acc.totalDecryptedAmount + (hasDecryptionResult ? decryptedValue : 0n);
+          const totalPendingAmount = acc.totalPendingAmount + (hasDecryptionResult ? 0n : claim.requestedAmount);
 
           return {
             totalRequestedAmount,
@@ -248,8 +345,23 @@ export const usePairClaims = (pairAddress?: Address) => {
   );
 };
 
-export const useRefetchPendingClaims = () => {
+export const usePairClaimableItems = (pairAddress?: Address): ClaimWithAddresses[] => {
   const chain = useChainId();
+  const { address: account } = useAccount();
+
+  return useClaimStore(
+    useDeepEqual(state => {
+      if (account == null || pairAddress == null) return [];
+      const claims = state.claims[chain]?.[pairAddress];
+      return Object.values(claims ?? {}).filter(
+        claim => !claim.claimed && !!claim.decryptionResult && claim.to.toLowerCase() === account.toLowerCase(),
+      );
+    }),
+  );
+};
+
+// Polls decryptForTx for claims that don't have a decryption result yet
+export const useRefetchPendingClaims = () => {
   const { address: account } = useAccount();
   const pendingClaims = usePendingClaims();
   const { refresh } = useRefresh(10000);
@@ -260,18 +372,11 @@ export const useRefetchPendingClaims = () => {
     if (account == null) return;
 
     const now = Date.now();
-    if (now - lastFetchTime.current < 10_000) return; // Prevent refetching too frequently
+    if (now - lastFetchTime.current < 10_000) return;
 
-    const fetchAndStoreClaims = async () => {
-      lastFetchTime.current = now;
-      const refetchedClaimsMap = await _refetchPendingClaims(pendingClaims);
-      useClaimStore.setState(state => {
-        _addClaimsToStore(state, chain, refetchedClaimsMap);
-      });
-    };
-
-    fetchAndStoreClaims();
-  }, [account, chain, pendingClaims, refresh]);
+    lastFetchTime.current = now;
+    decryptPendingClaims(pendingClaims);
+  }, [account, pendingClaims, refresh]);
 };
 
 export const useAllClaims = () => {

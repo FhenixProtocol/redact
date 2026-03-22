@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { ConfidentialETH, ERC20_Harness, WETH_Harness } from "../typechain-types";
+import { FHERC20WrappedNative, ERC20_Harness, WETH_Harness } from "../typechain-types";
 import { RedactCore } from "../typechain-types";
 
 describe("RedactCore", function () {
@@ -12,8 +12,8 @@ describe("RedactCore", function () {
     await wETH.waitForDeployment();
 
     // Deploy eETH
-    const eETHFactory = await ethers.getContractFactory("ConfidentialETH");
-    const eETH = (await eETHFactory.deploy(wETH.target)) as ConfidentialETH;
+    const eETHFactory = await ethers.getContractFactory("FHERC20WrappedNative");
+    const eETH = (await eETHFactory.deploy(wETH.target, "", "")) as FHERC20WrappedNative;
     await eETH.waitForDeployment();
 
     // Deploy USDC
@@ -117,7 +117,7 @@ describe("RedactCore", function () {
 
       await redactCore.deployFherc20(wBTC.target);
       const eBTCAddress = await redactCore.getFherc20(wBTC.target);
-      const eBTC = await ethers.getContractAt("ConfidentialERC20", eBTCAddress);
+      const eBTC = await ethers.getContractAt("FHERC20WrappedERC20", eBTCAddress);
 
       expect(await eBTC.symbol()).to.equal("ewBTC");
 
@@ -131,7 +131,7 @@ describe("RedactCore", function () {
 
       await redactCore.deployFherc20(wBTC.target);
       const eBTCAddress = await redactCore.getFherc20(wBTC.target);
-      const eBTC = await ethers.getContractAt("ConfidentialERC20", eBTCAddress);
+      const eBTC = await ethers.getContractAt("FHERC20WrappedERC20", eBTCAddress);
 
       await expect(redactCore.connect(bob).updateFherc20Symbol(eBTC, "eBTC")).to.be.revertedWithCustomError(
         redactCore,

@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v5.1.0) (token/ERC20/ERC20.sol)
 
 pragma solidity ^0.8.25;
 
-import { ConfidentialERC20 } from "../ConfidentialERC20.sol";
-import { ConfidentialETH } from "../ConfidentialETH.sol";
-import { IWETH } from "../interfaces/IWETH.sol";
-import { InEuint128 } from "@fhenixprotocol/cofhe-contracts/FHE.sol";
-import { IFHERC20 } from "../interfaces/IFHERC20.sol";
+import { FHE, InEuint64, euint64 } from "@fhenixprotocol/cofhe-contracts/FHE.sol";
+import { IFHERC20 } from "fhenix-confidential-contracts/contracts/interfaces/IFHERC20.sol";
 
 contract MockFherc20Vault {
     IFHERC20 public fherc20;
@@ -16,7 +12,9 @@ contract MockFherc20Vault {
         fherc20 = IFHERC20(fherc20_);
     }
 
-    function deposit(InEuint128 memory inValue, IFHERC20.FHERC20_EIP712_Permit calldata permit) public {
-        fherc20.encTransferFrom(msg.sender, address(this), inValue, permit);
+    function deposit(InEuint64 memory inValue) public {
+        euint64 value = FHE.asEuint64(inValue);
+        FHE.allow(value, address(fherc20));
+        fherc20.confidentialTransferFrom(msg.sender, address(this), value);
     }
 }

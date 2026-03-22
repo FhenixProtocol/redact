@@ -43,7 +43,7 @@ export const useSendPair = () => {
 export const useSendBalances = () => {
   const pair = useSendPair();
   const balances = useConfidentialTokenPairBalances(pair?.publicToken.address);
-  const decryptedConfidentialBalance = useDecryptValue(FheTypes.Uint128, balances?.confidentialBalance);
+  const decryptedConfidentialBalance = useDecryptValue(FheTypes.Uint64, balances?.confidentialBalance);
 
   return useMemo(
     () => ({

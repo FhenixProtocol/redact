@@ -7,10 +7,13 @@ import { WriteContractVariables } from "wagmi/query";
 import confidentialErc20Abi from "~~/contracts/ConfidentialErc20Abi";
 import {
   ClaimWithAddresses,
+  fetchAndDecryptPendingClaims,
   fetchPairClaims,
   removeClaimedClaim,
   removePairClaimableClaims,
+  useClaimStore,
 } from "~~/services/store/claim";
+import { getChainId } from "~~/lib/common";
 import { refetchSingleTokenPairBalances } from "~~/services/store/tokenStore";
 import { TransactionActionType } from "~~/services/store/transactionStore";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
@@ -48,11 +51,12 @@ export const useDecryptFherc20Action = () => {
 
       try {
         setIsPending(true);
+        console.log("--- decrypt (unshield) start ---");
 
         const writeContractObject = {
           abi: confidentialErc20Abi,
           address: confidentialTokenAddress,
-          functionName: "decrypt",
+          functionName: "unshield",
           args: [account, amount],
         } as WriteContractVariables<Abi, string, any[], Config, number>;
 
@@ -69,9 +73,26 @@ export const useDecryptFherc20Action = () => {
             actionType: TransactionActionType.Decrypt,
           },
           {
-            onBlockConfirmation: () => {
+            onBlockConfirmation: async () => {
+              console.log("--- decrypt TX confirmed, fetching claims ---");
               refetchSingleTokenPairBalances(publicTokenAddress);
-              fetchPairClaims({ erc20Address: publicTokenAddress, fherc20Address: confidentialTokenAddress });
+
+              // Retry fetching claims — RPC may return stale data right after TX confirmation
+              const pair = { erc20Address: publicTokenAddress, fherc20Address: confidentialTokenAddress };
+              for (let attempt = 0; attempt < 3; attempt++) {
+                await fetchPairClaims(pair);
+                await fetchAndDecryptPendingClaims(publicTokenAddress);
+                // Check if we found any pending claims
+                const hasNewClaims = Object.values(
+                  useClaimStore.getState().claims[await getChainId()]?.[publicTokenAddress] ?? {},
+                ).some(c => !c.claimed);
+                if (hasNewClaims) {
+                  console.log("--- decrypt done (attempt", attempt + 1, ") ---");
+                  break;
+                }
+                console.log("--- claims not found yet, retrying in 2s (attempt", attempt + 1, ") ---");
+                await new Promise(r => setTimeout(r, 2000));
+              }
             },
           },
         );
@@ -118,11 +139,16 @@ export const useClaimFherc20Action = () => {
       try {
         setIsPending(true);
 
+        if (!claim.decryptionResult) {
+          toast.error("Claim not yet decrypted — please wait");
+          return;
+        }
+
         const writeContractObject = {
           abi: confidentialErc20Abi,
           address: claim.fherc20Address,
-          functionName: "claimDecrypted",
-          args: [claim.ctHash],
+          functionName: "claimUnshielded",
+          args: [claim.ctHash, claim.decryptionResult.decryptedValue, claim.decryptionResult.signature],
         } as WriteContractVariables<Abi, string, any[], Config, number>;
 
         await simulateContractWriteAndNotifyError({ wagmiConfig, writeContractParams: writeContractObject });
@@ -172,12 +198,14 @@ export const useClaimAllAction = () => {
       confidentialTokenAddress,
       claimAmount,
       tokenDecimals,
+      claims,
     }: {
       publicTokenAddress: Address;
       publicTokenSymbol: string;
       confidentialTokenAddress: Address;
       claimAmount: bigint;
       tokenDecimals: number;
+      claims?: ClaimWithAddresses[];
     }) => {
       if (account == null) {
         toast.error("No account found");
@@ -192,10 +220,24 @@ export const useClaimAllAction = () => {
       try {
         setIsPending(true);
 
+        // Use stored decryption results from decryptForTx (already resolved off-chain)
+        const claimsToProcess = (claims ?? []).filter(c => c.decryptionResult);
+        if (claimsToProcess.length === 0) {
+          toast.error("No claims ready to claim");
+          return;
+        }
+
+        const ctHashes = claimsToProcess.map(c => c.ctHash);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- filtered above
+        const decryptedAmounts = claimsToProcess.map(c => c.decryptionResult!.decryptedValue);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- filtered above
+        const signatures = claimsToProcess.map(c => c.decryptionResult!.signature);
+
         const writeContractObject = {
           abi: confidentialErc20Abi,
           address: confidentialTokenAddress,
-          functionName: "claimAllDecrypted",
+          functionName: "claimUnshieldedBatch",
+          args: [ctHashes, decryptedAmounts, signatures],
         } as WriteContractVariables<Abi, string, any[], Config, number>;
 
         await simulateContractWriteAndNotifyError({ wagmiConfig, writeContractParams: writeContractObject });

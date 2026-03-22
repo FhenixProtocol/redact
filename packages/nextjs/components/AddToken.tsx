@@ -89,16 +89,18 @@ export function AddToken({ onClose }: AddTokenProps) {
       />
       <AnimatePresence>
         <PublicTokenDetails
+          key="public"
           tokenDetails={tokenDetails?.pair.publicToken}
           balance={tokenDetails?.balances.publicBalance}
         />
         <ConfidentialTokenDetails
+          key="confidential"
           publicTokenDetails={tokenDetails?.pair.publicToken}
           confidentialTokenDetails={tokenDetails?.pair.confidentialToken}
           requiresDeployment={!tokenDetails?.pair.confidentialTokenDeployed}
           confidentialBalance={tokenDetails?.balances.confidentialBalance}
         />
-        <WarningRow />
+        <WarningRow key="warning" />
       </AnimatePresence>
 
       <div className="flex gap-2">

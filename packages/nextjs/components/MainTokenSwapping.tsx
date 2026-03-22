@@ -17,7 +17,7 @@ import { useClaimAllAction, useDecryptFherc20Action } from "~~/hooks/useDecryptA
 import { useApproveFherc20Action, useDeployFherc20Action, useEncryptErc20Action } from "~~/hooks/useEncryptActions";
 import { formatTokenAmount } from "~~/lib/common";
 import { getConfidentialSymbol } from "~~/lib/common";
-import { usePairClaims } from "~~/services/store/claim";
+import { usePairClaimableItems, usePairClaims } from "~~/services/store/claim";
 import {
   useEncryptDecryptBalances,
   useEncryptDecryptFormattedAllowance,
@@ -476,6 +476,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   const valueError = useEncryptDecryptValueError();
   const rawInputValue = useEncryptDecryptRawInputValue();
   const pairClaims = usePairClaims(pair?.publicToken.address);
+  const claimableItems = usePairClaimableItems(pair?.publicToken.address);
   const setInputValue = useUpdateEncryptDecryptValue();
   const hasInteracted = useEncryptDecryptHasInteracted();
   const setHasInteracted = useSetEncryptDecryptHasInteracted();
@@ -595,6 +596,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       confidentialTokenAddress: pair.confidentialToken.address,
       claimAmount: pairClaims.totalDecryptedAmount,
       tokenDecimals: pair.confidentialToken.decimals,
+      claims: claimableItems,
     });
   };
 

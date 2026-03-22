@@ -16,7 +16,7 @@ import toast from "react-hot-toast";
 import { useClaimAllAction } from "~~/hooks/useDecryptActions";
 import { ETH_ADDRESS } from "~~/lib/common";
 import { cn } from "~~/lib/utils";
-import { usePairClaims } from "~~/services/store/claim";
+import { usePairClaimableItems, usePairClaims } from "~~/services/store/claim";
 import { useDecryptValue } from "~~/services/store/decrypted";
 import {
   DrawerPageName,
@@ -98,7 +98,7 @@ const TokenTotalBalanceRow = ({
   pair: ConfidentialTokenPair;
   balances: ConfidentialTokenPairBalances | undefined;
 }) => {
-  const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint128, balances?.confidentialBalance);
+  const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint64, balances?.confidentialBalance);
   const pairClaims = usePairClaims(pair?.publicToken.address);
   const fragmentedPair = useConfidentialTokenPair(pair?.fragmentedPair);
   const fragmentedBalances = useConfidentialTokenPairBalances(fragmentedPair?.publicToken.address);
@@ -209,7 +209,7 @@ const TokenBalancesSection = ({
   const setIsEncrypt = useEncryptDecryptSetIsEncrypt();
   const setToken = useSelectEncryptDecryptToken();
   const setDrawerOpen = useSetDrawerOpen();
-  const decryptedBalance = useDecryptValue(FheTypes.Uint128, balances.confidentialBalance);
+  const decryptedBalance = useDecryptValue(FheTypes.Uint64, balances.confidentialBalance);
   const fragmentedBalances = useConfidentialTokenPairBalances(fragmentedPair?.publicToken.address);
 
   const handleEncryptDecrypt = (isEncrypt: boolean) => {
@@ -259,6 +259,7 @@ const TokenBalancesSection = ({
 
 const TokenClaimButton = ({ pair }: { pair: ConfidentialTokenPair }) => {
   const pairClaims = usePairClaims(pair.publicToken.address);
+  const claimableItems = usePairClaimableItems(pair.publicToken.address);
   const { onClaimAll, isClaiming } = useClaimAllAction();
 
   if (pairClaims == null) return null;
@@ -286,6 +287,7 @@ const TokenClaimButton = ({ pair }: { pair: ConfidentialTokenPair }) => {
       confidentialTokenAddress: pair.confidentialToken.address,
       claimAmount: pairClaims.totalDecryptedAmount,
       tokenDecimals: pair.publicToken.decimals,
+      claims: claimableItems,
     });
   };
 

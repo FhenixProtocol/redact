@@ -10,8 +10,8 @@ import { getAlchemyHttpUrl } from "~~/utils/scaffold-eth";
 
 const { targetNetworks } = scaffoldConfig;
 
-// Define the multicall3 address for hardhat chain
-const HARDHAT_MULTICALL3_ADDRESS = deployedContracts["31337"].Multicall3.address;
+// Define the multicall3 address for hardhat chain (may not exist if not deployed locally)
+const HARDHAT_MULTICALL3_ADDRESS = (deployedContracts as any)?.["31337"]?.Multicall3?.address;
 
 // We always want to have mainnet enabled (ENS resolution, ETH price, etc). But only once.
 export const enabledChains = targetNetworks.find((network: Chain) => network.id === 1)

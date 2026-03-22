@@ -389,7 +389,7 @@ const _fetchConfidentialPairBalances = async (
       contracts.push({
         address: fherc20Address,
         abi: confidentialErc20Abi,
-        functionName: "encBalanceOf",
+        functionName: "confidentialBalanceOf",
         args: [account],
       });
       contracts.push({
@@ -441,7 +441,7 @@ const _fetchConfidentialPairBalances = async (
 };
 
 const _decryptConfidentialBalances = async (chain: number, account: Address, ctHashes: bigint[]) => {
-  ctHashes.map(ctHash => decryptValue(FheTypes.Uint128, ctHash, account));
+  ctHashes.map(ctHash => decryptValue(FheTypes.Uint64, ctHash, account));
 };
 
 export const _fetchTokenPairsData = async (
@@ -486,9 +486,10 @@ export const fetchTokenPairsData = async () => {
   const chain = await getChainId();
 
   try {
-    await loadPredefinedValues(
-      "https://redact-resources.s3.eu-west-1.amazonaws.com/predefined-token-list_testnet.json",
-    );
+    const tokenListUrl =
+      process.env.NEXT_PUBLIC_TOKEN_LIST_URL ??
+      "https://redact-resources.s3.eu-west-1.amazonaws.com/predefined-token-list_testnet.json";
+    await loadPredefinedValues(tokenListUrl);
   } catch (error) {
     console.error("Error loading predefined values:", error);
   }
@@ -525,7 +526,7 @@ export const fetchTokenPairBalances = async () => {
   // Request decryption of the confidential balance ctHashes
   const confidentialBalanceCtHashes = pairBalances
     .map(balance => balance.confidentialBalance)
-    .filter((ctHashMaybe): ctHashMaybe is bigint => ctHashMaybe != null);
+    .filter((ctHashMaybe): ctHashMaybe is bigint => ctHashMaybe != null && ctHashMaybe !== 0n);
   _decryptConfidentialBalances(chain, account, confidentialBalanceCtHashes);
 
   useTokenStore.setState(state => {

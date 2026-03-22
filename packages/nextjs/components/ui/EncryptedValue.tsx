@@ -75,7 +75,7 @@ export function EncryptedBalance({
 }) {
   return (
     <EncryptedValue
-      fheType={FheTypes.Uint128}
+      fheType={FheTypes.Uint64}
       ctHash={ctHash}
       transform={value => formatTokenAmount(value, decimals, precision)}
       className={className}

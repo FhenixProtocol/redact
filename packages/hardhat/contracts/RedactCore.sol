@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v5.1.0) (token/ERC20/ERC20.sol)
 
 pragma solidity ^0.8.25;
 
 import { IERC20, IERC20Metadata, ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { EnumerableMap } from "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import { Ownable, Ownable2Step } from "@openzeppelin/contracts/access/Ownable2Step.sol";
-import { ConfidentialERC20 } from "./ConfidentialERC20.sol";
-import { ConfidentialETH } from "./ConfidentialETH.sol";
+import { FHERC20WrappedERC20 } from "fhenix-confidential-contracts/contracts/FHERC20WrappedERC20.sol";
+import { FHERC20WrappedNative } from "fhenix-confidential-contracts/contracts/FHERC20WrappedNative.sol";
 import { IWETH } from "./interfaces/IWETH.sol";
 
 contract RedactCore is Ownable2Step {
@@ -17,12 +16,12 @@ contract RedactCore is Ownable2Step {
 
     // Confidential ETH :: ETH / wETH deposited into Redacted are routed to eETH
     IWETH public immutable wETH;
-    ConfidentialETH public immutable eETH;
+    FHERC20WrappedNative public immutable eETH;
 
     // Stablecoins :: deposited stablecoins are routed to FUSD
     mapping(address erc20 => bool isStablecoin) public _stablecoins;
 
-    constructor(IWETH wETH_, ConfidentialETH eETH_) Ownable(msg.sender) {
+    constructor(IWETH wETH_, FHERC20WrappedNative eETH_) Ownable(msg.sender) {
         if (address(wETH_) == address(0)) revert Invalid_WETH();
         if (address(eETH_) == address(0)) revert Invalid_eETH();
         wETH = wETH_;
@@ -58,7 +57,7 @@ contract RedactCore is Ownable2Step {
         return erc20 == address(wETH);
     }
 
-    function updateFherc20Symbol(ConfidentialERC20 fherc20, string memory updatedSymbol) public onlyOwner {
+    function updateFherc20Symbol(FHERC20WrappedERC20 fherc20, string memory updatedSymbol) public onlyOwner {
         fherc20.updateSymbol(updatedSymbol);
         emit Fherc20SymbolUpdated(address(fherc20), updatedSymbol);
     }
@@ -69,7 +68,7 @@ contract RedactCore is Ownable2Step {
         if (_stablecoins[address(erc20)]) revert Invalid_Stablecoin();
         if (address(erc20) == address(wETH)) revert Invalid_WETH();
 
-        ConfidentialERC20 fherc20 = new ConfidentialERC20(erc20, "");
+        FHERC20WrappedERC20 fherc20 = new FHERC20WrappedERC20(erc20, "");
         _fherc20Map.set(address(erc20), address(fherc20));
 
         emit Fherc20Deployed(address(erc20), address(fherc20));

@@ -58,7 +58,7 @@ const _decryptValue = async <T extends FheTypes>(
   fheType: T,
   value: bigint,
 ): Promise<DecryptionResult<T>> => {
-  if (value === 0n) {
+  if (!value || value === 0n || BigInt(value) === 0n) {
     return {
       fheType,
       ctHash: 0n,
@@ -120,6 +120,17 @@ export const decryptValue = async <T extends FheTypes>(
   ctHash: bigint,
   address: string,
 ): Promise<DecryptionResult<T> | undefined> => {
+  // Skip zero handles — no encrypted balance exists
+  if (ctHash == null || ctHash === 0n) {
+    return {
+      fheType,
+      ctHash: ctHash ?? 0n,
+      value: fheType === FheTypes.Bool ? false : fheType === FheTypes.Uint160 ? zeroAddress : 0n,
+      error: null,
+      state: "success",
+    } as DecryptionResult<T>;
+  }
+
   // Check if cofhejs is initialized, if not return a pending decryption
   const pending = _pendingIfCofhejsNotInitialized(fheType, ctHash);
   if (pending != null) return pending;
@@ -179,7 +190,7 @@ export const useDecryptValue = <T extends FheTypes>(
   const strResult = superjson.stringify(result);
 
   useEffect(() => {
-    if (ctHash == null || cofhejsAccount == null) return;
+    if (ctHash == null || ctHash === 0n || cofhejsAccount == null) return;
     if (result != null && result.state !== "error") return;
     decryptValue(fheType, ctHash, cofhejsAccount);
     // eslint-disable-next-line react-hooks/exhaustive-deps

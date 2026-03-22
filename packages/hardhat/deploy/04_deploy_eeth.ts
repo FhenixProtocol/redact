@@ -23,9 +23,9 @@ const deployEeth: DeployFunction = async function (hre: HardhatRuntimeEnvironmen
   }
 
   await deploy("eETH", {
-    contract: "ConfidentialETH",
+    contract: "FHERC20WrappedNative",
     from: deployer,
-    args: [weth],
+    args: [weth, "", ""],
     log: true,
     autoMine: true,
   });

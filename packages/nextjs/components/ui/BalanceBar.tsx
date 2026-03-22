@@ -92,7 +92,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
     infoRowPosition = "top",
   } = props;
 
-  const { value } = useDecryptValue(FheTypes.Uint128, confidentialBalance);
+  const { value } = useDecryptValue(FheTypes.Uint64, confidentialBalance);
 
   const unsealedConfidentialBalance = value ?? 0n;
 
