@@ -8,7 +8,22 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { useCofhejsAccount } from "~~/hooks/useCofhe";
+import type { CofheClient } from "@cofhe/sdk";
 import { getCofheClient, isCofheInitialized } from "~~/services/cofhe/cofheClient";
+
+// Deduplicates concurrent getOrCreateSelfPermit calls so the user only sees
+// one wallet signature popup even when multiple decryptions fire in parallel.
+let _permitPromise: Promise<void> | null = null;
+async function ensurePermit(client: CofheClient) {
+  if (_permitPromise) return _permitPromise;
+  _permitPromise = client.permits
+    .getOrCreateSelfPermit()
+    .then(() => {})
+    .finally(() => {
+      _permitPromise = null;
+    });
+  return _permitPromise;
+}
 
 type DecryptionResult<T extends FheTypes> =
   | {
@@ -80,6 +95,7 @@ const _decryptValue = async <T extends FheTypes>(
   }
 
   try {
+    await ensurePermit(client);
     const result = await client.decryptForView(value, fheType).withPermit().execute();
     return {
       fheType,
