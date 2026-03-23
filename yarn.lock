@@ -234,13 +234,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cofhe/abi@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@cofhe/abi@npm:0.4.0"
+"@cofhe/abi@npm:0.0.0-beta-20260323135047":
+  version: 0.0.0-beta-20260323135047
+  resolution: "@cofhe/abi@npm:0.0.0-beta-20260323135047"
   dependencies:
-    "@cofhe/sdk": 0.4.0
+    "@cofhe/sdk": 0.0.0-beta-20260323135047
     abitype: ^1.2.3
-  checksum: 65669afd32004de43d8ea659312dc7220e41fc853ad0573bf3a3c69f7f1303cc57ba0e8a15d65e97eedd2fb231c0c5a165d43ec922935d212f32eac41fa023f1
+  checksum: c25a249c7bf27cb1c73c464aea4c6675499cacd134ff5e62e99490829215f99ebf926a9a56603df8409551b51cef423a3cdf0ca1cb07be2fbfbef50f1f1754da
   languageName: node
   linkType: hard
 
@@ -280,11 +280,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cofhe/react@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@cofhe/react@npm:0.4.0"
+"@cofhe/react@npm:0.0.0-beta-20260323135047":
+  version: 0.0.0-beta-20260323135047
+  resolution: "@cofhe/react@npm:0.0.0-beta-20260323135047"
   dependencies:
-    "@cofhe/sdk": 0.4.0
+    "@cofhe/sdk": 0.0.0-beta-20260323135047
     "@radix-ui/react-dropdown-menu": ^2.1.16
     "@radix-ui/react-select": ^2.2.6
     "@tanstack/query-async-storage-persister": ^5.90.22
@@ -305,7 +305,38 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     viem: ^2.38.6
-  checksum: fcbe91d01cca0cf698be5b00ff391012b7f76bfe09fb940c10a7016be90c9d736249d44ae724a4d89b08a9aebaafba6533953a495d9d8fa973d15ee85d9a0153
+  checksum: b92eb9f24d2bb4c0027b2ffde8c9595eaa2f2d6e9b2501ee04a5cfa6dbb1053b246afae0170e75f6b4595dcddf225345637c8156c6dcb3867fe2d2fdf6468b2e
+  languageName: node
+  linkType: hard
+
+"@cofhe/sdk@npm:0.0.0-beta-20260323135047":
+  version: 0.0.0-beta-20260323135047
+  resolution: "@cofhe/sdk@npm:0.0.0-beta-20260323135047"
+  dependencies:
+    iframe-shared-storage: ^1.0.34
+    immer: ^10.1.1
+    node-tfhe: 0.11.1
+    tfhe: 0.11.1
+    tweetnacl: ^1.0.3
+    viem: ^2.38.6
+    zod: ^4.0.0
+    zustand: ^5.0.1
+  peerDependencies:
+    "@nomicfoundation/hardhat-ethers": ^3.0.0
+    "@wagmi/core": ^2.0.0
+    ethers: ^5.0.0 || ^6.0.0
+    hardhat: ^2.0.0
+    viem: ^2.38.6
+  peerDependenciesMeta:
+    "@nomicfoundation/hardhat-ethers":
+      optional: true
+    "@wagmi/core":
+      optional: true
+    ethers:
+      optional: true
+    hardhat:
+      optional: true
+  checksum: 4791864426dcf89f1e72bcca0a58948f8b7561932cb20487d2ce79b8dfa0dc310f1fdab8000bdcdc795df5ab2a0ad78940066d131033012c10533263a29dcc93
   languageName: node
   linkType: hard
 
@@ -4762,9 +4793,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@se-2/nextjs@workspace:packages/nextjs"
   dependencies:
-    "@cofhe/abi": 0.4.0
-    "@cofhe/react": 0.4.0
-    "@cofhe/sdk": 0.4.0
+    "@cofhe/abi": 0.0.0-beta-20260323135047
+    "@cofhe/react": 0.0.0-beta-20260323135047
+    "@cofhe/sdk": 0.0.0-beta-20260323135047
     "@emotion/react": ^11.14.0
     "@emotion/styled": ^11.14.0
     "@heroicons/react": ~2.1.5
