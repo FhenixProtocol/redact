@@ -174,7 +174,26 @@
         "isStablecoin": false,
         "isWETH": true,
         "fragmentedPair": ""
-      }   
+      },
+      "0x036CbD53842c5426634e7929541eC2318f3dCF7e": {
+        "publicToken": {
+          "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+          "name": "USD Coin",
+          "symbol": "USDC",
+          "decimals": 6,
+          "image": ""
+        },
+        "confidentialToken": {
+          "address": "0x4517d47188190126C92841834F626f02FAe948d4",
+          "name": "Confidential USD Coin",
+          "symbol": "eUSDC",
+          "decimals": 6
+        },
+        "confidentialTokenDeployed": true,
+        "isStablecoin": false,
+        "isWETH": false,
+        "fragmentedPair": ""
+      }      
     }     
   }
 }
