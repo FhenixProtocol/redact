@@ -1,142 +1,160 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { ConfidentialETH, ERC20_Harness, WETH_Harness } from "../typechain-types";
-import { RedactCore } from "../typechain-types";
+import {
+  RedactCore,
+  ConfidentialETH,
+  ConfidentialERC20,
+  WETH_Harness,
+  ERC20_Harness,
+} from "../../typechain-types";
+import { ZeroAddress } from "ethers";
 
 describe("RedactCore", function () {
-  // We define a fixture to reuse the same setup in every test.
-  const deployContracts = async () => {
-    // Deploy WETH
+  async function deployFixture() {
+    const [owner, alice] = await ethers.getSigners();
+
     const wETHFactory = await ethers.getContractFactory("WETH_Harness");
     const wETH = (await wETHFactory.deploy()) as WETH_Harness;
-    await wETH.waitForDeployment();
 
-    // Deploy eETH
     const eETHFactory = await ethers.getContractFactory("ConfidentialETH");
     const eETH = (await eETHFactory.deploy(wETH.target)) as ConfidentialETH;
-    await eETH.waitForDeployment();
 
-    // Deploy USDC
+    const coreFactory = await ethers.getContractFactory("RedactCore");
+    const core = (await coreFactory.deploy(wETH.target, eETH.target)) as RedactCore;
+
     const usdcFactory = await ethers.getContractFactory("ERC20_Harness");
-    const usdc = (await usdcFactory.deploy("USD Coin", "USDC", 18)) as ERC20_Harness;
-    await usdc.waitForDeployment();
+    const usdc = (await usdcFactory.deploy("USD Coin", "USDC", 6)) as ERC20_Harness;
+    const wbtc = (await usdcFactory.deploy("Wrapped BTC", "WBTC", 8)) as ERC20_Harness;
 
-    // Deploy wBTC
-    const wbtcFactory = await ethers.getContractFactory("ERC20_Harness");
-    const wBTC = (await wbtcFactory.deploy("Wrapped Bitcoin", "wBTC", 18)) as ERC20_Harness;
-    await wBTC.waitForDeployment();
-
-    // Deploy RedactCore
-    const redactCoreFactory = await ethers.getContractFactory("RedactCore");
-    const redactCore = (await redactCoreFactory.deploy(wETH.target, eETH.target)) as RedactCore;
-    await redactCore.waitForDeployment();
-
-    return { wETH, eETH, usdc, wBTC, redactCore };
-  };
-
-  async function setupFixture() {
-    const [owner, bob, alice] = await ethers.getSigners();
-    const contracts = await deployContracts();
-
-    await contracts.redactCore.updateStablecoin(contracts.usdc.target, true);
-
-    return { owner, bob, alice, ...contracts };
+    return { owner, alice, wETH, eETH, core, usdc, wbtc };
   }
 
-  describe("initialization", function () {
-    it("Should be constructed correctly", async function () {
-      const { redactCore, wETH, eETH } = await setupFixture();
+  describe("constructor", function () {
+    it("should store wETH and eETH", async function () {
+      const { core, wETH, eETH } = await deployFixture();
 
-      expect(await redactCore.wETH()).to.equal(wETH.target);
-      expect(await redactCore.eETH()).to.equal(eETH.target);
-      expect(await redactCore.getIsWETH(wETH.target)).to.equal(true);
+      expect(await core.wETH()).to.equal(wETH.target);
+      expect(await core.eETH()).to.equal(eETH.target);
     });
 
-    it("Should be initialized with stablecoins", async function () {
-      const { redactCore, usdc } = await setupFixture();
+    it("should register wETH → eETH in the map", async function () {
+      const { core, wETH, eETH } = await deployFixture();
 
-      expect(await redactCore.getIsStablecoin(usdc.target)).to.equal(true);
+      expect(await core.getConfidentialERC20(wETH.target as string)).to.equal(eETH.target);
     });
 
-    it("Should be able to update stablecoins", async function () {
-      const { redactCore, usdc } = await setupFixture();
-      await redactCore.updateStablecoin(usdc.target, false);
-      expect(await redactCore.getIsStablecoin(usdc.target)).to.equal(false);
-    });
-  });
+    it("should set deployer as owner", async function () {
+      const { core, owner } = await deployFixture();
 
-  describe("deploy FHERC20", function () {
-    it("Should be able to deploy FHERC20", async function () {
-      const { redactCore, wBTC } = await setupFixture();
-
-      await expect(redactCore.deployFherc20(wBTC.target)).to.emit(redactCore, "Fherc20Deployed");
-
-      const ewBTCAddress = await redactCore.getFherc20(wBTC.target);
-      expect(ewBTCAddress).to.not.equal(ethers.ZeroAddress);
-
-      const deployedFherc20s = await redactCore.getDeployedFherc20s();
-
-      // eETH is already deployed, so we expect 2 after ewBTC deployment
-      expect(deployedFherc20s.length).to.equal(2);
-      expect(deployedFherc20s[1].erc20).to.equal(wBTC.target);
-      expect(deployedFherc20s[1].fherc20).to.equal(ewBTCAddress);
+      expect(await core.owner()).to.equal(owner.address);
     });
 
-    it("Should revert on already deployed FHERC20", async function () {
-      const { redactCore, wBTC } = await setupFixture();
+    it("should revert with zero-address wETH", async function () {
+      const { eETH } = await deployFixture();
+      const factory = await ethers.getContractFactory("RedactCore");
 
-      await redactCore.deployFherc20(wBTC.target);
-
-      await expect(redactCore.deployFherc20(wBTC.target)).to.be.revertedWithCustomError(
-        redactCore,
-        "Invalid_AlreadyDeployed",
+      await expect(factory.deploy(ZeroAddress, eETH.target)).to.be.revertedWithCustomError(
+        factory,
+        "InvalidWETH",
       );
     });
 
-    it("Should revert on stablecoin", async function () {
-      const { redactCore, usdc } = await setupFixture();
-      await expect(redactCore.deployFherc20(usdc.target)).to.be.revertedWithCustomError(
-        redactCore,
-        "Invalid_Stablecoin",
-      );
-    });
+    it("should revert with zero-address eETH", async function () {
+      const { wETH } = await deployFixture();
+      const factory = await ethers.getContractFactory("RedactCore");
 
-    it("Should revert on wETH (wETH is already deployed)", async function () {
-      const { redactCore, wETH } = await setupFixture();
-
-      await expect(redactCore.deployFherc20(wETH.target)).to.be.revertedWithCustomError(
-        redactCore,
-        "Invalid_AlreadyDeployed",
+      await expect(factory.deploy(wETH.target, ZeroAddress)).to.be.revertedWithCustomError(
+        factory,
+        "InvalideETH",
       );
     });
   });
 
-  describe("update FHERC20 symbol", function () {
-    it("Should be able to update FHERC20 symbol", async function () {
-      const { owner, redactCore, wBTC } = await setupFixture();
+  describe("deployConfidentialERC20", function () {
+    it("should deploy a ConfidentialERC20 wrapper", async function () {
+      const { core, usdc } = await deployFixture();
 
-      await redactCore.deployFherc20(wBTC.target);
-      const eBTCAddress = await redactCore.getFherc20(wBTC.target);
-      const eBTC = await ethers.getContractAt("ConfidentialERC20", eBTCAddress);
+      const tx = await core.deployConfidentialERC20(usdc.target);
+      const addr = await core.getConfidentialERC20(usdc.target as string);
 
-      expect(await eBTC.symbol()).to.equal("ewBTC");
-
-      // Change symbol
-      await redactCore.connect(owner).updateFherc20Symbol(eBTC, "eBTC");
-      expect(await eBTC.symbol()).to.equal("eBTC");
+      expect(addr).to.not.equal(ZeroAddress);
+      await expect(tx).to.emit(core, "ConfidentialERC20Deployed").withArgs(usdc.target, addr);
     });
 
-    it("Should revert on non-owner", async function () {
-      const { bob, redactCore, wBTC } = await setupFixture();
+    it("should generate correct name and symbol", async function () {
+      const { core, usdc } = await deployFixture();
 
-      await redactCore.deployFherc20(wBTC.target);
-      const eBTCAddress = await redactCore.getFherc20(wBTC.target);
-      const eBTC = await ethers.getContractAt("ConfidentialERC20", eBTCAddress);
+      await core.deployConfidentialERC20(usdc.target);
+      const addr = await core.getConfidentialERC20(usdc.target as string);
+      const eUSDC = (await ethers.getContractAt("ConfidentialERC20", addr)) as ConfidentialERC20;
 
-      await expect(redactCore.connect(bob).updateFherc20Symbol(eBTC, "eBTC")).to.be.revertedWithCustomError(
-        redactCore,
-        "OwnableUnauthorizedAccount",
+      expect(await eUSDC.name()).to.equal("ERC7984 Confidential USD Coin");
+      expect(await eUSDC.symbol()).to.equal("eUSDC");
+    });
+
+    it("should set RedactCore as owner of the wrapper", async function () {
+      const { core, usdc } = await deployFixture();
+
+      await core.deployConfidentialERC20(usdc.target);
+      const addr = await core.getConfidentialERC20(usdc.target as string);
+      const eUSDC = (await ethers.getContractAt("ConfidentialERC20", addr)) as ConfidentialERC20;
+
+      expect(await eUSDC.owner()).to.equal(core.target);
+    });
+
+    it("should revert if wrapper already deployed", async function () {
+      const { core, usdc } = await deployFixture();
+
+      await core.deployConfidentialERC20(usdc.target);
+      await expect(core.deployConfidentialERC20(usdc.target)).to.be.revertedWithCustomError(
+        core,
+        "AlreadyDeployed",
       );
+    });
+
+    it("should revert if token is WETH", async function () {
+      const { core, wETH } = await deployFixture();
+
+      await expect(core.deployConfidentialERC20(wETH.target)).to.be.revertedWithCustomError(
+        core,
+        "InvalidWETH",
+      );
+    });
+
+    it("should deploy multiple wrappers", async function () {
+      const { core, usdc, wbtc } = await deployFixture();
+
+      await core.deployConfidentialERC20(usdc.target);
+      await core.deployConfidentialERC20(wbtc.target);
+
+      const mapped = await core.getDeployedConfidentialERC20s();
+      // wETH→eETH + USDC + WBTC = 3
+      expect(mapped.length).to.equal(3);
+    });
+
+    it("should be callable by anyone (permissionless)", async function () {
+      const { core, usdc, alice } = await deployFixture();
+
+      await expect(core.connect(alice).deployConfidentialERC20(usdc.target)).to.not.be.reverted;
+    });
+  });
+
+  describe("getConfidentialERC20", function () {
+    it("should return address(0) for unregistered tokens", async function () {
+      const { core, usdc } = await deployFixture();
+
+      expect(await core.getConfidentialERC20(usdc.target as string)).to.equal(ZeroAddress);
+    });
+  });
+
+  describe("getDeployedConfidentialERC20s", function () {
+    it("should include wETH→eETH at initialization", async function () {
+      const { core, wETH, eETH } = await deployFixture();
+
+      const mapped = await core.getDeployedConfidentialERC20s();
+      expect(mapped.length).to.equal(1);
+      expect(mapped[0].erc20).to.equal(wETH.target);
+      expect(mapped[0].confidentialERC20).to.equal(eETH.target);
     });
   });
 });
