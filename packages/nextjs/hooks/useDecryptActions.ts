@@ -57,7 +57,7 @@ export const useDecryptFherc20Action = () => {
           abi: confidentialErc20Abi,
           address: confidentialTokenAddress,
           functionName: "unshield",
-          args: [account, amount],
+          args: [account, account, amount],
         } as WriteContractVariables<Abi, string, any[], Config, number>;
 
         await simulateContractWriteAndNotifyError({ wagmiConfig, writeContractParams: writeContractObject });

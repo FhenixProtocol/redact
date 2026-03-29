@@ -38,7 +38,7 @@ export const useDeployFherc20Action = () => {
         const writeContractObject = {
           abi: redactCoreContract.abi,
           address: redactCoreContract.address as Address,
-          functionName: "deployFherc20",
+          functionName: "deployConfidentialERC20",
           args: [tokenAddress],
         } as WriteContractVariables<Abi, string, any[], Config, number>;
 

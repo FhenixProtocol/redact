@@ -1,63 +1,38 @@
 import { expect } from "chai";
-import { ERC20, FHERC20 } from "../typechain-types";
-import hre, { ethers } from "hardhat";
+import { ERC20 } from "../typechain-types";
+import hre from "hardhat";
 
-// LOGS
+// ERC7984 BALANCES
 
-export const logState = (state: string) => {
-  console.log("Encrypt State - ", state);
-};
+const erc7984EncBalances = new Map<string, bigint>();
 
-export const nullLogState = () => null;
-
-// TICKS
-
-export const ticksToIndicated = async (token: FHERC20, ticks: bigint): Promise<bigint> => {
-  const tick = await token.indicatorTick();
-  return ticks * BigInt(tick);
-};
-
-export const tick = async (token: FHERC20): Promise<bigint> => {
-  return token.indicatorTick();
-};
-
-// BALANCES
-
-const indicatedBalances = new Map<string, bigint>();
-const encBalances = new Map<string, bigint>();
-
-export const prepExpectFHERC20BalancesChange = async (token: FHERC20, account: string) => {
-  indicatedBalances.set(account, await token.balanceOf(account));
+export const prepExpectERC7984BalancesChange = async (
+  token: { confidentialBalanceOf: (account: string) => Promise<string> },
+  account: string,
+) => {
   const encBalanceHash = await token.confidentialBalanceOf(account);
   const encBalance = await hre.cofhe.mocks.getPlaintext(encBalanceHash);
-  encBalances.set(account, encBalance);
+  erc7984EncBalances.set(account, encBalance);
 };
 
-export const expectFHERC20BalancesChange = async (
-  token: FHERC20,
+export const expectERC7984BalancesChange = async (
+  token: { confidentialBalanceOf: (account: string) => Promise<string>; symbol: () => Promise<string> },
   account: string,
-  expectedIndicatedChange: bigint,
   expectedEncChange: bigint,
 ) => {
   const symbol = await token.symbol();
 
-  const currIndicated = await token.balanceOf(account);
-  const prevIndicated = indicatedBalances.get(account)!;
-  const indicatedChange = currIndicated - prevIndicated;
-  expect(indicatedChange).to.equal(
-    expectedIndicatedChange,
-    `${symbol} (FHERC20) indicated balance change for ${account} is incorrect. Expected: ${expectedIndicatedChange}, received: ${indicatedChange}`,
-  );
-
   const currEncBalanceHash = await token.confidentialBalanceOf(account);
   const currEncBalance = await hre.cofhe.mocks.getPlaintext(currEncBalanceHash);
-  const prevEncBalance = encBalances.get(account)!;
+  const prevEncBalance = erc7984EncBalances.get(account)!;
   const encChange = currEncBalance - prevEncBalance;
   expect(encChange).to.equal(
     expectedEncChange,
-    `${symbol} (FHERC20) encrypted balance change for ${account} is incorrect. Expected: ${expectedEncChange}, received: ${encChange}`,
+    `${symbol} (ERC7984) encrypted balance change for ${account} is incorrect. Expected: ${expectedEncChange}, received: ${encChange}`,
   );
 };
+
+// ERC20 BALANCES
 
 const erc20Balances = new Map<string, bigint>();
 
@@ -75,8 +50,4 @@ export const expectERC20BalancesChange = async (token: ERC20, account: string, e
     expectedChange,
     `${symbol} (ERC20) balance change for ${account} is incorrect. Expected: ${expectedChange}, received: ${delta}`,
   );
-};
-
-export const getNowTimestamp = () => {
-  return BigInt(Date.now()) / 1000n;
 };

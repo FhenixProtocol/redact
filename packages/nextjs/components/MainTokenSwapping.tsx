@@ -205,7 +205,9 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
     setHasInteracted(true);
     let value = e.target.value;
 
-    const currentTokenDecimals = pair?.publicToken.decimals ?? 18;
+    const currentTokenDecimals = !isEncrypt
+      ? (pair?.confidentialToken?.decimals ?? 6)
+      : (pair?.publicToken.decimals ?? 18);
 
     if (value.includes(".")) {
       const parts = value.split(".");
@@ -262,7 +264,7 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
         <div className="flex justify-between items-center w-full">
           <div className="text-xs text-[#336699]">
             Balance: {isEncrypt && formatTokenAmount(balances?.publicBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
-            {!isEncrypt && formatTokenAmount(balances?.confidentialBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
+            {!isEncrypt && formatTokenAmount(balances?.confidentialBalance ?? 0n, pair?.confidentialToken?.decimals ?? 18)}
           </div>
           <Button
             disabled={disabled}

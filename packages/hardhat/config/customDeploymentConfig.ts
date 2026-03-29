@@ -16,7 +16,7 @@ export const chainConfig: ChainConfigMap = {
     skipTokens: true
   },
   "421614": {
-    weth: "0x0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
+    weth: "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
     eeth: "",
     skipTokens: true
   },

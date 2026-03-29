@@ -164,7 +164,10 @@ export const useUpdateEncryptDecryptValueByPercent = () => {
           state.decryptValue = amount;
         }
         // Update the input string with the formatted amount
-        state.inputString = formatUnits(amount, pair.publicToken.decimals);
+        const currentTokenDecimals = !state.isEncrypt
+          ? (pair?.confidentialToken?.decimals ?? 6)
+          : (pair?.publicToken.decimals ?? 18);
+        state.inputString = formatUnits(amount, currentTokenDecimals);
       });
     },
     [pair, balances],

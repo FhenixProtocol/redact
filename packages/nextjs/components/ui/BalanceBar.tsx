@@ -15,6 +15,7 @@ interface BalanceBarProps {
   claimableAmount?: bigint;
   showBalance?: boolean;
   decimals?: number;
+  confidentialDecimals?: number;
   height?: number;
   borderClassName?: string;
   infoRowPosition?: "top" | "bottom";
@@ -87,6 +88,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
     claimableAmount = 0n,
     showBalance = false,
     decimals = 18,
+    confidentialDecimals,
     height = 10,
     borderClassName = "border-2 border-blue-700",
     infoRowPosition = "top",
@@ -96,8 +98,13 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
 
   const unsealedConfidentialBalance = value ?? 0n;
 
+  // Scale confidential balance to public decimals for correct totals and percentages
+  const confDecimals = confidentialDecimals ?? decimals;
+  const rate = decimals > confDecimals ? 10n ** BigInt(decimals - confDecimals) : 1n;
+  const scaledConfidentialBalance = BigInt(unsealedConfidentialBalance) * rate;
+
   const totalBalance =
-    BigInt(publicBalance) + BigInt(unsealedConfidentialBalance) + BigInt(claimableAmount) + BigInt(fragmentedBalance);
+    BigInt(publicBalance) + scaledConfidentialBalance + BigInt(claimableAmount) + BigInt(fragmentedBalance);
 
   const publicPercentage = totalBalance > 0n ? Number((BigInt(publicBalance) * 10000n) / totalBalance) / 100 : 0;
 
@@ -105,7 +112,7 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
     totalBalance > 0n ? Number((BigInt(fragmentedBalance) * 10000n) / totalBalance) / 100 : 0;
 
   const confidentialPercentage =
-    totalBalance > 0n ? Number((BigInt(unsealedConfidentialBalance) * 10000n) / totalBalance) / 100 : 0;
+    totalBalance > 0n ? Number((scaledConfidentialBalance * 10000n) / totalBalance) / 100 : 0;
   const claimablePercentage = totalBalance > 0n ? Number((BigInt(claimableAmount) * 10000n) / totalBalance) / 100 : 0;
 
   const displayPublic = useMemo(() => {
@@ -115,8 +122,8 @@ const BalanceBar = React.forwardRef<HTMLDivElement, BalanceBarProps>((props, ref
 
   const displayConfidential = useMemo(() => {
     if (totalBalance === 0n) return "0";
-    return formatTokenAmount(unsealedConfidentialBalance, decimals);
-  }, [unsealedConfidentialBalance, decimals, totalBalance]);
+    return formatTokenAmount(unsealedConfidentialBalance, confDecimals);
+  }, [unsealedConfidentialBalance, confDecimals, totalBalance]);
 
   const displayClaimable = useMemo(() => {
     if (totalBalance === 0n) return "0";

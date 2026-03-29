@@ -83,6 +83,7 @@ const TokenHeader = ({
         confidentialBalance={balances?.confidentialBalance ?? 0n}
         claimableAmount={pairClaims?.totalDecryptedAmount ?? 0n}
         decimals={pair.publicToken.decimals}
+        confidentialDecimals={pair.confidentialToken?.decimals}
         showBalance={false}
         infoRowPosition="bottom"
         fragmentedBalance={fragmentedBalances?.publicBalance ?? 0n}
@@ -104,12 +105,17 @@ const TokenTotalBalanceRow = ({
   const fragmentedBalances = useConfidentialTokenPairBalances(fragmentedPair?.publicToken.address);
   const fragmentedBalance = fragmentedBalances?.publicBalance ?? 0n;
 
+  const confDecimals = pair.confidentialToken?.decimals ?? pair.publicToken.decimals;
+  const pubDecimals = pair.publicToken.decimals;
+  const rate = pubDecimals > confDecimals ? 10n ** BigInt(pubDecimals - confDecimals) : 1n;
+
   const totalBalance = useMemo(() => {
     if (decryptedBalance == null) return -1n;
+    const scaledConfidential = decryptedBalance * rate;
     return (
-      (balances?.publicBalance ?? 0n) + decryptedBalance + (pairClaims?.totalDecryptedAmount ?? 0n) + fragmentedBalance
+      (balances?.publicBalance ?? 0n) + scaledConfidential + (pairClaims?.totalDecryptedAmount ?? 0n) + fragmentedBalance
     );
-  }, [decryptedBalance, balances?.publicBalance, pairClaims?.totalDecryptedAmount, fragmentedBalance]);
+  }, [decryptedBalance, balances?.publicBalance, pairClaims?.totalDecryptedAmount, fragmentedBalance, rate]);
 
   return (
     <div className="flex flex-col items-start">

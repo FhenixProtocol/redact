@@ -13,9 +13,9 @@
         "confidentialToken": {
           "name": "Confidential Wrapped ETHER",
           "symbol": "eETH",
-          "decimals": 18,
+          "decimals": 6,
           "error": null,
-          "address": "0x87A3effB84CBE1E4caB6Ab430139eC41d156D55A",
+          "address": "0x659bc6F4E108F69Fb66AC0850d7d2a486218C820",
           "loading": false
         },
         "confidentialTokenDeployed": true,
@@ -35,54 +35,16 @@
         "confidentialToken": {
           "name": "Confidential Wrapped ETHER",
           "symbol": "eETH",
-          "decimals": 18,
+          "decimals": 6,
           "error": null,
-          "address": "0x87A3effB84CBE1E4caB6Ab430139eC41d156D55A",
+          "address": "0x659bc6F4E108F69Fb66AC0850d7d2a486218C820",
           "loading": false
         },
         "confidentialTokenDeployed": true,
         "isStablecoin": false,
         "isWETH": true,
         "fragmentedPair": ""
-      },
-      "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238": {
-        "publicToken": {
-          "address": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-          "name": "USD Coin",
-          "symbol": "USDC",
-          "decimals": 6,
-          "image": ""
-        },
-        "confidentialToken": {
-          "address": "0xd38AB9f1563316DeD5d3B3d5e727d55f410d492E",
-          "name": "Confidential USD Coin",
-          "symbol": "eUSDC",
-          "decimals": 6
-        },
-        "confidentialTokenDeployed": true,
-        "isStablecoin": false,
-        "isWETH": false,
-        "fragmentedPair": ""
-      }, 
-      "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4": {
-        "publicToken": {
-          "address": "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4",
-          "name": "EUR Coin",
-          "symbol": "EURC",
-          "decimals": 6,
-          "image": ""
-        },
-        "confidentialToken": {
-          "address": "0xb5cE4628874eBD8ED027DfE6Fb4E91346E9C5b48",
-          "name": "Confidential EUR Coin",
-          "symbol": "eEURC",
-          "decimals": 6
-        },
-        "confidentialTokenDeployed": true,
-        "isStablecoin": false,
-        "isWETH": false,
-        "fragmentedPair": ""
-      }           
+      }     
     },
     "421614": {
       "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee": {
@@ -97,9 +59,9 @@
         "confidentialToken": {
           "name": "Confidential Wrapped ETHER",
           "symbol": "eETH",
-          "decimals": 18,
+          "decimals": 6,
           "error": null,
-          "address": "0xec958EcBD30a8874503ee6C39AB6C4881018C265",
+          "address": "0x567Cf540203C9Ce44d280fcD40D704eC81c5c61b",
           "loading": false
         },
         "confidentialTokenDeployed": true,
@@ -119,9 +81,9 @@
         "confidentialToken": {
           "name": "Confidential Wrapped ETHER",
           "symbol": "eETH",
-          "decimals": 18,
+          "decimals": 6,
           "error": null,
-          "address": "0xec958EcBD30a8874503ee6C39AB6C4881018C265",
+          "address": "0x567Cf540203C9Ce44d280fcD40D704eC81c5c61b",
           "loading": false
         },
         "confidentialTokenDeployed": true,
@@ -143,9 +105,9 @@
         "confidentialToken": {
           "name": "Confidential Wrapped ETHER",
           "symbol": "eETH",
-          "decimals": 18,
+          "decimals": 6,
           "error": null,
-          "address": "0xf214B36A52B037Db6662b3fF7d8F08A62F00B754",
+          "address": "0x21968BA6348f086017329Be8b63Fd0194A7CBA40",
           "loading": false
         },
         "confidentialTokenDeployed": true,
@@ -165,35 +127,16 @@
         "confidentialToken": {
           "name": "Confidential Wrapped ETHER",
           "symbol": "eETH",
-          "decimals": 18,
+          "decimals": 6,
           "error": null,
-          "address": "0xf214B36A52B037Db6662b3fF7d8F08A62F00B754",
+          "address": "0x21968BA6348f086017329Be8b63Fd0194A7CBA40",
           "loading": false
         },
         "confidentialTokenDeployed": true,
         "isStablecoin": false,
         "isWETH": true,
         "fragmentedPair": ""
-      },
-      "0x036CbD53842c5426634e7929541eC2318f3dCF7e": {
-        "publicToken": {
-          "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-          "name": "USD Coin",
-          "symbol": "USDC",
-          "decimals": 6,
-          "image": ""
-        },
-        "confidentialToken": {
-          "address": "0x4517d47188190126C92841834F626f02FAe948d4",
-          "name": "Confidential USD Coin",
-          "symbol": "eUSDC",
-          "decimals": 6
-        },
-        "confidentialTokenDeployed": true,
-        "isStablecoin": false,
-        "isWETH": false,
-        "fragmentedPair": ""
-      }      
+      }   
     }     
   }
 }

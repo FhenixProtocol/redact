@@ -167,12 +167,17 @@ const TokenRowItem = ({ pairAddress }: { pairAddress: string }) => {
   const fragmentedBalance = fragmentedBalances?.publicBalance ?? 0n;
 
   const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint64, balances?.confidentialBalance);
+  const confDecimals = pair?.confidentialToken?.decimals ?? pair?.publicToken.decimals ?? 18;
+  const pubDecimals = pair?.publicToken.decimals ?? 18;
+  const rate = pubDecimals > confDecimals ? 10n ** BigInt(pubDecimals - confDecimals) : 1n;
+
   const totalBalance = useMemo(() => {
     if (decryptedBalance == null) return -1n;
+    const scaledConfidential = decryptedBalance * rate;
     return (
-      (balances?.publicBalance ?? 0n) + decryptedBalance + (pairClaims?.totalDecryptedAmount ?? 0n) + fragmentedBalance
+      (balances?.publicBalance ?? 0n) + scaledConfidential + (pairClaims?.totalDecryptedAmount ?? 0n) + fragmentedBalance
     );
-  }, [decryptedBalance, balances?.publicBalance, pairClaims?.totalDecryptedAmount, fragmentedBalance]);
+  }, [decryptedBalance, balances?.publicBalance, pairClaims?.totalDecryptedAmount, fragmentedBalance, rate]);
 
   if (pair == null) return null;
   if (pair.isWETH) return null;
@@ -207,6 +212,7 @@ const TokenRowItem = ({ pairAddress }: { pairAddress: string }) => {
           confidentialBalance={balances?.confidentialBalance ?? 0n}
           claimableAmount={pairClaims?.totalDecryptedAmount ?? 0n}
           decimals={pair.publicToken.decimals}
+          confidentialDecimals={pair.confidentialToken?.decimals}
           showBalance={false}
           fragmentedBalance={fragmentedBalance}
         />
