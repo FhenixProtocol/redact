@@ -170,7 +170,7 @@ const TokenBalanceRow = ({
                   <>
                     <CleartextBalance
                       balance={pairClaims.totalDecryptedAmount}
-                      decimals={pair.publicToken.decimals}
+                      decimals={pair.confidentialToken?.decimals ?? 6}
                       className="text-left min-w-[10px] text-lg text-success-500"
                       showIcon={false}
                     />
