@@ -164,10 +164,12 @@ export const useClaimFherc20Action = () => {
             actionType: TransactionActionType.Claim,
           },
           {
-            onBlockConfirmation: () => {
+            onBlockConfirmation: async () => {
               removeClaimedClaim(claim);
-              fetchPairClaims(claim);
               refetchSingleTokenPairBalances(claim.erc20Address);
+              // Delay re-fetching claims to allow RPC to index the state change
+              await new Promise(r => setTimeout(r, 3000));
+              fetchPairClaims(claim);
             },
           },
         );
@@ -253,10 +255,12 @@ export const useClaimAllAction = () => {
             actionType: TransactionActionType.Claim,
           },
           {
-            onBlockConfirmation: () => {
+            onBlockConfirmation: async () => {
               removePairClaimableClaims(publicTokenAddress);
-              fetchPairClaims({ erc20Address: publicTokenAddress, fherc20Address: confidentialTokenAddress });
               refetchSingleTokenPairBalances(publicTokenAddress);
+              // Delay re-fetching claims to allow RPC to index the state change
+              await new Promise(r => setTimeout(r, 3000));
+              fetchPairClaims({ erc20Address: publicTokenAddress, fherc20Address: confidentialTokenAddress });
             },
           },
         );
