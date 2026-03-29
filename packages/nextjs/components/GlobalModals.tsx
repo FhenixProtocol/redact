@@ -8,7 +8,7 @@ import { useGlobalState } from "~~/services/store/store";
 import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
 
 export const GlobalModals = () => {
-  const { isSelectTokenModalOpen, setSelectTokenModalOpen, onSelectTokenCallback } = useGlobalState();
+  const { isSelectTokenModalOpen, setSelectTokenModalOpen, onSelectTokenCallback, isMigrationModalOpen, setMigrationModalOpen } = useGlobalState();
 
   const handleSelectToken = (tokenPair: ConfidentialTokenPair, isEncrypt?: boolean) => {
     if (onSelectTokenCallback) {
@@ -21,6 +21,34 @@ export const GlobalModals = () => {
     <>
       {/* Add Token Modal */}
       <AddTokenModal />
+
+      {/* Migration Modal */}
+      <Modal
+        isOpen={isMigrationModalOpen}
+        onClose={() => setMigrationModalOpen(false)}
+        title="Migration Instraction"
+        duration="slow"
+        className="w-[600px]"
+      >
+        <div>
+          <p>Redact flow and contracts have been updated and not compatible with the old contract version.</p>
+          <br/>
+          <p>
+            Please go to{" "}
+            <a
+              href="https://test.redact.money"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-accent underline"
+            >
+              old redact version
+            </a>{" "}
+            ,decrypt and claim your tokens.
+            <br/>
+            The old version will be deprecated in the future.
+          </p>
+        </div>
+      </Modal>
 
       {/* Select Token Modal */}
       <Modal
