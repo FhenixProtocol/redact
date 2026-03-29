@@ -172,7 +172,7 @@ export const addArbitraryToken = async (pairWithBalances: ConfidentialTokenPairW
 };
 
 const _fetchIsERC7984 = async (chain: number, address: string) => {
-  const publicClient = getPublicClient(wagmiConfig);
+  const publicClient = getPublicClient(wagmiConfig, { chainId: chain });
 
   try {
     // ERC7984 interface ID
@@ -198,7 +198,7 @@ const _fetchIsERC7984 = async (chain: number, address: string) => {
 };
 
 const _fetchUnderlyingERC20 = async (chain: number, address: string) => {
-  const publicClient = getPublicClient(wagmiConfig);
+  const publicClient = getPublicClient(wagmiConfig, { chainId: chain });
   const underlyingERC20 = await publicClient.readContract({
     address: address as Address,
     abi: confidentialErc20Abi,
@@ -208,7 +208,7 @@ const _fetchUnderlyingERC20 = async (chain: number, address: string) => {
 };
 
 const _fetchWETHAddress = async (chain: number): Promise<Address> => {
-  const publicClient = getPublicClient(wagmiConfig);
+  const publicClient = getPublicClient(wagmiConfig, { chainId: chain });
   const redactCoreData = getDeployedContract(chain, "RedactCore");
 
   const wethAddress = await publicClient.readContract({
@@ -225,7 +225,7 @@ const _getIsWETHFlags = (addresses: Address[], wethAddress: Address): boolean[] 
 };
 
 const _fetchConfidentialERC20IfExists = async (chain: number, addresses: Address[]) => {
-  const publicClient = getPublicClient(wagmiConfig);
+  const publicClient = getPublicClient(wagmiConfig, { chainId: chain });
   const redactCoreData = getDeployedContract(chain, "RedactCore");
 
   const results = await publicClient.multicall({
@@ -352,7 +352,7 @@ const _fetchConfidentialPairBalances = async (
     }));
   }
 
-  const publicClient = getPublicClient(wagmiConfig);
+  const publicClient = getPublicClient(wagmiConfig, { chainId: chain });
 
   const ethBalance = await publicClient.getBalance({
     address: account,
