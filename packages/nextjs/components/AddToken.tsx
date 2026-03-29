@@ -9,7 +9,9 @@ import { isAddress } from "viem";
 import { Button } from "~~/components/ui/Button";
 import { FnxInput } from "~~/components/ui/FnxInput";
 import { Spinner } from "~~/components/ui/Spinner";
+import { useDeployFherc20Action } from "~~/hooks/useEncryptActions";
 import { formatTokenAmount } from "~~/lib/common";
+import { useGlobalState } from "~~/services/store/store";
 import {
   ConfidentialTokenPairWithBalances,
   TokenItemData,
@@ -66,9 +68,41 @@ export function AddToken({ onClose }: AddTokenProps) {
     setLoadingTokenDetails(false);
   };
 
-  const handleAdd = () => {
+  const { onDeployFherc20, isDeploying } = useDeployFherc20Action();
+  const { onSelectTokenCallback, setSelectTokenModalOpen } = useGlobalState();
+
+  const requiresDeployment = tokenDetails != null && !tokenDetails.pair.confidentialTokenDeployed;
+
+  const handleAdd = async () => {
     if (tokenDetails == null) return;
-    addArbitraryToken(tokenDetails);
+
+    let finalDetails = tokenDetails;
+
+    if (requiresDeployment) {
+      try {
+        await onDeployFherc20({
+          tokenAddress: tokenDetails.pair.publicToken.address,
+          publicTokenSymbol: tokenDetails.pair.publicToken.symbol,
+        });
+        // Re-search to get updated pair with deployed confidential token
+        const updated = await searchArbitraryToken(tokenDetails.pair.publicToken.address);
+        if (updated) {
+          finalDetails = updated;
+        }
+      } catch {
+        toast.error("Deployment failed");
+        return;
+      }
+    }
+
+    await addArbitraryToken(finalDetails);
+
+    // Auto-select the newly added token if opened from the token selector
+    if (onSelectTokenCallback) {
+      onSelectTokenCallback(finalDetails.pair, true);
+      setSelectTokenModalOpen(false, null);
+    }
+
     if (onClose) onClose();
   };
 
@@ -109,10 +143,10 @@ export function AddToken({ onClose }: AddTokenProps) {
           className="flex-1 text-white"
           uppercase={true}
           onClick={!tokenDetails ? handleSearch : handleAdd}
-          disabled={!tokenDetails || loadingTokenDetails}
-          icon={loadingTokenDetails ? SpinnerIcon : PlusIcon}
+          disabled={!tokenDetails || loadingTokenDetails || isDeploying}
+          icon={loadingTokenDetails || isDeploying ? SpinnerIcon : PlusIcon}
         >
-          {loadingTokenDetails ? "Loading..." : "Add"}
+          {loadingTokenDetails ? "Loading..." : isDeploying ? "Deploying..." : requiresDeployment ? "Add & Deploy" : "Add"}
         </Button>
         <Button
           variant="surface"

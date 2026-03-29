@@ -53,9 +53,10 @@ export const useGlobalState = create<GlobalState>(set => ({
   isSelectTokenModalOpen: false,
   onSelectTokenCallback: null,
   setSelectTokenModalOpen: (isOpen: boolean, onSelectToken = null) =>
-    set(() => ({
+    set(state => ({
       isSelectTokenModalOpen: isOpen,
-      onSelectTokenCallback: onSelectToken,
+      // Preserve existing callback when closing (e.g. to open AddToken), clear only when explicitly provided
+      onSelectTokenCallback: onSelectToken !== null ? onSelectToken : isOpen ? null : state.onSelectTokenCallback,
     })),
 
   isFAQOpen: false,

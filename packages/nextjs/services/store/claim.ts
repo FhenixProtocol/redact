@@ -108,15 +108,10 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
 
   results.forEach(({ status, result }, index) => {
     if (status === "failure") {
-      console.log("[Claims] getUserClaims failed for", pairsWithFherc20[index].fherc20Address);
       return;
     }
 
     const rawClaims = result as unknown as Claim[];
-    console.log("[Claims] getUserClaims returned", rawClaims.length, "claims for", pairsWithFherc20[index].erc20Address);
-    rawClaims.forEach((claim, i) => {
-      console.log(`[Claims]   [${i}] ctHash=${claim.ctHash} decrypted=${claim.decrypted} claimed=${claim.claimed} requestedAmount=${claim.requestedAmount} decryptedAmount=${claim.decryptedAmount}`);
-    });
 
     const claimsWithAddresses = rawClaims.map(claim => ({
       ...claim,
@@ -133,7 +128,6 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
 };
 
 const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
-  console.log("[Claims] Refetching", pendingClaims.length, "pending claims...");
   const publicClient = getPublicClient(wagmiConfig);
   const results = await publicClient?.multicall({
     contracts: pendingClaims.map(({ fherc20Address, ctHash }) => ({
@@ -148,13 +142,11 @@ const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
 
   results.forEach(({ status, result }, index) => {
     if (status === "failure") {
-      console.log("[Claims] getClaim failed for ctHash", pendingClaims[index].ctHash);
       return;
     }
 
     const { erc20Address, fherc20Address } = pendingClaims[index];
     const onChainClaim = result as unknown as Claim;
-    console.log(`[Claims] getClaim ctHash=${onChainClaim.ctHash} decrypted=${onChainClaim.decrypted} claimed=${onChainClaim.claimed} decryptedAmount=${onChainClaim.decryptedAmount}`);
 
     const claimWithAddresses = {
       ...onChainClaim,
@@ -231,11 +223,7 @@ export const decryptPendingClaims = async (pendingClaims: ClaimWithAddresses[]) 
     if (claim.decryptionResult) continue; // Already decrypted off-chain
 
     try {
-      console.log("--- decryptForTx ---");
-      console.log("[Claims] Calling decryptForTx for ctHash", claim.ctHash);
       const result = await client.decryptForTx(claim.ctHash).withoutPermit().execute();
-      console.log("[Claims] decryptForTx result:", result.decryptedValue, result.signature);
-      console.log("--- decryptForTx done ---");
 
       const decryptionResult = {
         decryptedValue: result.decryptedValue,
@@ -247,7 +235,6 @@ export const decryptPendingClaims = async (pendingClaims: ClaimWithAddresses[]) 
         if (stored) {
           // Replace the entire claim object to ensure immer detects the change
           state.claims[chain][claim.erc20Address][key] = { ...stored, decryptionResult };
-          console.log("[Claims] Stored decryptionResult for", claim.ctHash, "value:", result.decryptedValue);
         } else {
           console.log("[Claims] WARNING: claim not found in store for", claim.ctHash, "erc20:", claim.erc20Address, "chain:", chain);
         }

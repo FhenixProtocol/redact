@@ -14,7 +14,7 @@ import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { targetNetworksNoHardhat, useCofhe, useIsConnectedChainSupported } from "~~/hooks/useCofhe";
 import { useClaimAllAction, useDecryptFherc20Action } from "~~/hooks/useDecryptActions";
-import { useApproveFherc20Action, useDeployFherc20Action, useEncryptErc20Action } from "~~/hooks/useEncryptActions";
+import { useApproveFherc20Action, useEncryptErc20Action } from "~~/hooks/useEncryptActions";
 import { formatTokenAmount } from "~~/lib/common";
 import { getConfidentialSymbol } from "~~/lib/common";
 import { usePairClaimableItems, usePairClaims } from "~~/services/store/claim";
@@ -314,24 +314,6 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   const hasInteracted = useEncryptDecryptHasInteracted();
   const setHasInteracted = useSetEncryptDecryptHasInteracted();
 
-  // Deploy
-
-  const isStablecoin = pair?.isStablecoin;
-
-  const { onDeployFherc20, isDeploying } = useDeployFherc20Action();
-
-  const handleDeploy = () => {
-    if (pair == null) return;
-    onDeployFherc20({ tokenAddress: pair.publicToken.address, publicTokenSymbol: pair.publicToken.symbol });
-  };
-
-  const deployState = useMemo(() => {
-    if (pair == null) return TxGuideStepState.Ready;
-    if (pair.confidentialTokenDeployed) return TxGuideStepState.Success;
-    if (isDeploying) return TxGuideStepState.Loading;
-    return TxGuideStepState.Ready;
-  }, [pair, isDeploying]);
-
   // Encrypt
 
   const { onEncryptErc20, isEncrypting, isEncryptError } = useEncryptErc20Action();
@@ -429,9 +411,6 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   // ERRS
 
   const missingPairErrMessage = pair == null ? `Select a token to encrypt` : undefined;
-  const stablecoinErrMessage = isStablecoin
-    ? "Stablecoin encryption disabled until FHED (FHE Dollar) release"
-    : undefined;
 
   const valueErrMessage = hasInteracted && valueError != null ? `Invalid amount:\n${valueError}` : undefined;
   const encryptErrMessage = hasInteracted && isEncryptError ? `Encryption failed` : undefined;
@@ -440,17 +419,6 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   // Steps
 
   const steps = [
-    {
-      title: "Deploy",
-      cta: pair == null ? "ENCRYPT" : `DEPLOY`,
-      hint: pair?.publicToken.symbol
-        ? `e${pair.publicToken.symbol} has not been deployed yet (1 time tx)`
-        : "Please select a token",
-      state: deployState,
-      action: handleDeploy,
-      disabled: pair == null || isDeploying || isStablecoin,
-      errorMessage: sharedErrMessage ?? stablecoinErrMessage,
-    },
     {
       title: "Approve",
       cta: pair == null ? "ENCRYPT" : `APPROVE`,
