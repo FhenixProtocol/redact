@@ -1,118 +1,64 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v5.1.0) (token/ERC20/ERC20.sol)
-
 pragma solidity ^0.8.25;
 
-import { IERC20, IERC20Metadata, ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { IFHERC20, FHERC20 } from "./FHERC20.sol";
-import { euint128, FHE } from "@fhenixprotocol/cofhe-contracts/FHE.sol";
-import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import { ConfidentialClaim } from "./ConfidentialClaim.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {
+    FHERC20ERC20WrapperUpgradeable
+} from "fhenix-confidential-contracts/contracts/FHERC20/extensions/FHERC20ERC20WrapperUpgradeable.sol";
+import { IFHERC20 } from "fhenix-confidential-contracts/contracts/interfaces/IFHERC20.sol";
 
-contract ConfidentialERC20 is FHERC20, Ownable, ConfidentialClaim {
-    using EnumerableSet for EnumerableSet.UintSet;
-    using SafeERC20 for IERC20;
+/**
+ * @dev Upgradeable confidential ERC-20 wrapper deployed by {RedactCore}.
+ *
+ * Wraps a standard ERC-20 token into a confidential {FHERC20} token.
+ * Name is auto-generated as `"FHERC20 Confidential <underlyingName>"` and
+ * symbol as `"e<underlyingSymbol>"`.
+ *
+ * Deployed behind a UUPS proxy; the owner (typically RedactCore) may authorize upgrades.
+ */
+contract ConfidentialERC20 is FHERC20ERC20WrapperUpgradeable, OwnableUpgradeable, UUPSUpgradeable {
+    error InvalidUnderlying(address token);
 
-    IERC20 private immutable _erc20;
-    string private _symbol;
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
 
-    event EncryptedERC20(address indexed from, address indexed to, uint128 value);
-    event DecryptedERC20(address indexed from, address indexed to, uint128 value);
-    event ClaimedDecryptedERC20(address indexed from, address indexed to, uint128 value);
-    event SymbolUpdated(string symbol);
+    function initialize(IERC20 erc20_) public initializer {
+        if (_isFHERC20(address(erc20_))) revert InvalidUnderlying(address(erc20_));
 
-    /**
-     * @dev The erc20 token couldn't be wrapped.
-     */
-    error FHERC20InvalidErc20(address token);
+        uint8 d = _cappedDecimals(address(erc20_));
+        string memory underlyingName = IERC20Metadata(address(erc20_)).name();
+        string memory underlyingSymbol = IERC20Metadata(address(erc20_)).symbol();
 
-    /**
-     * @dev The recipient is the zero address.
-     */
-    error InvalidRecipient();
+        __FHERC20_init(
+            string.concat("FHERC20 Confidential ", underlyingName),
+            string.concat("e", underlyingSymbol),
+            d,
+            ""
+        );
+        __FHERC20ERC20Wrapper_init(erc20_);
+        __Ownable_init(msg.sender);
+        __UUPSUpgradeable_init();
+    }
 
-    constructor(
-        IERC20 erc20_,
-        string memory symbolOverride_
-    )
-        Ownable(msg.sender)
-        FHERC20(
-            string.concat("Confidential ", IERC20Metadata(address(erc20_)).name()),
-            bytes(symbolOverride_).length == 0
-                ? string.concat("e", IERC20Metadata(address(erc20_)).symbol())
-                : symbolOverride_,
-            IERC20Metadata(address(erc20_)).decimals()
-        )
-    {
-        try IFHERC20(address(erc20_)).isFherc20() returns (bool isFherc20) {
-            if (isFherc20) {
-                revert FHERC20InvalidErc20(address(erc20_));
-            }
+    function _cappedDecimals(address token) private view returns (uint8) {
+        (bool ok, bytes memory data) = token.staticcall(abi.encodeCall(IERC20Metadata.decimals, ()));
+        uint8 d = (ok && data.length == 32) ? abi.decode(data, (uint8)) : 18;
+        return d > 6 ? 6 : d;
+    }
+
+    function _isFHERC20(address token) private view returns (bool) {
+        try IERC165(token).supportsInterface(type(IFHERC20).interfaceId) returns (bool supported) {
+            return supported;
         } catch {
-            // Not an FHERC20, continue
-        }
-
-        _erc20 = erc20_;
-
-        _symbol = bytes(symbolOverride_).length == 0
-            ? string.concat("e", IERC20Metadata(address(erc20_)).symbol())
-            : symbolOverride_;
-    }
-
-    function symbol() public view override returns (string memory) {
-        return _symbol;
-    }
-
-    function updateSymbol(string memory updatedSymbol) public onlyOwner {
-        _symbol = updatedSymbol;
-        emit SymbolUpdated(updatedSymbol);
-    }
-
-    /**
-     * @dev Returns the address of the erc20 ERC-20 token that is being encrypted wrapped.
-     */
-    function erc20() public view returns (IERC20) {
-        return _erc20;
-    }
-
-    function encrypt(address to, uint128 value) public {
-        if (to == address(0)) to = msg.sender;
-        _erc20.safeTransferFrom(msg.sender, address(this), value);
-        _mint(to, value);
-        emit EncryptedERC20(msg.sender, to, value);
-    }
-
-    function decrypt(address to, uint128 value) public {
-        if (to == address(0)) to = msg.sender;
-        euint128 burned = _burn(msg.sender, value);
-        FHE.decrypt(burned);
-        _createClaim(to, value, burned);
-        emit DecryptedERC20(msg.sender, to, value);
-    }
-
-    /**
-     * @notice Claim a decrypted amount of the underlying ERC20
-     * @param ctHash The ctHash of the burned amount
-     */
-    function claimDecrypted(uint256 ctHash) public {
-        Claim memory claim = _handleClaim(ctHash);
-
-        // Send the ERC20 to the recipient
-        _erc20.safeTransfer(claim.to, claim.decryptedAmount);
-        emit ClaimedDecryptedERC20(msg.sender, claim.to, claim.decryptedAmount);
-    }
-
-    /**
-     * @notice Claim all decrypted amounts of the underlying ERC20
-     */
-    function claimAllDecrypted() public {
-        Claim[] memory claims = _handleClaimAll();
-
-        for (uint256 i = 0; i < claims.length; i++) {
-            _erc20.safeTransfer(claims[i].to, claims[i].decryptedAmount);
-            emit ClaimedDecryptedERC20(msg.sender, claims[i].to, claims[i].decryptedAmount);
+            return false;
         }
     }
+
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 }

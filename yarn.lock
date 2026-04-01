@@ -234,6 +234,73 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cofhe/hardhat-plugin@npm:0.4.0":
+  version: 0.4.0
+  resolution: "@cofhe/hardhat-plugin@npm:0.4.0"
+  dependencies:
+    "@cofhe/mock-contracts": 0.4.0
+    "@cofhe/sdk": 0.4.0
+    chai: ^4.2.0
+    chalk: ^4.1.2
+    fast-glob: ^3.3.2
+    viem: ^2.38.6
+  peerDependencies:
+    "@fhenixprotocol/cofhe-contracts": ">=0.1.0"
+    "@nomicfoundation/hardhat-ethers": ^3.0.0
+    "@openzeppelin/contracts": ^5.0.0
+    ethers: ^5.0.0 || ^6.0.0
+    hardhat: ^2.0.0
+  peerDependenciesMeta:
+    "@fhenixprotocol/cofhe-contracts":
+      optional: false
+    "@openzeppelin/contracts":
+      optional: false
+  checksum: 679d47335b88c306ba3c03d632703a6f74c392c2e394d4df82885719cc03c91c24765579978b26b90b35de3e74ce7bd10bfe1be78aacb2545c88eba61ae4b1fb
+  languageName: node
+  linkType: hard
+
+"@cofhe/mock-contracts@npm:0.4.0":
+  version: 0.4.0
+  resolution: "@cofhe/mock-contracts@npm:0.4.0"
+  dependencies:
+    "@fhenixprotocol/cofhe-contracts": 0.1.0
+    "@openzeppelin/contracts": ^5.0.0
+    "@openzeppelin/contracts-upgradeable": ^5.0.0
+  checksum: cc4b2cc5716b419cacd4e58472ee677002085ea6317ac238a8f2dd49a0ccef249f8fdbfbadeb12cd29ca6d33ce20fdcce530f11b7992bf686472a89ba44b373d
+  languageName: node
+  linkType: hard
+
+"@cofhe/sdk@npm:0.4.0":
+  version: 0.4.0
+  resolution: "@cofhe/sdk@npm:0.4.0"
+  dependencies:
+    iframe-shared-storage: ^1.0.34
+    immer: ^10.1.1
+    node-tfhe: 0.11.1
+    tfhe: 0.11.1
+    tweetnacl: ^1.0.3
+    viem: ^2.38.6
+    zod: ^4.0.0
+    zustand: ^5.0.1
+  peerDependencies:
+    "@nomicfoundation/hardhat-ethers": ^3.0.0
+    "@wagmi/core": ^2.0.0
+    ethers: ^5.0.0 || ^6.0.0
+    hardhat: ^2.0.0
+    viem: ^2.38.6
+  peerDependenciesMeta:
+    "@nomicfoundation/hardhat-ethers":
+      optional: true
+    "@wagmi/core":
+      optional: true
+    ethers:
+      optional: true
+    hardhat:
+      optional: true
+  checksum: dd826e03af6d26d8f25ed0a91c3cc0dd3d5674fea152b9192c5ce83c820cee75cf06019b22c63c416d0c2aaaaf6f6c787efd26acbb85a6549dae8025134be76b
+  languageName: node
+  linkType: hard
+
 "@coinbase/wallet-sdk@npm:4.3.0":
   version: 4.3.0
   resolution: "@coinbase/wallet-sdk@npm:4.3.0"
@@ -1399,7 +1466,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fhenixprotocol/cofhe-mock-contracts@npm:^0.2.1-alpha.0, @fhenixprotocol/cofhe-mock-contracts@npm:^0.2.1-alpha.4":
+"@fhenixprotocol/cofhe-contracts@npm:0.1.0":
+  version: 0.1.0
+  resolution: "@fhenixprotocol/cofhe-contracts@npm:0.1.0"
+  dependencies:
+    "@openzeppelin/contracts": ^5.0.0
+  checksum: 8de9ec1e67f1df8d89943d73a0c3c02ddffc26907c25a5ffa6c5fe8c916e2a010e3f775a326f5923e81ba40b54bff19f849f6cbdbef81628ac7bbed0cda0fb3b
+  languageName: node
+  linkType: hard
+
+"@fhenixprotocol/cofhe-contracts@npm:0.1.3":
+  version: 0.1.3
+  resolution: "@fhenixprotocol/cofhe-contracts@npm:0.1.3"
+  dependencies:
+    "@openzeppelin/contracts": ^5.0.0
+  checksum: 37d4879cbc12c1fe65b73bf44a8a1c7f75fa0e4b29af89a5dd42689a742a7c8c6c6f95b5be7f6e0137b73c1558125651f19d6a138e0dbede676abbcf956cc401
+  languageName: node
+  linkType: hard
+
+"@fhenixprotocol/cofhe-mock-contracts@npm:^0.2.1-alpha.4":
   version: 0.2.1-alpha.4
   resolution: "@fhenixprotocol/cofhe-mock-contracts@npm:0.2.1-alpha.4"
   dependencies:
@@ -2685,10 +2770,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/env@npm:15.2.2":
-  version: 15.2.2
-  resolution: "@next/env@npm:15.2.2"
-  checksum: da032cecdb04583ae6aa0679a912d5e6b36220bc33cf0933b8b350b91decc1001e1aa7baf26d9ac1e89033eefdc5936c634f485b05517facec1737d02f6099e2
+"@next/env@npm:15.2.8":
+  version: 15.2.8
+  resolution: "@next/env@npm:15.2.8"
+  checksum: df7606a0cca0b47b1157ef2e791c892f1fd6b9f715624e5aef48a3ca1de57d09cb3c821cc13c888a9b20ba8b17c5fb5742bb5ac6e0e7cd95f1e162fe33d9e59c
   languageName: node
   linkType: hard
 
@@ -2701,58 +2786,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/swc-darwin-arm64@npm:15.2.2":
-  version: 15.2.2
-  resolution: "@next/swc-darwin-arm64@npm:15.2.2"
+"@next/swc-darwin-arm64@npm:15.2.5":
+  version: 15.2.5
+  resolution: "@next/swc-darwin-arm64@npm:15.2.5"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@next/swc-darwin-x64@npm:15.2.2":
-  version: 15.2.2
-  resolution: "@next/swc-darwin-x64@npm:15.2.2"
+"@next/swc-darwin-x64@npm:15.2.5":
+  version: 15.2.5
+  resolution: "@next/swc-darwin-x64@npm:15.2.5"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@next/swc-linux-arm64-gnu@npm:15.2.2":
-  version: 15.2.2
-  resolution: "@next/swc-linux-arm64-gnu@npm:15.2.2"
+"@next/swc-linux-arm64-gnu@npm:15.2.5":
+  version: 15.2.5
+  resolution: "@next/swc-linux-arm64-gnu@npm:15.2.5"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@next/swc-linux-arm64-musl@npm:15.2.2":
-  version: 15.2.2
-  resolution: "@next/swc-linux-arm64-musl@npm:15.2.2"
+"@next/swc-linux-arm64-musl@npm:15.2.5":
+  version: 15.2.5
+  resolution: "@next/swc-linux-arm64-musl@npm:15.2.5"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@next/swc-linux-x64-gnu@npm:15.2.2":
-  version: 15.2.2
-  resolution: "@next/swc-linux-x64-gnu@npm:15.2.2"
+"@next/swc-linux-x64-gnu@npm:15.2.5":
+  version: 15.2.5
+  resolution: "@next/swc-linux-x64-gnu@npm:15.2.5"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@next/swc-linux-x64-musl@npm:15.2.2":
-  version: 15.2.2
-  resolution: "@next/swc-linux-x64-musl@npm:15.2.2"
+"@next/swc-linux-x64-musl@npm:15.2.5":
+  version: 15.2.5
+  resolution: "@next/swc-linux-x64-musl@npm:15.2.5"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@next/swc-win32-arm64-msvc@npm:15.2.2":
-  version: 15.2.2
-  resolution: "@next/swc-win32-arm64-msvc@npm:15.2.2"
+"@next/swc-win32-arm64-msvc@npm:15.2.5":
+  version: 15.2.5
+  resolution: "@next/swc-win32-arm64-msvc@npm:15.2.5"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@next/swc-win32-x64-msvc@npm:15.2.2":
-  version: 15.2.2
-  resolution: "@next/swc-win32-x64-msvc@npm:15.2.2"
+"@next/swc-win32-x64-msvc@npm:15.2.5":
+  version: 15.2.5
+  resolution: "@next/swc-win32-x64-msvc@npm:15.2.5"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -3519,7 +3604,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts-upgradeable@npm:^5.0.0":
+"@openzeppelin/contracts-upgradeable@npm:5.4.0, @openzeppelin/contracts-upgradeable@npm:^5.0.0":
   version: 5.4.0
   resolution: "@openzeppelin/contracts-upgradeable@npm:5.4.0"
   peerDependencies:
@@ -4510,10 +4595,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@se-2/hardhat@workspace:packages/hardhat"
   dependencies:
+    "@cofhe/hardhat-plugin": 0.4.0
+    "@cofhe/sdk": 0.4.0
     "@ethersproject/abi": ~5.7.0
     "@ethersproject/providers": ~5.7.2
-    "@fhenixprotocol/cofhe-contracts": 0.0.13
-    "@fhenixprotocol/cofhe-mock-contracts": ^0.2.1-alpha.0
+    "@fhenixprotocol/cofhe-contracts": 0.1.3
     "@inquirer/password": ^4.0.2
     "@nomicfoundation/hardhat-chai-matchers": ~2.0.7
     "@nomicfoundation/hardhat-ethers": ~3.0.8
@@ -4545,6 +4631,7 @@ __metadata:
     eslint-config-prettier: ~8.10.0
     eslint-plugin-prettier: ~5.2.1
     ethers: ~6.13.2
+    fhenix-confidential-contracts: 0.3.1
     hardhat: ~2.22.10
     hardhat-deploy: ~0.12.4
     hardhat-deploy-ethers: ~0.4.2
@@ -4601,7 +4688,7 @@ __metadata:
     kubo-rpc-client: ~5.0.2
     lucide-react: ^0.477.0
     motion: ^12.5.0
-    next: 15.2.2
+    next: 15.2.8
     next-nprogress-bar: ~2.3.13
     next-themes: ~0.3.0
     postcss: ~8.4.45
@@ -6961,6 +7048,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"abitype@npm:1.2.3, abitype@npm:^1.2.3":
+  version: 1.2.3
+  resolution: "abitype@npm:1.2.3"
+  peerDependencies:
+    typescript: ">=5.0.4"
+    zod: ^3.22.0 || ^4.0.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+    zod:
+      optional: true
+  checksum: b5b5620f8e55a6dd7ae829630c0ded02b30f589f0f8f5ca931cdfcf6d7daa8154e30e3fe3593b3f6c4872a955ac55d447ccc2f801fd6a6aa698bdad966e3fe2e
+  languageName: node
+  linkType: hard
+
 "abort-controller@npm:^3.0.0":
   version: 3.0.0
   resolution: "abort-controller@npm:3.0.0"
@@ -8047,7 +8149,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chai@npm:~4.5.0":
+"chai@npm:^4.2.0, chai@npm:~4.5.0":
   version: 4.5.0
   resolution: "chai@npm:4.5.0"
   dependencies:
@@ -10718,6 +10820,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fhenix-confidential-contracts@npm:0.3.1":
+  version: 0.3.1
+  resolution: "fhenix-confidential-contracts@npm:0.3.1"
+  dependencies:
+    "@openzeppelin/contracts": ^5.2.0
+    "@openzeppelin/contracts-upgradeable": 5.4.0
+    "@typechain/ethers-v6": ~0.5.1
+    dotenv: ~16.4.5
+    envfile: ~7.1.0
+    qrcode: ~1.5.4
+  checksum: 06fff35013e3632cb119cb9caa701cefd944c91194801e05b163c9fb0925ffe419c7347d792ea2a3d30ab9234c3405481f8922c2f62fbbe7ab66269ffa27817c
+  languageName: node
+  linkType: hard
+
 "figures@npm:^3.2.0":
   version: 3.2.0
   resolution: "figures@npm:3.2.0"
@@ -11918,7 +12034,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"idb-keyval@npm:^6.2.1":
+"idb-keyval@npm:^6.2.1, idb-keyval@npm:^6.2.2":
   version: 6.2.2
   resolution: "idb-keyval@npm:6.2.2"
   checksum: 5ac99363d346dd849fda82057301b95c8a79d4d8f5435f84fb921c6f5f471d6a2bdf89599bbe075ea3466612d0a58b787a1698ef5e8f1fbb9a5d629be96523fa
@@ -11929,6 +12045,16 @@ __metadata:
   version: 1.2.1
   resolution: "ieee754@npm:1.2.1"
   checksum: 5144c0c9815e54ada181d80a0b810221a253562422e7c6c3a60b1901154184f49326ec239d618c416c1c5945a2e197107aee8d986a3dd836b53dffefd99b5e7e
+  languageName: node
+  linkType: hard
+
+"iframe-shared-storage@npm:^1.0.34":
+  version: 1.0.34
+  resolution: "iframe-shared-storage@npm:1.0.34"
+  dependencies:
+    idb-keyval: ^6.2.2
+    postmsg-rpc: ^2.4.0
+  checksum: 4d01e05aa957f98eec0c9e14a1daa701a5dc94d9c99f058ccb344ce80e17fb56da438307cfcd55f1c5f7eda74c525bc0b1a84a6082415edf88d39e44f36e108c
   languageName: node
   linkType: hard
 
@@ -14334,7 +14460,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.11, nanoid@npm:^3.3.6, nanoid@npm:^3.3.7":
+"nanoid@npm:^3.3.11, nanoid@npm:^3.3.6, nanoid@npm:^3.3.7, nanoid@npm:^3.3.8":
   version: 3.3.11
   resolution: "nanoid@npm:3.3.11"
   bin:
@@ -14425,19 +14551,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next@npm:15.2.2":
-  version: 15.2.2
-  resolution: "next@npm:15.2.2"
+"next@npm:15.2.8":
+  version: 15.2.8
+  resolution: "next@npm:15.2.8"
   dependencies:
-    "@next/env": 15.2.2
-    "@next/swc-darwin-arm64": 15.2.2
-    "@next/swc-darwin-x64": 15.2.2
-    "@next/swc-linux-arm64-gnu": 15.2.2
-    "@next/swc-linux-arm64-musl": 15.2.2
-    "@next/swc-linux-x64-gnu": 15.2.2
-    "@next/swc-linux-x64-musl": 15.2.2
-    "@next/swc-win32-arm64-msvc": 15.2.2
-    "@next/swc-win32-x64-msvc": 15.2.2
+    "@next/env": 15.2.8
+    "@next/swc-darwin-arm64": 15.2.5
+    "@next/swc-darwin-x64": 15.2.5
+    "@next/swc-linux-arm64-gnu": 15.2.5
+    "@next/swc-linux-arm64-musl": 15.2.5
+    "@next/swc-linux-x64-gnu": 15.2.5
+    "@next/swc-linux-x64-musl": 15.2.5
+    "@next/swc-win32-arm64-msvc": 15.2.5
+    "@next/swc-win32-x64-msvc": 15.2.5
     "@swc/counter": 0.1.3
     "@swc/helpers": 0.5.15
     busboy: 1.6.0
@@ -14482,7 +14608,7 @@ __metadata:
       optional: true
   bin:
     next: dist/bin/next
-  checksum: f7db89f62511d24682e255250530d018c808d7911a868fc0a8cd4ed87b6cea7f609c7d9e5869616b64351eef3da4c3ef45349e70e910d6dec3ff4d4faf604c04
+  checksum: 8d60e137d7e425615fbf639a05f7268c99016b89237bebc20805fb63da18692fd2534ef5ccdda790ddf0c1fd12c5a32850eb87feb6f322b0f5432a83867972ca
   languageName: node
   linkType: hard
 
@@ -15136,6 +15262,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ox@npm:0.14.7":
+  version: 0.14.7
+  resolution: "ox@npm:0.14.7"
+  dependencies:
+    "@adraffy/ens-normalize": ^1.11.0
+    "@noble/ciphers": ^1.3.0
+    "@noble/curves": 1.9.1
+    "@noble/hashes": ^1.8.0
+    "@scure/bip32": ^1.7.0
+    "@scure/bip39": ^1.6.0
+    abitype: ^1.2.3
+    eventemitter3: 5.0.1
+  peerDependencies:
+    typescript: ">=5.4.0"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 072768caa20419f6fba739aa28cca3896789b37e59e33d811d7a265a6c1044b4a03ff6abd82613f3da0e3965c517994b4841afa36da2c1bbf545fcf16680e885
+  languageName: node
+  linkType: hard
+
 "ox@npm:0.6.7":
   version: 0.6.7
   resolution: "ox@npm:0.6.7"
@@ -15693,6 +15840,15 @@ __metadata:
     picocolors: ^1.1.1
     source-map-js: ^1.2.1
   checksum: eb5d6cbdca24f50399aafa5d2bea489e4caee4c563ea1edd5a2485bc5f84e9ceef3febf170272bc83a99c31d23a316ad179213e853f34c2a7a8ffa534559d63a
+  languageName: node
+  linkType: hard
+
+"postmsg-rpc@npm:^2.4.0":
+  version: 2.4.0
+  resolution: "postmsg-rpc@npm:2.4.0"
+  dependencies:
+    shortid: ^2.2.8
+  checksum: aa397b3b47bf4ae09543843de531873cc08ef1a38dcf5a01ce3a28b7eb459271b795b99dea3eb97c9966de985279c6fda3e114801459774518a0bef3db74049e
   languageName: node
   linkType: hard
 
@@ -17023,6 +17179,15 @@ __metadata:
   bin:
     shjs: bin/shjs
   checksum: 7babc46f732a98f4c054ec1f048b55b9149b98aa2da32f6cf9844c434b43c6251efebd6eec120937bd0999e13811ebd45efe17410edb3ca938f82f9381302748
+  languageName: node
+  linkType: hard
+
+"shortid@npm:^2.2.8":
+  version: 2.2.17
+  resolution: "shortid@npm:2.2.17"
+  dependencies:
+    nanoid: ^3.3.8
+  checksum: e661408a6f7fb86a9947178984e739bdc99478745ffb8c8632b7b98c2a8d03d97c33aab6dcb9de73b8a64827a253266d407c362b6ac8b904b12014e8e428f9cd
   languageName: node
   linkType: hard
 
@@ -19082,6 +19247,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"viem@npm:^2.38.6":
+  version: 2.47.6
+  resolution: "viem@npm:2.47.6"
+  dependencies:
+    "@noble/curves": 1.9.1
+    "@noble/hashes": 1.8.0
+    "@scure/bip32": 1.7.0
+    "@scure/bip39": 1.6.0
+    abitype: 1.2.3
+    isows: 1.0.7
+    ox: 0.14.7
+    ws: 8.18.3
+  peerDependencies:
+    typescript: ">=5.0.4"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 3aefa1edc74598affb715f2b2c325db0fad2330e193a94fa7ff0293acd4b24b8a9ea3d082d78dc40c763e051b07853320074a69b1e72621ac339ccb1995ac92b
+  languageName: node
+  linkType: hard
+
 "wagmi@npm:2.14.11":
   version: 2.14.11
   resolution: "wagmi@npm:2.14.11"
@@ -19703,6 +19889,13 @@ __metadata:
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: c9a403a62b329188a5f6bd24d5d935d2bba345f7ab8151d1baa1505b5da9f227fb139354b043711490c798e91f3df75991395e40142e6510a4b16409f302b849
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.0.0":
+  version: 4.3.6
+  resolution: "zod@npm:4.3.6"
+  checksum: 19cec761b46bae4b6e7e861ea740f3f248e50a6671825afc8a5758e27b35d6f20ccde9942422fd5cf6f8b697f18bd05ef8bb33f5f2db112ab25cc628de2fae47
   languageName: node
   linkType: hard
 
