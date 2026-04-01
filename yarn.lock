@@ -3604,7 +3604,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts-upgradeable@npm:^5.0.0":
+"@openzeppelin/contracts-upgradeable@npm:5.4.0, @openzeppelin/contracts-upgradeable@npm:^5.0.0":
   version: 5.4.0
   resolution: "@openzeppelin/contracts-upgradeable@npm:5.4.0"
   peerDependencies:
@@ -4631,7 +4631,7 @@ __metadata:
     eslint-config-prettier: ~8.10.0
     eslint-plugin-prettier: ~5.2.1
     ethers: ~6.13.2
-    fhenix-confidential-contracts: 0.2.1
+    fhenix-confidential-contracts: 0.3.1
     hardhat: ~2.22.10
     hardhat-deploy: ~0.12.4
     hardhat-deploy-ethers: ~0.4.2
@@ -10820,16 +10820,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fhenix-confidential-contracts@npm:0.2.1":
-  version: 0.2.1
-  resolution: "fhenix-confidential-contracts@npm:0.2.1"
+"fhenix-confidential-contracts@npm:0.3.1":
+  version: 0.3.1
+  resolution: "fhenix-confidential-contracts@npm:0.3.1"
   dependencies:
     "@openzeppelin/contracts": ^5.2.0
+    "@openzeppelin/contracts-upgradeable": 5.4.0
     "@typechain/ethers-v6": ~0.5.1
     dotenv: ~16.4.5
     envfile: ~7.1.0
     qrcode: ~1.5.4
-  checksum: 2997104f0ab63bc5af5e299039ee45833cca0c8f8e28498a5c820e103c2c2a3ab03bfbce1c839f4318d4dfb7c5f9e4044268713ff6fecf2e53f811ded55b657d
+  checksum: 06fff35013e3632cb119cb9caa701cefd944c91194801e05b163c9fb0925ffe419c7347d792ea2a3d30ab9234c3405481f8922c2f62fbbe7ab66269ffa27817c
   languageName: node
   linkType: hard
 
