@@ -37,8 +37,14 @@ const deployRedactCore: DeployFunction = async function (hre: HardhatRuntimeEnvi
     eeth,
     await hre.ethers.getSigner(deployer),
   );
-  await eethContract.transferOwnership(redactCore.target);
-  console.log("eETH ownership transferred to RedactCore");
+  const currentOwner = await eethContract.owner();
+  if (currentOwner !== redactCore.target) {
+    const tx = await eethContract.transferOwnership(redactCore.target);
+    await tx.wait();
+    console.log("eETH ownership transferred to RedactCore");
+  } else {
+    console.log("eETH ownership already transferred to RedactCore, skipping");
+  }
 
   if (!skipTokens) {
     const usdc = await deployments.get("USDC");
