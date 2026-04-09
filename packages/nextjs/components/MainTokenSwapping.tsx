@@ -273,7 +273,7 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
         <div className="flex justify-between items-center w-full">
           <div className="text-xs text-[#336699]">
             Balance: {isEncrypt && formatTokenAmount(balances?.publicBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
-            {!isEncrypt && formatTokenAmount(balances?.confidentialBalance ?? 0n, pair?.confidentialToken?.decimals ?? 18)}
+            {!isEncrypt && formatTokenAmount(balances?.confidentialBalance ?? 0n, pair?.confidentialToken?.decimals ?? 6)}
           </div>
           <Button
             disabled={disabled}
@@ -582,7 +582,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   // Steps
 
   const claimAmountHint = pairClaims?.totalDecryptedAmount
-    ? formatTokenAmount(pairClaims.totalDecryptedAmount, pair?.confidentialToken?.decimals ?? 18)
+    ? formatTokenAmount(pairClaims.totalDecryptedAmount, pair?.confidentialToken?.decimals ?? 6)
     : "";
   const steps = [
     {
