@@ -228,13 +228,14 @@ const _fetchConfidentialERC20IfExists = async (chain: number, addresses: Address
   const publicClient = getPublicClient(wagmiConfig, { chainId: chain as any });
   const redactCoreData = getDeployedContract(chain, "RedactCore");
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const results = await publicClient.multicall({
     contracts: addresses.map(address => ({
       address: redactCoreData.address as Address,
       abi: redactCoreData.abi,
-      functionName: "getConfidentialERC20",
+      functionName: "getConfidentialERC20" as const,
       args: [address],
-    })),
+    })) as any[],
   });
 
   return results.map(result => result.result as Address);
@@ -283,24 +284,13 @@ const _fetchConfidentialPairPublicData = async (addresses: { erc20Address: Addre
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await publicClient.multicall({
     contracts: addressesToFetch.flatMap(address => [
-      {
-        address,
-        abi: erc20Abi,
-        functionName: "name",
-      },
-      {
-        address,
-        abi: erc20Abi,
-        functionName: "symbol",
-      },
-      {
-        address,
-        abi: erc20Abi,
-        functionName: "decimals",
-      },
-    ]),
+      { address, abi: erc20Abi, functionName: "name" },
+      { address, abi: erc20Abi, functionName: "symbol" },
+      { address, abi: erc20Abi, functionName: "decimals" },
+    ]) as any[],
   });
 
   const chunks = chunk(result, 3);
@@ -387,9 +377,8 @@ const _fetchConfidentialPairBalances = async (
     }
   }
 
-  const results = await publicClient.multicall({
-    contracts,
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const results = await publicClient.multicall({ contracts: contracts as any[] });
 
   const balances: ConfidentialTokenPairBalances[] = [];
   let resultIndex = 0;
