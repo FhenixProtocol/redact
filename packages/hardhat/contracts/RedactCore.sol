@@ -126,4 +126,24 @@ contract RedactCore is Ownable2Step {
     function upgradeWrapper(address proxy, address newImplementation, bytes calldata data) external onlyOwner {
         UUPSUpgradeable(proxy).upgradeToAndCall(newImplementation, data);
     }
+
+    /**
+     * @dev Upgrades all registered ConfidentialERC20 proxies (excluding eETH) to `newImplementation`,
+     * and updates the stored implementation for future deployments.
+     */
+    function upgradeAllWrappers(address newImplementation, bytes calldata data) external onlyOwner {
+        if (newImplementation == address(0)) revert InvalidImplementation();
+
+        address old = confidentialERC20Implementation;
+        confidentialERC20Implementation = newImplementation;
+        emit ConfidentialERC20ImplementationUpdated(old, newImplementation);
+
+        uint256 len = _confidentialERC20Map.length();
+        for (uint256 i = 0; i < len; i++) {
+            (address erc20, address proxy) = _confidentialERC20Map.at(i);
+            // Skip eETH — it has a different implementation contract
+            if (erc20 == address(wETH)) continue;
+            UUPSUpgradeable(proxy).upgradeToAndCall(newImplementation, data);
+        }
+    }
 }
