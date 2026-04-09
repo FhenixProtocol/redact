@@ -234,13 +234,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cofhe/abi@npm:0.0.0-beta-20260323135047":
-  version: 0.0.0-beta-20260323135047
-  resolution: "@cofhe/abi@npm:0.0.0-beta-20260323135047"
+"@cofhe/abi@npm:0.0.0-beta-20260330063109":
+  version: 0.0.0-beta-20260330063109
+  resolution: "@cofhe/abi@npm:0.0.0-beta-20260330063109"
   dependencies:
-    "@cofhe/sdk": 0.0.0-beta-20260323135047
+    "@cofhe/sdk": 0.0.0-beta-20260330063109
     abitype: ^1.2.3
-  checksum: c25a249c7bf27cb1c73c464aea4c6675499cacd134ff5e62e99490829215f99ebf926a9a56603df8409551b51cef423a3cdf0ca1cb07be2fbfbef50f1f1754da
+  checksum: 1492251b63490b451a9574ac21297db5b7780d72d5c5c3d5267ef7a6e5d916b6aec398f051276a03e36450835d18ce6b464320aa10df97940242eb9964684939
   languageName: node
   linkType: hard
 
@@ -280,11 +280,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cofhe/react@npm:0.0.0-beta-20260323135047":
-  version: 0.0.0-beta-20260323135047
-  resolution: "@cofhe/react@npm:0.0.0-beta-20260323135047"
+"@cofhe/react@npm:0.0.0-beta-20260330063109":
+  version: 0.0.0-beta-20260330063109
+  resolution: "@cofhe/react@npm:0.0.0-beta-20260330063109"
   dependencies:
-    "@cofhe/sdk": 0.0.0-beta-20260323135047
+    "@cofhe/sdk": 0.0.0-beta-20260330063109
+    "@fhenixprotocol/cofhe-errors": ^1.0.2
     "@radix-ui/react-dropdown-menu": ^2.1.16
     "@radix-ui/react-select": ^2.2.6
     "@tanstack/query-async-storage-persister": ^5.90.22
@@ -305,13 +306,13 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     viem: ^2.38.6
-  checksum: b92eb9f24d2bb4c0027b2ffde8c9595eaa2f2d6e9b2501ee04a5cfa6dbb1053b246afae0170e75f6b4595dcddf225345637c8156c6dcb3867fe2d2fdf6468b2e
+  checksum: ca1238e1828446eaf2bc8eea1108d66078ec61f6556ca3a2d1c6b192f93be40b203a3676f80fece736645d0453ff686aecbe222434b2cbabccaa9f83d6d5a00e
   languageName: node
   linkType: hard
 
-"@cofhe/sdk@npm:0.0.0-beta-20260323135047":
-  version: 0.0.0-beta-20260323135047
-  resolution: "@cofhe/sdk@npm:0.0.0-beta-20260323135047"
+"@cofhe/sdk@npm:0.0.0-beta-20260330063109":
+  version: 0.0.0-beta-20260330063109
+  resolution: "@cofhe/sdk@npm:0.0.0-beta-20260330063109"
   dependencies:
     iframe-shared-storage: ^1.0.34
     immer: ^10.1.1
@@ -336,7 +337,7 @@ __metadata:
       optional: true
     hardhat:
       optional: true
-  checksum: 4791864426dcf89f1e72bcca0a58948f8b7561932cb20487d2ce79b8dfa0dc310f1fdab8000bdcdc795df5ab2a0ad78940066d131033012c10533263a29dcc93
+  checksum: e0d3188b6f8e1e95687549c1b96865e7e332362cc0d8e800b0a38738fa63db167da70f70619c3c352bc12f9a8fb487e3e6ee76781d31252c4dffb86049c38ed4
   languageName: node
   linkType: hard
 
@@ -1551,6 +1552,15 @@ __metadata:
   dependencies:
     "@openzeppelin/contracts": ^5.0.0
   checksum: 37d4879cbc12c1fe65b73bf44a8a1c7f75fa0e4b29af89a5dd42689a742a7c8c6c6f95b5be7f6e0137b73c1558125651f19d6a138e0dbede676abbcf956cc401
+  languageName: node
+  linkType: hard
+
+"@fhenixprotocol/cofhe-errors@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@fhenixprotocol/cofhe-errors@npm:1.0.2"
+  bin:
+    cofhe-errors: cli.js
+  checksum: ae363b8cdfddb62241220d7eaa34aab5ce1a98e9e22246592ada37dd760204bad04be74120ec3267f192ddc270f7d540468595c8eb64e237479e4ab1b57bcbd9
   languageName: node
   linkType: hard
 
@@ -3674,7 +3684,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts-upgradeable@npm:^5.0.0":
+"@openzeppelin/contracts-upgradeable@npm:5.4.0, @openzeppelin/contracts-upgradeable@npm:^5.0.0":
   version: 5.4.0
   resolution: "@openzeppelin/contracts-upgradeable@npm:5.4.0"
   peerDependencies:
@@ -4784,7 +4794,7 @@ __metadata:
     eslint-config-prettier: ~8.10.0
     eslint-plugin-prettier: ~5.2.1
     ethers: ~6.13.2
-    fhenix-confidential-contracts: 0.2.1
+    fhenix-confidential-contracts: 0.3.1
     hardhat: ~2.22.10
     hardhat-deploy: ~0.12.4
     hardhat-deploy-ethers: ~0.4.2
@@ -4803,9 +4813,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@se-2/nextjs@workspace:packages/nextjs"
   dependencies:
-    "@cofhe/abi": 0.0.0-beta-20260323135047
-    "@cofhe/react": 0.0.0-beta-20260323135047
-    "@cofhe/sdk": 0.0.0-beta-20260323135047
+    "@cofhe/abi": 0.0.0-beta-20260330063109
+    "@cofhe/react": 0.0.0-beta-20260330063109
+    "@cofhe/sdk": 0.0.0-beta-20260330063109
     "@emotion/react": ^11.14.0
     "@emotion/styled": ^11.14.0
     "@heroicons/react": ~2.1.5
@@ -11228,16 +11238,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fhenix-confidential-contracts@npm:0.2.1":
-  version: 0.2.1
-  resolution: "fhenix-confidential-contracts@npm:0.2.1"
+"fhenix-confidential-contracts@npm:0.3.1":
+  version: 0.3.1
+  resolution: "fhenix-confidential-contracts@npm:0.3.1"
   dependencies:
     "@openzeppelin/contracts": ^5.2.0
+    "@openzeppelin/contracts-upgradeable": 5.4.0
     "@typechain/ethers-v6": ~0.5.1
     dotenv: ~16.4.5
     envfile: ~7.1.0
     qrcode: ~1.5.4
-  checksum: 2997104f0ab63bc5af5e299039ee45833cca0c8f8e28498a5c820e103c2c2a3ab03bfbce1c839f4318d4dfb7c5f9e4044268713ff6fecf2e53f811ded55b657d
+  checksum: 06fff35013e3632cb119cb9caa701cefd944c91194801e05b163c9fb0925ffe419c7347d792ea2a3d30ab9234c3405481f8922c2f62fbbe7ab66269ffa27817c
   languageName: node
   linkType: hard
 

@@ -2,20 +2,20 @@ import { expect } from "chai";
 import { ERC20 } from "../typechain-types";
 import hre from "hardhat";
 
-// ERC7984 BALANCES
+// BALANCES
 
-const erc7984EncBalances = new Map<string, bigint>();
+const encBalances = new Map<string, bigint>();
 
-export const prepExpectERC7984BalancesChange = async (
+export const prepExpectFHERC20BalancesChange = async (
   token: { confidentialBalanceOf: (account: string) => Promise<string> },
   account: string,
 ) => {
   const encBalanceHash = await token.confidentialBalanceOf(account);
   const encBalance = await hre.cofhe.mocks.getPlaintext(encBalanceHash);
-  erc7984EncBalances.set(account, encBalance);
+  encBalances.set(account, encBalance);
 };
 
-export const expectERC7984BalancesChange = async (
+export const expectFHERC20BalancesChange = async (
   token: { confidentialBalanceOf: (account: string) => Promise<string>; symbol: () => Promise<string> },
   account: string,
   expectedEncChange: bigint,
@@ -24,11 +24,11 @@ export const expectERC7984BalancesChange = async (
 
   const currEncBalanceHash = await token.confidentialBalanceOf(account);
   const currEncBalance = await hre.cofhe.mocks.getPlaintext(currEncBalanceHash);
-  const prevEncBalance = erc7984EncBalances.get(account)!;
+  const prevEncBalance = encBalances.get(account)!;
   const encChange = currEncBalance - prevEncBalance;
   expect(encChange).to.equal(
     expectedEncChange,
-    `${symbol} (ERC7984) encrypted balance change for ${account} is incorrect. Expected: ${expectedEncChange}, received: ${encChange}`,
+    `${symbol} (FHERC20) encrypted balance change for ${account} is incorrect. Expected: ${expectedEncChange}, received: ${encChange}`,
   );
 };
 

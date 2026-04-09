@@ -1,23 +1,40 @@
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
-import { ConfidentialETH, WETH_Harness } from "../typechain-types";
-import { expectERC7984BalancesChange, prepExpectERC7984BalancesChange } from "./utils";
+import { ConfidentialETH, ConfidentialETHV2_Harness, WETH_Harness } from "../typechain-types";
+import { expectFHERC20BalancesChange, prepExpectFHERC20BalancesChange } from "./utils";
 import { Encryptable } from "@cofhe/sdk";
 
 describe("ConfidentialETH", function () {
-  async function deployFixture() {
-    const [owner, bob, alice] = await ethers.getSigners();
-
+  async function deployProxy(): Promise<{
+    impl: ConfidentialETH;
+    eETH: ConfidentialETH;
+    wETH: WETH_Harness;
+  }> {
     const wETHFactory = await ethers.getContractFactory("WETH_Harness");
     const wETH = (await wETHFactory.deploy()) as WETH_Harness;
 
-    const eETHFactory = await ethers.getContractFactory("ConfidentialETH");
-    const eETH = (await eETHFactory.deploy(wETH.target)) as ConfidentialETH;
+    const implFactory = await ethers.getContractFactory("ConfidentialETH");
+    const impl = await implFactory.deploy();
+    await impl.waitForDeployment();
+
+    const initData = impl.interface.encodeFunctionData("initialize", [await wETH.getAddress()]);
+
+    const proxyFactory = await ethers.getContractFactory("ERC1967Proxy");
+    const proxy = await proxyFactory.deploy(await impl.getAddress(), initData);
+    await proxy.waitForDeployment();
+
+    const eETH = implFactory.attach(await proxy.getAddress()) as ConfidentialETH;
+    return { impl, eETH, wETH };
+  }
+
+  async function deployFixture() {
+    const [owner, bob, alice] = await ethers.getSigners();
+    const { impl, eETH, wETH } = await deployProxy();
 
     const bobClient = await hre.cofhe.createClientWithBatteries(bob);
     const aliceClient = await hre.cofhe.createClientWithBatteries(alice);
 
-    return { owner, bob, alice, bobClient, aliceClient, wETH, eETH };
+    return { owner, bob, alice, bobClient, aliceClient, wETH, eETH, impl };
   }
 
   // wETH has 18 decimals → rate = 1e12, confidential decimals = 6
@@ -27,7 +44,7 @@ describe("ConfidentialETH", function () {
     it("should have correct name and symbol", async function () {
       const { eETH } = await deployFixture();
 
-      expect(await eETH.name()).to.equal("ERC7984 Confidential Ether");
+      expect(await eETH.name()).to.equal("FHERC20 Confidential Ether");
       expect(await eETH.symbol()).to.equal("eETH");
     });
 
@@ -60,6 +77,18 @@ describe("ConfidentialETH", function () {
 
       expect(await eETH.contractURI()).to.equal("");
     });
+
+    it("should not allow calling initialize twice", async function () {
+      const { eETH, wETH } = await deployFixture();
+
+      await expect(eETH.initialize(wETH.target)).to.be.revertedWithCustomError(eETH, "InvalidInitialization");
+    });
+
+    it("should not allow calling initialize on the implementation", async function () {
+      const { impl, wETH } = await deployFixture();
+
+      await expect(impl.initialize(wETH.target)).to.be.revertedWithCustomError(impl, "InvalidInitialization");
+    });
   });
 
   describe("shieldNative", function () {
@@ -69,11 +98,11 @@ describe("ConfidentialETH", function () {
       const shieldValue = ethers.parseEther("1"); // 1 ETH = 1e18 wei
       const expectedConfidential = shieldValue / conversionRate; // 1e6
 
-      await prepExpectERC7984BalancesChange(eETH, bob.address);
+      await prepExpectFHERC20BalancesChange(eETH, bob.address);
 
       await eETH.connect(bob).shieldNative(bob.address, { value: shieldValue });
 
-      await expectERC7984BalancesChange(eETH, bob.address, expectedConfidential);
+      await expectFHERC20BalancesChange(eETH, bob.address, expectedConfidential);
     });
 
     it("should refund dust below conversion rate", async function () {
@@ -111,12 +140,12 @@ describe("ConfidentialETH", function () {
       await wETH.connect(bob).deposit({ value: wrapAmount });
       await wETH.connect(bob).approve(eETH.target, wrapAmount);
 
-      await prepExpectERC7984BalancesChange(eETH, bob.address);
+      await prepExpectFHERC20BalancesChange(eETH, bob.address);
 
       await eETH.connect(bob).shieldWrappedNative(bob.address, wrapAmount);
 
       const expected = wrapAmount / conversionRate;
-      await expectERC7984BalancesChange(eETH, bob.address, expected);
+      await expectFHERC20BalancesChange(eETH, bob.address, expected);
     });
   });
 
@@ -130,12 +159,12 @@ describe("ConfidentialETH", function () {
       const confidentialAmount = shieldValue / conversionRate;
       const unshieldAmount = confidentialAmount / 2n;
 
-      await prepExpectERC7984BalancesChange(eETH, bob.address);
+      await prepExpectFHERC20BalancesChange(eETH, bob.address);
 
       const tx = await eETH.connect(bob).unshield(bob.address, alice.address, unshieldAmount);
       await expect(tx).to.emit(eETH, "Unshielded");
 
-      await expectERC7984BalancesChange(eETH, bob.address, -unshieldAmount);
+      await expectFHERC20BalancesChange(eETH, bob.address, -unshieldAmount);
     });
   });
 
@@ -149,13 +178,58 @@ describe("ConfidentialETH", function () {
       const transferAmount = 300_000n;
       const [enc] = await bobClient.encryptInputs([Encryptable.uint64(transferAmount)]).execute();
 
-      await prepExpectERC7984BalancesChange(eETH, bob.address);
-      await prepExpectERC7984BalancesChange(eETH, alice.address);
+      await prepExpectFHERC20BalancesChange(eETH, bob.address);
+      await prepExpectFHERC20BalancesChange(eETH, alice.address);
 
       await eETH.connect(bob)["confidentialTransfer(address,(uint256,uint8,uint8,bytes))"](alice.address, enc);
 
-      await expectERC7984BalancesChange(eETH, bob.address, -transferAmount);
-      await expectERC7984BalancesChange(eETH, alice.address, transferAmount);
+      await expectFHERC20BalancesChange(eETH, bob.address, -transferAmount);
+      await expectFHERC20BalancesChange(eETH, alice.address, transferAmount);
+    });
+  });
+
+  describe("UUPS upgrade", function () {
+    it("should upgrade to V2 by owner", async function () {
+      const { eETH } = await deployFixture();
+
+      const v2Factory = await ethers.getContractFactory("ConfidentialETHV2_Harness");
+      const v2Impl = await v2Factory.deploy();
+      await v2Impl.waitForDeployment();
+
+      await eETH.upgradeToAndCall(await v2Impl.getAddress(), "0x");
+
+      const upgraded = v2Factory.attach(await eETH.getAddress()) as ConfidentialETHV2_Harness;
+      expect(await upgraded.version()).to.equal(2);
+      expect(await upgraded.name()).to.equal("FHERC20 Confidential Ether");
+    });
+
+    it("should preserve state after upgrade", async function () {
+      const { bob, eETH } = await deployFixture();
+
+      const shieldValue = ethers.parseEther("1");
+      await eETH.connect(bob).shieldNative(bob.address, { value: shieldValue });
+
+      const v2Factory = await ethers.getContractFactory("ConfidentialETHV2_Harness");
+      const v2Impl = await v2Factory.deploy();
+      await v2Impl.waitForDeployment();
+
+      await eETH.upgradeToAndCall(await v2Impl.getAddress(), "0x");
+
+      const upgraded = v2Factory.attach(await eETH.getAddress()) as ConfidentialETHV2_Harness;
+      await hre.cofhe.mocks.expectPlaintext(await upgraded.confidentialTotalSupply(), shieldValue / conversionRate);
+    });
+
+    it("should reject upgrade from non-owner", async function () {
+      const { bob, eETH } = await deployFixture();
+
+      const v2Factory = await ethers.getContractFactory("ConfidentialETHV2_Harness");
+      const v2Impl = await v2Factory.deploy();
+      await v2Impl.waitForDeployment();
+
+      await expect(eETH.connect(bob).upgradeToAndCall(await v2Impl.getAddress(), "0x")).to.be.revertedWithCustomError(
+        eETH,
+        "OwnableUnauthorizedAccount",
+      );
     });
   });
 });

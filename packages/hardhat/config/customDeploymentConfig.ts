@@ -1,6 +1,7 @@
 export type ChainConfig = {
   weth?: string;
   eeth?: string;
+  confidentialERC20Impl?: string;
   skipTokens?: boolean;
 };
 

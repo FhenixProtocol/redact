@@ -17,9 +17,9 @@
     "vercel:yolo": "vercel --build-env YARN_ENABLE_IMMUTABLE_INSTALLS=false --build-env ENABLE_EXPERIMENTAL_COREPACK=1 --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true --build-env VERCEL_TELEMETRY_DISABLED=1"
   },
   "dependencies": {
-    "@cofhe/abi": "0.0.0-beta-20260323135047",
-    "@cofhe/react": "0.0.0-beta-20260323135047",
-    "@cofhe/sdk": "0.0.0-beta-20260323135047",
+    "@cofhe/abi": "0.0.0-beta-20260330063109",
+    "@cofhe/react": "0.0.0-beta-20260330063109",
+    "@cofhe/sdk": "0.0.0-beta-20260330063109",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@heroicons/react": "~2.1.5",
