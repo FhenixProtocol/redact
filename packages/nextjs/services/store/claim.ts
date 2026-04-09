@@ -95,14 +95,14 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
 
   const pairsWithFherc20 = addressPairs.filter(({ fherc20Address }) => fherc20Address != null);
 
-  const results = await publicClient?.multicall({
-    contracts: pairsWithFherc20.map(({ fherc20Address }) => ({
-      address: fherc20Address!,
-      abi: confidentialErc20Abi,
-      functionName: "getUserClaims",
-      args: [account],
-    })),
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const claimContracts = pairsWithFherc20.map(({ fherc20Address }) => ({
+    address: fherc20Address!,
+    abi: confidentialErc20Abi,
+    functionName: "getUserClaims" as const,
+    args: [account] as const,
+  })) as any[];
+  const results = await publicClient?.multicall({ contracts: claimContracts });
 
   const erc20Claims = {} as Record<Address, ClaimWithAddresses[]>;
 
@@ -129,14 +129,14 @@ const _fetchClaims = async (account: Address, addressPairs: AddressPair[]) => {
 
 const _refetchPendingClaims = async (pendingClaims: ClaimWithAddresses[]) => {
   const publicClient = getPublicClient(wagmiConfig);
-  const results = await publicClient?.multicall({
-    contracts: pendingClaims.map(({ fherc20Address, ctHash }) => ({
-      address: fherc20Address,
-      abi: confidentialErc20Abi,
-      functionName: "getClaim",
-      args: [ctHash],
-    })),
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const contracts = pendingClaims.map(({ fherc20Address, ctHash }) => ({
+    address: fherc20Address,
+    abi: confidentialErc20Abi,
+    functionName: "getClaim" as const,
+    args: [ctHash] as const,
+  })) as any[];
+  const results = await publicClient?.multicall({ contracts });
 
   const erc20Claims = {} as Record<Address, ClaimWithAddresses[]>;
 
@@ -419,14 +419,14 @@ export const checkAndCleanupClaims = async () => {
 
   try {
     // Call getClaim for each claim to get current on-chain status
-    const results = await publicClient.multicall({
-      contracts: allClaims.map(claim => ({
-        address: claim.fherc20Address,
-        abi: confidentialErc20Abi,
-        functionName: "getClaim",
-        args: [claim.ctHash],
-      })),
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const verifyContracts = allClaims.map(claim => ({
+      address: claim.fherc20Address,
+      abi: confidentialErc20Abi,
+      functionName: "getClaim" as const,
+      args: [claim.ctHash] as const,
+    })) as any[];
+    const results = await publicClient.multicall({ contracts: verifyContracts });
 
     let updatedCount = 0;
     let removedCount = 0;
