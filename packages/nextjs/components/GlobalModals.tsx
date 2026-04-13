@@ -36,7 +36,7 @@ export const GlobalModals = () => {
           <p>
             Please go to{" "}
             <a
-              href="https://test.redact.money"
+              href="https://old.redact.money"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary-accent underline"
