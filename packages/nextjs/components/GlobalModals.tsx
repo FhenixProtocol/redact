@@ -45,7 +45,15 @@ export const GlobalModals = () => {
             </a>{" "}
             ,decrypt and claim your tokens.
             <br/>
-            The old version will be deprecated in the future.
+            The old version will be deprecated in the future.<br/><br/>
+            <a
+              href="https://x.com/RedactMoney/status/2044025923578577132"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-accent underline"
+            >
+              To learn more, click here.
+            </a>
           </p>
         </div>
       </Modal>
