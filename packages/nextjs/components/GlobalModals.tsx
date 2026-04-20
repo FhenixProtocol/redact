@@ -31,21 +31,10 @@ export const GlobalModals = () => {
         className="w-[600px]"
       >
         <div>
-          <p>Redact flow and contracts have been updated and not compatible with the old contract version.</p>
+          <p>The system upgrade was successful. </p>
+          <p>Please note that legacy Redact contracts are no longer supported.</p>
           <br/>
           <p>
-            Please go to{" "}
-            <a
-              href="https://old.redact.money"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary-accent underline"
-            >
-              old redact version
-            </a>{" "}
-            ,decrypt and claim your tokens.
-            <br/>
-            The old version will be deprecated in the future.<br/><br/>
             <a
               href="https://x.com/RedactMoney/status/2044025923578577132"
               target="_blank"

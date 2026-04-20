@@ -77,12 +77,12 @@ export function MainTokenSwapping() {
 
   return (
     <div className="text-center inline-block w-full">
-      {/* <button
+      <button
         onClick={() => setMigrationModalOpen(true)}
         className="text-md text-primary-accent cursor-pointer mb-2 hover:opacity-80 font-bold"
       >
         Migration instructions from old Redact version
-      </button> */}
+      </button>
       <div className="flex gap-8 items-center justify-center w-full max-w-[450px] md:w-[450px] mx-auto rounded-3xl drop-shadow-xl">
         <Card className="rounded-[inherit] w-full max-w-[450px] bg-background/60 border-component-stroke firefox-compatible-backdrop-blur-xs">
           <ConnectOverlay />
