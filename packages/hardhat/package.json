@@ -8,7 +8,7 @@
     "chain": "hardhat node --network hardhat --no-deploy",
     "check-types": "tsc --noEmit --incremental",
     "clean": "hardhat clean",
-    "compile": "hardhat compile",
+    "compile": "node ../nextjs/scripts/patch-cofhe-ssr.js && hardhat compile",
     "deploy": "ts-node scripts/runHardhatDeployWithPK.ts",
     "flatten": "hardhat flatten",
     "fork": "MAINNET_FORKING_ENABLED=true hardhat node --network hardhat --no-deploy",
