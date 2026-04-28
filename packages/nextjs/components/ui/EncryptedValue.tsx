@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { DisplayValue } from "./DisplayValue";
-import { FheTypes, UnsealedItem } from "cofhejs/web";
+import { FheTypes, type UnsealedItem } from "@cofhe/sdk";
 import { EyeOff, LoaderCircle } from "lucide-react";
 import { formatTokenAmount } from "~~/lib/common";
 import { cn } from "~~/lib/utils";
@@ -75,7 +75,7 @@ export function EncryptedBalance({
 }) {
   return (
     <EncryptedValue
-      fheType={FheTypes.Uint128}
+      fheType={FheTypes.Uint64}
       ctHash={ctHash}
       transform={value => formatTokenAmount(value, decimals, precision)}
       className={className}

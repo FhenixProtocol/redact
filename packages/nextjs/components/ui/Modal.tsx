@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "./Button";
 import { X } from "lucide-react";
+import { cn } from "~~/lib/utils";
 
 interface ModalProps {
   isOpen: boolean;
@@ -8,9 +9,10 @@ interface ModalProps {
   title?: string;
   children: React.ReactNode;
   duration?: "fast" | "normal" | "slow";
+  className?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children, duration = "normal" }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, duration = "normal", className }: ModalProps) {
   if (!isOpen) return null;
 
   // Define duration multipliers
@@ -40,7 +42,7 @@ export function Modal({ isOpen, onClose, title, children, duration = "normal" }:
 
       {/* Modal with slide up and fade */}
       <div
-        className="relative drop-shadow-lg z-50 w-[450px] m-2 rounded-[24px] border-primary-accent border-1 bg-surface p-6 shadow-xl"
+        className={cn("relative drop-shadow-lg z-50 w-[450px] m-2 rounded-[24px] border-primary-accent border-1 bg-surface p-6 shadow-xl", className)}
         style={{
           animation: `contentShow ${animationDuration} cubic-bezier(0.16, 1, 0.3, 1)`,
         }}

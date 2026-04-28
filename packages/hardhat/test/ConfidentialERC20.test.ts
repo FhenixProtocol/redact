@@ -1,225 +1,233 @@
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
-import { ConfidentialERC20, ERC20_Harness } from "../typechain-types";
+import { ConfidentialERC20, ConfidentialERC20V2_Harness, ERC20_Harness } from "../typechain-types";
 import {
   expectERC20BalancesChange,
   expectFHERC20BalancesChange,
   prepExpectERC20BalancesChange,
-  ticksToIndicated,
+  prepExpectFHERC20BalancesChange,
 } from "./utils";
-import { prepExpectFHERC20BalancesChange } from "./utils";
+import { Encryptable } from "@cofhe/sdk";
 
 describe("ConfidentialERC20", function () {
-  // We define a fixture to reuse the same setup in every test.
-  const deployContracts = async () => {
-    // Deploy wBTC
-    const wBTCFactory = await ethers.getContractFactory("ERC20_Harness");
-    const wBTC = (await wBTCFactory.deploy("Wrapped BTC", "wBTC", 8)) as ERC20_Harness;
-    await wBTC.waitForDeployment();
+  async function deployERC20Proxy(
+    erc20: ERC20_Harness,
+  ): Promise<{ impl: ConfidentialERC20; proxy: ConfidentialERC20 }> {
+    const implFactory = await ethers.getContractFactory("ConfidentialERC20");
+    const impl = await implFactory.deploy();
+    await impl.waitForDeployment();
 
-    // Deploy eBTC
-    const eBTCFactory = await ethers.getContractFactory("ConfidentialERC20");
-    const eBTC = (await eBTCFactory.deploy(wBTC, "eBTC")) as ConfidentialERC20;
-    await eBTC.waitForDeployment();
+    const initData = impl.interface.encodeFunctionData("initialize", [await erc20.getAddress()]);
 
-    return { wBTC, eBTC };
-  };
+    const proxyFactory = await ethers.getContractFactory("ERC1967Proxy");
+    const proxy = await proxyFactory.deploy(await impl.getAddress(), initData);
+    await proxy.waitForDeployment();
 
-  async function setupFixture() {
-    const [owner, bob, alice, eve] = await ethers.getSigners();
-    const { wBTC, eBTC } = await deployContracts();
+    return {
+      impl,
+      proxy: implFactory.attach(await proxy.getAddress()) as ConfidentialERC20,
+    };
+  }
 
-    await hre.cofhe.initializeWithHardhatSigner(owner);
+  async function deployFixture() {
+    const [owner, bob, alice] = await ethers.getSigners();
 
-    return { owner, bob, alice, eve, wBTC, eBTC };
+    const usdcFactory = await ethers.getContractFactory("ERC20_Harness");
+    const usdc = (await usdcFactory.deploy("USD Coin", "USDC", 6)) as ERC20_Harness;
+
+    const { impl, proxy: eUSDC } = await deployERC20Proxy(usdc);
+
+    const bobClient = await hre.cofhe.createClientWithBatteries(bob);
+    const aliceClient = await hre.cofhe.createClientWithBatteries(alice);
+
+    return { owner, bob, alice, bobClient, aliceClient, usdc, eUSDC, impl };
   }
 
   describe("initialization", function () {
-    it("Should be constructed correctly", async function () {
-      const { wBTC, eBTC } = await setupFixture();
+    it("should generate correct name and symbol", async function () {
+      const { eUSDC } = await deployFixture();
 
-      expect(await eBTC.name()).to.equal("Confidential Wrapped BTC", "ConfidentialERC20 name correct");
-      expect(await eBTC.symbol()).to.equal("eBTC", "ConfidentialERC20 symbol correct");
-      expect(await eBTC.decimals()).to.equal(8, "ConfidentialERC20 decimals correct");
-      expect(await eBTC.erc20()).to.equal(wBTC.target, "ConfidentialERC20 underlying ERC20 correct");
-      expect(await eBTC.isFherc20()).to.equal(true, "ConfidentialERC20 isFherc20 correct");
+      expect(await eUSDC.name()).to.equal("FHERC20 Confidential USD Coin");
+      expect(await eUSDC.symbol()).to.equal("eUSDC");
     });
 
-    it("Should handle symbol correctly", async function () {
-      // Deploy TEST
-      const TESTFactory = await ethers.getContractFactory("ERC20_Harness");
-      const TEST = (await TESTFactory.deploy("Test Token", "TEST", 18)) as ERC20_Harness;
-      await TEST.waitForDeployment();
+    it("should set deployer as owner", async function () {
+      const { eUSDC, owner } = await deployFixture();
 
-      // Deploy eTEST
-      const eTESTFactory = await ethers.getContractFactory("ConfidentialERC20");
-      const eTEST = (await eTESTFactory.deploy(TEST, "eTEST")) as ConfidentialERC20;
-      await eTEST.waitForDeployment();
-
-      expect(await eTEST.name()).to.equal("Confidential Test Token", "eTEST name correct");
-      expect(await eTEST.symbol()).to.equal("eTEST", "eTEST symbol correct");
-      expect(await eTEST.decimals()).to.equal(await TEST.decimals(), "eTEST decimals correct");
-      expect(await eTEST.erc20()).to.equal(TEST.target, "eTEST underlying ERC20 correct");
-
-      await eTEST.updateSymbol("encTEST");
-      expect(await eTEST.symbol()).to.equal("encTEST", "eTEST symbol updated correct");
+      expect(await eUSDC.owner()).to.equal(owner.address);
     });
 
-    it("Should revert if underlying token is not ERC20", async function () {
-      const { eBTC } = await setupFixture();
+    it("should have correct decimals (capped at 6)", async function () {
+      const { eUSDC } = await deployFixture();
 
-      // Deploy eeBTC
-      const eeBTCFactory = await ethers.getContractFactory("ConfidentialERC20");
-      await expect(eeBTCFactory.deploy(eBTC, "eeBTC")).to.be.revertedWithCustomError(eBTC, "FHERC20InvalidErc20");
+      expect(await eUSDC.decimals()).to.equal(6);
     });
-  });
 
-  describe("encrypt balance (ERC20 -> FHERC20)", function () {
-    it("Should succeed", async function () {
-      const { eBTC, bob, wBTC } = await setupFixture();
+    it("should cap decimals for 18-decimal token", async function () {
+      const factory18 = await ethers.getContractFactory("ERC20_Harness");
+      const dai = (await factory18.deploy("Dai", "DAI", 18)) as ERC20_Harness;
 
-      expect(await eBTC.totalSupply()).to.equal(0, "Total indicated supply init 0");
-      expect(await eBTC.encTotalSupply()).to.equal(0, "Total supply not initialized (hash is 0)");
+      const { proxy: eDai } = await deployERC20Proxy(dai);
 
-      const mintValue = BigInt(10e8);
-      const transferValue = BigInt(1e8);
+      expect(await eDai.decimals()).to.equal(6);
+      expect(await eDai.rate()).to.equal(10n ** 12n);
+      expect(await eDai.name()).to.equal("FHERC20 Confidential Dai");
+      expect(await eDai.symbol()).to.equal("eDAI");
+    });
 
-      // Mint wBTC
-      await wBTC.mint(bob, mintValue);
-      await wBTC.connect(bob).approve(eBTC.target, mintValue);
+    it("should use native decimals for ≤6-decimal token", async function () {
+      const factory2 = await ethers.getContractFactory("ERC20_Harness");
+      const token = (await factory2.deploy("Test", "TST", 2)) as ERC20_Harness;
 
-      // 1st TX, indicated + 5001, true + 1e8
+      const { proxy: eToken } = await deployERC20Proxy(token);
 
-      await prepExpectERC20BalancesChange(wBTC, bob.address);
-      await prepExpectFHERC20BalancesChange(eBTC, bob.address);
+      expect(await eToken.decimals()).to.equal(2);
+      expect(await eToken.rate()).to.equal(1n);
+    });
 
-      await expect(eBTC.connect(bob).encrypt(bob, transferValue)).to.emit(eBTC, "Transfer");
+    it("should have empty contractURI", async function () {
+      const { eUSDC } = await deployFixture();
 
-      await expectERC20BalancesChange(wBTC, bob.address, -1n * transferValue);
-      await expectFHERC20BalancesChange(eBTC, bob.address, await ticksToIndicated(eBTC, 5001n), transferValue);
+      expect(await eUSDC.contractURI()).to.equal("");
+    });
 
-      expect(await eBTC.totalSupply()).to.equal(
-        await ticksToIndicated(eBTC, 5001n),
-        "Total indicated supply increases",
-      );
-      await hre.cofhe.mocks.expectPlaintext(await eBTC.encTotalSupply(), transferValue);
+    it("should report correct underlying", async function () {
+      const { eUSDC, usdc } = await deployFixture();
 
-      // 2nd TX, indicated + 1, true + 1e8
+      expect(await eUSDC.underlying()).to.equal(usdc.target);
+    });
 
-      await prepExpectERC20BalancesChange(wBTC, bob.address);
-      await prepExpectFHERC20BalancesChange(eBTC, bob.address);
+    it("should reject wrapping another FHERC20 token", async function () {
+      const { eUSDC } = await deployFixture();
 
-      await expect(eBTC.connect(bob).encrypt(bob, transferValue)).to.emit(eBTC, "Transfer");
+      const implFactory = await ethers.getContractFactory("ConfidentialERC20");
+      const impl = await implFactory.deploy();
+      await impl.waitForDeployment();
 
-      await expectERC20BalancesChange(wBTC, bob.address, -1n * transferValue);
-      await expectFHERC20BalancesChange(eBTC, bob.address, await ticksToIndicated(eBTC, 1n), transferValue);
+      const initData = impl.interface.encodeFunctionData("initialize", [await eUSDC.getAddress()]);
+      const proxyFactory = await ethers.getContractFactory("ERC1967Proxy");
+
+      await expect(proxyFactory.deploy(await impl.getAddress(), initData)).to.be.reverted;
+    });
+
+    it("should not allow calling initialize twice", async function () {
+      const { eUSDC, usdc } = await deployFixture();
+
+      await expect(eUSDC.initialize(usdc.target)).to.be.revertedWithCustomError(eUSDC, "InvalidInitialization");
+    });
+
+    it("should not allow calling initialize on the implementation", async function () {
+      const { impl, usdc } = await deployFixture();
+
+      await expect(impl.initialize(usdc.target)).to.be.revertedWithCustomError(impl, "InvalidInitialization");
     });
   });
 
-  describe("decrypt & claim balance (FHERC20 -> ERC20)", function () {
-    it("Should succeed", async function () {
-      const { eBTC, bob, wBTC } = await setupFixture();
+  describe("shield", function () {
+    it("should shield tokens", async function () {
+      const { bob, usdc, eUSDC } = await deployFixture();
 
-      expect(await eBTC.totalSupply()).to.equal(0, "Total supply init 0");
-      expect(await eBTC.encTotalSupply()).to.equal(0, "Total supply not initialized (hash is 0)");
+      const shieldAmount = 1_000_000n; // 1 USDC (6 decimals, rate=1)
+      await usdc.mint(bob.address, shieldAmount);
+      await usdc.connect(bob).approve(eUSDC.target, shieldAmount);
 
-      const mintValue = BigInt(10e8);
-      const transferValue = BigInt(1e8);
+      await prepExpectERC20BalancesChange(usdc, bob.address);
+      await prepExpectFHERC20BalancesChange(eUSDC, bob.address);
 
-      // Mint and encrypt wBTC
-      await wBTC.mint(bob, mintValue);
-      await wBTC.connect(bob).approve(eBTC.target, mintValue);
-      await eBTC.connect(bob).encrypt(bob, mintValue);
+      await eUSDC.connect(bob).shield(bob.address, shieldAmount);
 
-      // TX
-
-      await prepExpectERC20BalancesChange(wBTC, bob.address);
-      await prepExpectFHERC20BalancesChange(eBTC, bob.address);
-
-      await expect(eBTC.connect(bob).decrypt(bob, transferValue)).to.emit(eBTC, "Transfer");
-
-      // -- expect only **FHERC20** balance to change
-      await expectERC20BalancesChange(wBTC, bob.address, 0n);
-      await expectFHERC20BalancesChange(
-        eBTC,
-        bob.address,
-        -1n * (await ticksToIndicated(eBTC, 1n)),
-        -1n * transferValue,
-      );
-
-      // Decrypt inserts a claimable amount into the user's claimable set
-
-      let claims = await eBTC.getUserClaims(bob.address);
-      expect(claims.length).to.equal(1, "Bob has 1 claimable amount");
-
-      const claimableCtHash = claims[0].ctHash;
-      let claim = await eBTC.getClaim(claimableCtHash);
-      expect(claim.claimed).to.equal(false, "Claimable amount not claimed");
-      await hre.cofhe.mocks.expectPlaintext(claimableCtHash, transferValue);
-
-      // Hardhat time travel 11 seconds
-      await hre.network.provider.send("evm_increaseTime", [11]);
-      await hre.network.provider.send("evm_mine");
-
-      // Claim Decrypted
-
-      await prepExpectERC20BalancesChange(wBTC, bob.address);
-      await prepExpectFHERC20BalancesChange(eBTC, bob.address);
-
-      await eBTC.connect(bob).claimDecrypted(claimableCtHash);
-
-      // -- expect only **ERC20** balance to change
-      await expectERC20BalancesChange(wBTC, bob.address, 1n * transferValue);
-      await expectFHERC20BalancesChange(eBTC, bob.address, 0n, 0n);
-
-      // Claimable amount is now claimed
-      claim = await eBTC.getClaim(claimableCtHash);
-      expect(claim.claimed).to.equal(true, "Claimable amount claimed");
-
-      // User has no claimable amounts left
-      claims = await eBTC.getUserClaims(bob.address);
-      expect(claims.length).to.equal(0, "Bob has no claimable amounts");
-
-      // Total indicated supply decreases
-      expect(await eBTC.totalSupply()).to.equal(
-        await ticksToIndicated(eBTC, 5000n),
-        "Total indicated supply decreases",
-      );
-      await hre.cofhe.mocks.expectPlaintext(await eBTC.encTotalSupply(), mintValue - transferValue);
+      await expectERC20BalancesChange(usdc, bob.address, -shieldAmount);
+      await expectFHERC20BalancesChange(eUSDC, bob.address, shieldAmount);
     });
-    it("Should claim all decrypted amounts", async function () {
-      const { eBTC, bob, wBTC } = await setupFixture();
+  });
 
-      expect(await eBTC.totalSupply()).to.equal(0, "Total supply init 0");
-      expect(await eBTC.encTotalSupply()).to.equal(0, "Total supply not initialized (hash is 0)");
+  describe("unshield", function () {
+    it("should unshield tokens and create claim", async function () {
+      const { bob, alice, usdc, eUSDC } = await deployFixture();
 
-      const mintValue = BigInt(10e8);
-      const transferValue = BigInt(1e8);
+      const amount = 1_000_000n;
+      await usdc.mint(bob.address, amount);
+      await usdc.connect(bob).approve(eUSDC.target, amount);
+      await eUSDC.connect(bob).shield(bob.address, amount);
 
-      // Mint and encrypt wBTC
-      await wBTC.mint(bob, mintValue);
-      await wBTC.connect(bob).approve(eBTC.target, mintValue);
-      await eBTC.connect(bob).encrypt(bob.address, mintValue);
+      const unshieldAmount = 500_000n;
 
-      // Multiple decryptions
+      await prepExpectFHERC20BalancesChange(eUSDC, bob.address);
 
-      await eBTC.connect(bob).decrypt(bob.address, transferValue);
-      await eBTC.connect(bob).decrypt(bob.address, transferValue);
+      const tx = await eUSDC.connect(bob).unshield(bob.address, alice.address, unshieldAmount);
+      await expect(tx).to.emit(eUSDC, "Unshielded");
 
-      // Hardhat time travel 11 seconds
-      await hre.network.provider.send("evm_increaseTime", [11]);
-      await hre.network.provider.send("evm_mine");
+      await expectFHERC20BalancesChange(eUSDC, bob.address, -unshieldAmount);
+    });
+  });
 
-      prepExpectERC20BalancesChange(wBTC, bob.address);
+  describe("confidentialTransfer", function () {
+    it("should transfer between accounts", async function () {
+      const { bob, alice, usdc, eUSDC, bobClient } = await deployFixture();
 
-      // Claim all decrypted amounts
-      await eBTC.connect(bob).claimAllDecrypted();
+      const amount = 1_000_000n;
+      await usdc.mint(bob.address, amount);
+      await usdc.connect(bob).approve(eUSDC.target, amount);
+      await eUSDC.connect(bob).shield(bob.address, amount);
 
-      await expectERC20BalancesChange(wBTC, bob.address, 2n * transferValue);
+      const transferAmount = 300_000n;
+      const [enc] = await bobClient.encryptInputs([Encryptable.uint64(transferAmount)]).execute();
 
-      // Expect all decrypted amounts to be claimed
-      const claims = await eBTC.getUserClaims(bob.address);
-      expect(claims.length).to.equal(0, "Bob has no claimable amounts");
+      await prepExpectFHERC20BalancesChange(eUSDC, bob.address);
+      await prepExpectFHERC20BalancesChange(eUSDC, alice.address);
+
+      await eUSDC.connect(bob)["confidentialTransfer(address,(uint256,uint8,uint8,bytes))"](alice.address, enc);
+
+      await expectFHERC20BalancesChange(eUSDC, bob.address, -transferAmount);
+      await expectFHERC20BalancesChange(eUSDC, alice.address, transferAmount);
+    });
+  });
+
+  describe("UUPS upgrade", function () {
+    it("should upgrade to V2 by owner", async function () {
+      const { eUSDC } = await deployFixture();
+
+      const v2Factory = await ethers.getContractFactory("ConfidentialERC20V2_Harness");
+      const v2Impl = await v2Factory.deploy();
+      await v2Impl.waitForDeployment();
+
+      await eUSDC.upgradeToAndCall(await v2Impl.getAddress(), "0x");
+
+      const upgraded = v2Factory.attach(await eUSDC.getAddress()) as ConfidentialERC20V2_Harness;
+      expect(await upgraded.version()).to.equal(2);
+      expect(await upgraded.name()).to.equal("FHERC20 Confidential USD Coin");
+    });
+
+    it("should preserve state after upgrade", async function () {
+      const { bob, usdc, eUSDC } = await deployFixture();
+
+      const amount = 1_000_000n;
+      await usdc.mint(bob.address, amount);
+      await usdc.connect(bob).approve(eUSDC.target, amount);
+      await eUSDC.connect(bob).shield(bob.address, amount);
+
+      const v2Factory = await ethers.getContractFactory("ConfidentialERC20V2_Harness");
+      const v2Impl = await v2Factory.deploy();
+      await v2Impl.waitForDeployment();
+
+      await eUSDC.upgradeToAndCall(await v2Impl.getAddress(), "0x");
+
+      const upgraded = v2Factory.attach(await eUSDC.getAddress()) as ConfidentialERC20V2_Harness;
+      expect(await upgraded.underlying()).to.equal(usdc.target);
+      await hre.cofhe.mocks.expectPlaintext(await upgraded.confidentialTotalSupply(), amount);
+    });
+
+    it("should reject upgrade from non-owner", async function () {
+      const { bob, eUSDC } = await deployFixture();
+
+      const v2Factory = await ethers.getContractFactory("ConfidentialERC20V2_Harness");
+      const v2Impl = await v2Factory.deploy();
+      await v2Impl.waitForDeployment();
+
+      await expect(eUSDC.connect(bob).upgradeToAndCall(await v2Impl.getAddress(), "0x")).to.be.revertedWithCustomError(
+        eUSDC,
+        "OwnableUnauthorizedAccount",
+      );
     });
   });
 });

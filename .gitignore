@@ -24,3 +24,4 @@ node_modules
 # cli
 dist
 packages/hardhat/deployments/
+.claude/settings.json

@@ -13,7 +13,7 @@ import "hardhat-deploy-ethers";
 import { task } from "hardhat/config";
 import generateTsAbis from "./scripts/generateTsAbis";
 
-import "cofhe-hardhat-plugin";
+import "@cofhe/hardhat-plugin";
 
 import "./tasks/hh-prepare-wallet";
 

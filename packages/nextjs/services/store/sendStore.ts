@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useDecryptValue } from "./decrypted";
 import { setDrawerPairAddress, useDrawerPairAddress } from "./drawerStore";
 import { useConfidentialTokenPair, useConfidentialTokenPairBalances } from "./tokenStore";
-import { FheTypes } from "cofhejs/web";
+import { FheTypes } from "@cofhe/sdk";
 import { Address, formatUnits, isAddress, parseUnits, zeroAddress } from "viem";
 import { useAccount, useChainId } from "wagmi";
 import { create } from "zustand";
@@ -43,7 +43,7 @@ export const useSendPair = () => {
 export const useSendBalances = () => {
   const pair = useSendPair();
   const balances = useConfidentialTokenPairBalances(pair?.publicToken.address);
-  const decryptedConfidentialBalance = useDecryptValue(FheTypes.Uint128, balances?.confidentialBalance);
+  const decryptedConfidentialBalance = useDecryptValue(FheTypes.Uint64, balances?.confidentialBalance);
 
   return useMemo(
     () => ({
@@ -94,7 +94,8 @@ export const useUpdateSendValue = () => {
         // Allow only numbers and optional single decimal point, no negatives
         if (/^\d*\.?\d*$/.test(sanitized)) {
           try {
-            const amount = parseUnits(sanitized, pair.publicToken.decimals);
+            const decimals = state.isPublic ? pair.publicToken.decimals : (pair.confidentialToken?.decimals ?? 6);
+            const amount = parseUnits(sanitized, decimals);
             if (state.isPublic) {
               state.publicSendValue = amount;
             } else {
@@ -127,11 +128,13 @@ export const useSendRawInputValue = () => {
 export const useSendInputValue = () => {
   const rawInputValue = useSendRawInputValue();
   const pair = useSendPair();
+  const isPublic = useSendIsPublic();
 
   return useMemo(() => {
     if (pair == null) return "";
-    return formatUnits(rawInputValue, pair.publicToken.decimals);
-  }, [pair, rawInputValue]);
+    const decimals = isPublic ? pair.publicToken.decimals : (pair.confidentialToken?.decimals ?? 6);
+    return formatUnits(rawInputValue, decimals);
+  }, [pair, rawInputValue, isPublic]);
 };
 
 export const useUpdateSendValueByPercent = () => {
@@ -153,7 +156,8 @@ export const useUpdateSendValueByPercent = () => {
           state.confidentialSendValue = amount;
         }
         // Update the input string with the formatted amount
-        state.inputString = formatUnits(amount, pair.publicToken.decimals);
+        const decimals = state.isPublic ? pair.publicToken.decimals : (pair.confidentialToken?.decimals ?? 6);
+        state.inputString = formatUnits(amount, decimals);
       });
     },
     [pair, balances],
@@ -238,7 +242,7 @@ export const useSendFormattedAllowance = () => {
   return useMemo(
     () =>
       balances?.fherc20Allowance != null
-        ? formatUnits(balances.fherc20Allowance, pair?.publicToken.decimals ?? 18)
+        ? formatUnits(balances.fherc20Allowance, pair?.confidentialToken?.decimals ?? 6)
         : "0",
     [balances, pair],
   );

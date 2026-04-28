@@ -9,7 +9,7 @@ export type ScaffoldConfig = {
   version: string;
 };
 
-export const DEFAULT_ALCHEMY_API_KEY = "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
+export const DEFAULT_ALCHEMY_API_KEY = "qxe-jDETyO_MoicCKvcua";
 
 const scaffoldConfig = {
   // The networks on which your DApp is live

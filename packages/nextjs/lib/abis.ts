@@ -1,1592 +1,1871 @@
 export const ConfidentialERC20Abi = [
   {
-    inputs: [
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
       {
-        internalType: "contract IERC20",
-        name: "erc20_",
-        type: "address",
-      },
-      {
-        internalType: "string",
-        name: "symbolOverride_",
-        type: "string",
-      },
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "constructor",
+    "name": "AddressEmptyCode",
+    "type": "error"
   },
   {
-    inputs: [],
-    name: "AlreadyClaimed",
-    type: "error",
+    "inputs": [],
+    "name": "AlreadyClaimed",
+    "type": "error"
   },
   {
-    inputs: [],
-    name: "ClaimNotFound",
-    type: "error",
+    "inputs": [],
+    "name": "ClaimNotFound",
+    "type": "error"
   },
   {
-    inputs: [],
-    name: "ECDSAInvalidSignature",
-    type: "error",
-  },
-  {
-    inputs: [
+    "inputs": [
       {
-        internalType: "uint256",
-        name: "length",
-        type: "uint256",
-      },
+        "internalType": "address",
+        "name": "implementation",
+        "type": "address"
+      }
     ],
-    name: "ECDSAInvalidSignatureLength",
-    type: "error",
+    "name": "ERC1967InvalidImplementation",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "ERC1967NonPayable",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "FHERC20IncompatibleFunction",
+    "type": "error"
+  },
+  {
+    "inputs": [
       {
-        internalType: "bytes32",
-        name: "s",
-        type: "bytes32",
-      },
+        "internalType": "address",
+        "name": "receiver",
+        "type": "address"
+      }
     ],
-    name: "ECDSAInvalidSignatureS",
-    type: "error",
+    "name": "FHERC20InvalidReceiver",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "spender",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "allowance",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "needed",
-        type: "uint256",
-      },
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
     ],
-    name: "ERC20InsufficientAllowance",
-    type: "error",
+    "name": "FHERC20InvalidSender",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "FHERC20TotalSupplyOverflow",
+    "type": "error"
+  },
+  {
+    "inputs": [
       {
-        internalType: "address",
-        name: "sender",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "balance",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "needed",
-        type: "uint256",
-      },
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      }
     ],
-    name: "ERC20InsufficientBalance",
-    type: "error",
+    "name": "FHERC20UnauthorizedCaller",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "approver",
-        type: "address",
+        "internalType": "address",
+        "name": "holder",
+        "type": "address"
       },
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
     ],
-    name: "ERC20InvalidApprover",
-    type: "error",
+    "name": "FHERC20UnauthorizedSpender",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "receiver",
-        type: "address",
+        "internalType": "euint64",
+        "name": "amount",
+        "type": "bytes32"
       },
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
     ],
-    name: "ERC20InvalidReceiver",
-    type: "error",
+    "name": "FHERC20UnauthorizedUseOfEncryptedAmount",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "sender",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "holder",
+        "type": "address"
+      }
     ],
-    name: "ERC20InvalidSender",
-    type: "error",
+    "name": "FHERC20ZeroBalance",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "FailedCall",
+    "type": "error"
+  },
+  {
+    "inputs": [
       {
-        internalType: "address",
-        name: "spender",
-        type: "address",
+        "internalType": "uint8",
+        "name": "got",
+        "type": "uint8"
       },
+      {
+        "internalType": "uint8",
+        "name": "expected",
+        "type": "uint8"
+      }
     ],
-    name: "ERC20InvalidSpender",
-    type: "error",
+    "name": "InvalidEncryptedInput",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "InvalidInitialization",
+    "type": "error"
+  },
+  {
+    "inputs": [
       {
-        internalType: "uint256",
-        name: "deadline",
-        type: "uint256",
-      },
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
     ],
-    name: "ERC2612ExpiredSignature",
-    type: "error",
+    "name": "InvalidUnderlying",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "LengthMismatch",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotInitializing",
+    "type": "error"
+  },
+  {
+    "inputs": [
       {
-        internalType: "address",
-        name: "signer",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
     ],
-    name: "ERC2612InvalidSigner",
-    type: "error",
+    "name": "OwnableInvalidOwner",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "permitOwner",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
     ],
-    name: "FHERC20EncTransferFromOwnerMismatch",
-    type: "error",
+    "name": "OwnableUnauthorizedAccount",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "to",
-        type: "address",
+        "internalType": "uint8",
+        "name": "bits",
+        "type": "uint8"
       },
       {
-        internalType: "address",
-        name: "permitSpender",
-        type: "address",
-      },
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
     ],
-    name: "FHERC20EncTransferFromSpenderMismatch",
-    type: "error",
+    "name": "SafeCastOverflowedUintDowncast",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "uint256",
-        name: "inValueHash",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "permitValueHash",
-        type: "uint256",
-      },
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
     ],
-    name: "FHERC20EncTransferFromValueHashMismatch",
-    type: "error",
+    "name": "SafeERC20FailedOperation",
+    "type": "error"
   },
   {
-    inputs: [],
-    name: "FHERC20IncompatibleFunction",
-    type: "error",
-  },
-  {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
+        "internalType": "int32",
+        "name": "value",
+        "type": "int32"
+      }
     ],
-    name: "FHERC20InvalidErc20",
-    type: "error",
+    "name": "SecurityZoneOutOfBounds",
+    "type": "error"
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "currentNonce",
-        type: "uint256",
-      },
-    ],
-    name: "InvalidAccountNonce",
-    type: "error",
+    "inputs": [],
+    "name": "UUPSUnauthorizedCallContext",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "uint8",
-        name: "got",
-        type: "uint8",
-      },
-      {
-        internalType: "uint8",
-        name: "expected",
-        type: "uint8",
-      },
+        "internalType": "bytes32",
+        "name": "slot",
+        "type": "bytes32"
+      }
     ],
-    name: "InvalidEncryptedInput",
-    type: "error",
+    "name": "UUPSUnsupportedProxiableUUID",
+    "type": "error"
   },
   {
-    inputs: [],
-    name: "InvalidRecipient",
-    type: "error",
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "euint64",
+        "name": "encryptedAmount",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "requester",
+        "type": "address"
+      }
+    ],
+    "name": "AmountDiscloseRequested",
+    "type": "event"
   },
   {
-    inputs: [],
-    name: "InvalidShortString",
-    type: "error",
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "euint64",
+        "name": "encryptedAmount",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "amount",
+        "type": "uint64"
+      }
+    ],
+    "name": "AmountDisclosed",
+    "type": "event"
   },
   {
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        internalType: "address",
-        name: "owner",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
       },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
     ],
-    name: "OwnableInvalidOwner",
-    type: "error",
+    "name": "Approval",
+    "type": "event"
   },
   {
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        internalType: "address",
-        name: "account",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "unshieldRequestId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "euint64",
+        "name": "unshieldAmount",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "unshieldAmountCleartext",
+        "type": "uint64"
+      }
     ],
-    name: "OwnableUnauthorizedAccount",
-    type: "error",
+    "name": "ClaimedUnshielded",
+    "type": "event"
   },
   {
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        internalType: "uint8",
-        name: "bits",
-        type: "uint8",
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
       },
       {
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       },
+      {
+        "indexed": true,
+        "internalType": "euint64",
+        "name": "amount",
+        "type": "bytes32"
+      }
     ],
-    name: "SafeCastOverflowedUintDowncast",
-    type: "error",
+    "name": "ConfidentialTransfer",
+    "type": "event"
   },
   {
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "version",
+        "type": "uint64"
+      }
     ],
-    name: "SafeERC20FailedOperation",
-    type: "error",
+    "name": "Initialized",
+    "type": "event"
   },
   {
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        internalType: "int32",
-        name: "value",
-        type: "int32",
+        "indexed": true,
+        "internalType": "address",
+        "name": "holder",
+        "type": "address"
       },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "until",
+        "type": "uint48"
+      }
     ],
-    name: "SecurityZoneOutOfBounds",
-    type: "error",
+    "name": "OperatorSet",
+    "type": "event"
   },
   {
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        internalType: "string",
-        name: "str",
-        type: "string",
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
       },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
     ],
-    name: "StringTooLong",
-    type: "error",
+    "name": "OwnershipTransferred",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "owner",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "spender",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
     ],
-    name: "Approval",
-    type: "event",
+    "name": "Transfer",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint128",
-        name: "value",
-        type: "uint128",
-      },
+        "indexed": true,
+        "internalType": "euint64",
+        "name": "amount",
+        "type": "bytes32"
+      }
     ],
-    name: "ClaimedDecryptedERC20",
-    type: "event",
+    "name": "Unshielded",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint128",
-        name: "value",
-        type: "uint128",
-      },
+        "indexed": true,
+        "internalType": "address",
+        "name": "implementation",
+        "type": "address"
+      }
     ],
-    name: "DecryptedERC20",
-    type: "event",
+    "name": "Upgraded",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [],
-    name: "EIP712DomainChanged",
-    type: "event",
+    "inputs": [],
+    "name": "UPGRADE_INTERFACE_VERSION",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    anonymous: false,
-    inputs: [
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "value_hash",
-        type: "uint256",
-      },
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
     ],
-    name: "EncTransfer",
-    type: "event",
+    "name": "allowance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
   },
   {
-    anonymous: false,
-    inputs: [
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint128",
-        name: "value",
-        type: "uint128",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "EncryptedERC20",
-    type: "event",
+    "name": "approve",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
   },
   {
-    anonymous: false,
-    inputs: [
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "previousOwner",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "newOwner",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
     ],
-    name: "OwnershipTransferred",
-    type: "event",
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    anonymous: false,
-    inputs: [
+    "inputs": [],
+    "name": "balanceOfIsIndicator",
+    "outputs": [
       {
-        indexed: false,
-        internalType: "string",
-        name: "symbol",
-        type: "string",
-      },
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
     ],
-    name: "SymbolUpdated",
-    type: "event",
+    "stateMutability": "pure",
+    "type": "function"
   },
   {
-    anonymous: false,
-    inputs: [
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
+        "internalType": "bytes32",
+        "name": "ctHash",
+        "type": "bytes32"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
+        "internalType": "uint64",
+        "name": "decryptedAmount",
+        "type": "uint64"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
+        "internalType": "bytes",
+        "name": "decryptionProof",
+        "type": "bytes"
+      }
     ],
-    name: "Transfer",
-    type: "event",
+    "name": "claimUnshielded",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "DOMAIN_SEPARATOR",
-    outputs: [
+    "inputs": [
       {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
+        "internalType": "bytes32[]",
+        "name": "ctHashes",
+        "type": "bytes32[]"
       },
+      {
+        "internalType": "uint64[]",
+        "name": "decryptedAmounts",
+        "type": "uint64[]"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "decryptionProofs",
+        "type": "bytes[]"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "claimUnshieldedBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
     ],
-    name: "allowance",
-    outputs: [
+    "name": "confidentialBalanceOf",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "euint64",
+        "name": "",
+        "type": "bytes32"
+      }
     ],
-    stateMutability: "pure",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "confidentialTotalSupply",
+    "outputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "euint64",
+        "name": "",
+        "type": "bytes32"
+      }
     ],
-    name: "approve",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "account",
-        type: "address",
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       },
-    ],
-    name: "balanceOf",
-    outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "euint64",
+        "name": "amount",
+        "type": "bytes32"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "confidentialTransfer",
+    "outputs": [
+      {
+        "internalType": "euint64",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "balanceOfIsIndicator",
-    outputs: [
+    "inputs": [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "ctHash",
-        type: "uint256",
-      },
-    ],
-    name: "claimDecrypted",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "decimals",
-    outputs: [
-      {
-        internalType: "uint8",
-        name: "",
-        type: "uint8",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       },
       {
-        internalType: "uint128",
-        name: "value",
-        type: "uint128",
-      },
-    ],
-    name: "decrypt",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "eip712Domain",
-    outputs: [
-      {
-        internalType: "bytes1",
-        name: "fields",
-        type: "bytes1",
-      },
-      {
-        internalType: "string",
-        name: "name",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "version",
-        type: "string",
-      },
-      {
-        internalType: "uint256",
-        name: "chainId",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "verifyingContract",
-        type: "address",
-      },
-      {
-        internalType: "bytes32",
-        name: "salt",
-        type: "bytes32",
-      },
-      {
-        internalType: "uint256[]",
-        name: "extensions",
-        type: "uint256[]",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-    ],
-    name: "encBalanceOf",
-    outputs: [
-      {
-        internalType: "euint128",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "encTotalSupply",
-    outputs: [
-      {
-        internalType: "euint128",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        components: [
+        "components": [
           {
-            internalType: "uint256",
-            name: "ctHash",
-            type: "uint256",
+            "internalType": "uint256",
+            "name": "ctHash",
+            "type": "uint256"
           },
           {
-            internalType: "uint8",
-            name: "securityZone",
-            type: "uint8",
+            "internalType": "uint8",
+            "name": "securityZone",
+            "type": "uint8"
           },
           {
-            internalType: "uint8",
-            name: "utype",
-            type: "uint8",
+            "internalType": "uint8",
+            "name": "utype",
+            "type": "uint8"
           },
           {
-            internalType: "bytes",
-            name: "signature",
-            type: "bytes",
-          },
+            "internalType": "bytes",
+            "name": "signature",
+            "type": "bytes"
+          }
         ],
-        internalType: "struct InEuint128",
-        name: "inValue",
-        type: "tuple",
-      },
+        "internalType": "struct InEuint64",
+        "name": "encryptedAmount",
+        "type": "tuple"
+      }
     ],
-    name: "encTransfer",
-    outputs: [
+    "name": "confidentialTransfer",
+    "outputs": [
       {
-        internalType: "euint128",
-        name: "transferred",
-        type: "uint256",
-      },
+        "internalType": "euint64",
+        "name": "",
+        "type": "bytes32"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "function",
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "from",
-        type: "address",
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       },
       {
-        internalType: "address",
-        name: "to",
-        type: "address",
+        "internalType": "euint64",
+        "name": "amount",
+        "type": "bytes32"
       },
       {
-        components: [
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "confidentialTransferAndCall",
+    "outputs": [
+      {
+        "internalType": "euint64",
+        "name": "transferred",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "components": [
           {
-            internalType: "uint256",
-            name: "ctHash",
-            type: "uint256",
+            "internalType": "uint256",
+            "name": "ctHash",
+            "type": "uint256"
           },
           {
-            internalType: "uint8",
-            name: "securityZone",
-            type: "uint8",
+            "internalType": "uint8",
+            "name": "securityZone",
+            "type": "uint8"
           },
           {
-            internalType: "uint8",
-            name: "utype",
-            type: "uint8",
+            "internalType": "uint8",
+            "name": "utype",
+            "type": "uint8"
           },
           {
-            internalType: "bytes",
-            name: "signature",
-            type: "bytes",
-          },
+            "internalType": "bytes",
+            "name": "signature",
+            "type": "bytes"
+          }
         ],
-        internalType: "struct InEuint128",
-        name: "inValue",
-        type: "tuple",
+        "internalType": "struct InEuint64",
+        "name": "encryptedAmount",
+        "type": "tuple"
       },
       {
-        components: [
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "confidentialTransferAndCall",
+    "outputs": [
+      {
+        "internalType": "euint64",
+        "name": "transferred",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "components": [
           {
-            internalType: "address",
-            name: "owner",
-            type: "address",
+            "internalType": "uint256",
+            "name": "ctHash",
+            "type": "uint256"
           },
           {
-            internalType: "address",
-            name: "spender",
-            type: "address",
+            "internalType": "uint8",
+            "name": "securityZone",
+            "type": "uint8"
           },
           {
-            internalType: "uint256",
-            name: "value_hash",
-            type: "uint256",
+            "internalType": "uint8",
+            "name": "utype",
+            "type": "uint8"
           },
           {
-            internalType: "uint256",
-            name: "deadline",
-            type: "uint256",
-          },
-          {
-            internalType: "uint8",
-            name: "v",
-            type: "uint8",
-          },
-          {
-            internalType: "bytes32",
-            name: "r",
-            type: "bytes32",
-          },
-          {
-            internalType: "bytes32",
-            name: "s",
-            type: "bytes32",
-          },
+            "internalType": "bytes",
+            "name": "signature",
+            "type": "bytes"
+          }
         ],
-        internalType: "struct IFHERC20.FHERC20_EIP712_Permit",
-        name: "permit",
-        type: "tuple",
-      },
+        "internalType": "struct InEuint64",
+        "name": "encryptedAmount",
+        "type": "tuple"
+      }
     ],
-    name: "encTransferFrom",
-    outputs: [
+    "name": "confidentialTransferFrom",
+    "outputs": [
       {
-        internalType: "euint128",
-        name: "transferred",
-        type: "uint256",
-      },
+        "internalType": "euint64",
+        "name": "transferred",
+        "type": "bytes32"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "function",
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "to",
-        type: "address",
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
       },
       {
-        internalType: "uint128",
-        name: "value",
-        type: "uint128",
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       },
+      {
+        "internalType": "euint64",
+        "name": "amount",
+        "type": "bytes32"
+      }
     ],
-    name: "encrypt",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "name": "confidentialTransferFrom",
+    "outputs": [
+      {
+        "internalType": "euint64",
+        "name": "transferred",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "erc20",
-    outputs: [
+    "inputs": [
       {
-        internalType: "contract IERC20",
-        name: "",
-        type: "address",
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
       },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "euint64",
+        "name": "amount",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "confidentialTransferFromAndCall",
+    "outputs": [
+      {
+        "internalType": "euint64",
+        "name": "transferred",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "uint256",
-        name: "ctHash",
-        type: "uint256",
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
       },
-    ],
-    name: "getClaim",
-    outputs: [
       {
-        components: [
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "components": [
           {
-            internalType: "uint256",
-            name: "ctHash",
-            type: "uint256",
+            "internalType": "uint256",
+            "name": "ctHash",
+            "type": "uint256"
           },
           {
-            internalType: "uint128",
-            name: "requestedAmount",
-            type: "uint128",
+            "internalType": "uint8",
+            "name": "securityZone",
+            "type": "uint8"
           },
           {
-            internalType: "uint128",
-            name: "decryptedAmount",
-            type: "uint128",
+            "internalType": "uint8",
+            "name": "utype",
+            "type": "uint8"
           },
           {
-            internalType: "bool",
-            name: "decrypted",
-            type: "bool",
-          },
-          {
-            internalType: "address",
-            name: "to",
-            type: "address",
-          },
-          {
-            internalType: "bool",
-            name: "claimed",
-            type: "bool",
-          },
+            "internalType": "bytes",
+            "name": "signature",
+            "type": "bytes"
+          }
         ],
-        internalType: "struct ConfidentialClaim.Claim",
-        name: "",
-        type: "tuple",
+        "internalType": "struct InEuint64",
+        "name": "encryptedAmount",
+        "type": "tuple"
       },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "confidentialTransferFromAndCall",
+    "outputs": [
+      {
+        "internalType": "euint64",
+        "name": "transferred",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "contractURI",
+    "outputs": [
       {
-        internalType: "address",
-        name: "user",
-        type: "address",
-      },
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
     ],
-    name: "getUserClaims",
-    outputs: [
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
       {
-        components: [
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "euint64",
+        "name": "encryptedAmount",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "cleartextAmount",
+        "type": "uint64"
+      },
+      {
+        "internalType": "bytes",
+        "name": "decryptionProof",
+        "type": "bytes"
+      }
+    ],
+    "name": "discloseEncryptedAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "ctHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getClaim",
+    "outputs": [
+      {
+        "components": [
           {
-            internalType: "uint256",
-            name: "ctHash",
-            type: "uint256",
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
           },
           {
-            internalType: "uint128",
-            name: "requestedAmount",
-            type: "uint128",
+            "internalType": "bytes32",
+            "name": "ctHash",
+            "type": "bytes32"
           },
           {
-            internalType: "uint128",
-            name: "decryptedAmount",
-            type: "uint128",
+            "internalType": "uint64",
+            "name": "requestedAmount",
+            "type": "uint64"
           },
           {
-            internalType: "bool",
-            name: "decrypted",
-            type: "bool",
+            "internalType": "uint64",
+            "name": "decryptedAmount",
+            "type": "uint64"
           },
           {
-            internalType: "address",
-            name: "to",
-            type: "address",
-          },
-          {
-            internalType: "bool",
-            name: "claimed",
-            type: "bool",
-          },
+            "internalType": "bool",
+            "name": "claimed",
+            "type": "bool"
+          }
         ],
-        internalType: "struct ConfidentialClaim.Claim[]",
-        name: "",
-        type: "tuple[]",
-      },
+        "internalType": "struct FHERC20WrapperClaimHelperUpgradeable.Claim",
+        "name": "",
+        "type": "tuple"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "indicatorTick",
-    outputs: [
+    "inputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "getUserClaims",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "ctHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "requestedAmount",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "decryptedAmount",
+            "type": "uint64"
+          },
+          {
+            "internalType": "bool",
+            "name": "claimed",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct FHERC20WrapperClaimHelperUpgradeable.Claim[]",
+        "name": "userClaims",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "isFherc20",
-    outputs: [
+    "inputs": [],
+    "name": "indicatorTick",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "name",
-    outputs: [
+    "inputs": [],
+    "name": "inferredTotalSupply",
+    "outputs": [
       {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
+        "internalType": "contract IERC20",
+        "name": "erc20_",
+        "type": "address"
+      }
     ],
-    name: "nonces",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "owner",
-    outputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
+        "internalType": "address",
+        "name": "holder",
+        "type": "address"
       },
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "isOperator",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "renounceOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "inputs": [],
+    "name": "maxTotalSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "resetIndicatedBalance",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "inputs": [],
+    "name": "name",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "symbol",
-    outputs: [
+    "inputs": [
       {
-        internalType: "string",
-        name: "",
-        type: "string",
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       },
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "onTransferReceived",
+    "outputs": [
+      {
+        "internalType": "bytes4",
+        "name": "",
+        "type": "bytes4"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "totalSupply",
-    outputs: [
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "proxiableUUID",
+    "outputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
     ],
-    name: "transfer",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "rate",
+    "outputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "transferFrom",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "newOwner",
-        type: "address",
-      },
-    ],
-    name: "transferOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "string",
-        name: "updatedSymbol",
-        type: "string",
-      },
+        "internalType": "euint64",
+        "name": "encryptedAmount",
+        "type": "bytes32"
+      }
     ],
-    name: "updateSymbol",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "name": "requestDiscloseEncryptedAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
-];
+  {
+    "inputs": [],
+    "name": "resetIndicatedBalance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "internalType": "uint48",
+        "name": "until",
+        "type": "uint48"
+      }
+    ],
+    "name": "setOperator",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "shield",
+    "outputs": [
+      {
+        "internalType": "euint64",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceId",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "transfer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferFrom",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "underlying",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint64",
+        "name": "amount",
+        "type": "uint64"
+      }
+    ],
+    "name": "unshield",
+    "outputs": [
+      {
+        "internalType": "euint64",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "upgradeToAndCall",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  }
+] as const;
 
 export const RedactCoreAbi = [
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "contract IWETH",
-        name: "wETH_",
-        type: "address",
+        "internalType": "contract IWETH",
+        "name": "wETH_",
+        "type": "address"
       },
       {
-        internalType: "contract ConfidentialETH",
-        name: "eETH_",
-        type: "address",
+        "internalType": "contract ConfidentialETH",
+        "name": "eETH_",
+        "type": "address"
       },
+      {
+        "internalType": "address",
+        "name": "confidentialERC20Implementation_",
+        "type": "address"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "constructor",
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
-    inputs: [],
-    name: "Invalid_AlreadyDeployed",
-    type: "error",
+    "inputs": [],
+    "name": "AlreadyDeployed",
+    "type": "error"
   },
   {
-    inputs: [],
-    name: "Invalid_Stablecoin",
-    type: "error",
+    "inputs": [],
+    "name": "InvalidEETH",
+    "type": "error"
   },
   {
-    inputs: [],
-    name: "Invalid_WETH",
-    type: "error",
+    "inputs": [],
+    "name": "InvalidImplementation",
+    "type": "error"
   },
   {
-    inputs: [],
-    name: "Invalid_eETH",
-    type: "error",
+    "inputs": [],
+    "name": "InvalidWETH",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
     ],
-    name: "OwnableInvalidOwner",
-    type: "error",
+    "name": "OwnableInvalidOwner",
+    "type": "error"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
     ],
-    name: "OwnableUnauthorizedAccount",
-    type: "error",
+    "name": "OwnableUnauthorizedAccount",
+    "type": "error"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "erc20",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "erc20",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "fherc20",
-        type: "address",
-      },
+        "indexed": true,
+        "internalType": "address",
+        "name": "confidentialERC20",
+        "type": "address"
+      }
     ],
-    name: "Fherc20Deployed",
-    type: "event",
+    "name": "ConfidentialERC20Deployed",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "fherc20",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "oldImpl",
+        "type": "address"
       },
       {
-        indexed: false,
-        internalType: "string",
-        name: "symbol",
-        type: "string",
-      },
+        "indexed": true,
+        "internalType": "address",
+        "name": "newImpl",
+        "type": "address"
+      }
     ],
-    name: "Fherc20SymbolUpdated",
-    type: "event",
+    "name": "ConfidentialERC20ImplementationUpdated",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "previousOwner",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "newOwner",
-        type: "address",
-      },
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
     ],
-    name: "OwnershipTransferStarted",
-    type: "event",
+    "name": "OwnershipTransferStarted",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "previousOwner",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "newOwner",
-        type: "address",
-      },
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
     ],
-    name: "OwnershipTransferred",
-    type: "event",
+    "name": "OwnershipTransferred",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "inputs": [],
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "confidentialERC20Implementation",
+    "outputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "erc20",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "bool",
-        name: "isStablecoin",
-        type: "bool",
-      },
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
     ],
-    name: "StablecoinUpdated",
-    type: "event",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "erc20",
-        type: "address",
-      },
+        "internalType": "contract IERC20",
+        "name": "erc20",
+        "type": "address"
+      }
     ],
-    name: "_stablecoins",
-    outputs: [
+    "name": "deployConfidentialERC20",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "isStablecoin",
-        type: "bool",
-      },
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "acceptOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
+    "inputs": [],
+    "name": "eETH",
+    "outputs": [
       {
-        internalType: "contract IERC20",
-        name: "erc20",
-        type: "address",
-      },
+        "internalType": "contract ConfidentialETH",
+        "name": "",
+        "type": "address"
+      }
     ],
-    name: "deployFherc20",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "eETH",
-    outputs: [
+    "inputs": [
       {
-        internalType: "contract ConfidentialETH",
-        name: "",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "erc20",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "getConfidentialERC20",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "getDeployedFherc20s",
-    outputs: [
+    "inputs": [],
+    "name": "getDeployedConfidentialERC20s",
+    "outputs": [
       {
-        components: [
+        "components": [
           {
-            internalType: "address",
-            name: "erc20",
-            type: "address",
+            "internalType": "address",
+            "name": "erc20",
+            "type": "address"
           },
           {
-            internalType: "address",
-            name: "fherc20",
-            type: "address",
-          },
+            "internalType": "address",
+            "name": "confidentialERC20",
+            "type": "address"
+          }
         ],
-        internalType: "struct RedactedCore.MappedERC20[]",
-        name: "mappedFherc20s",
-        type: "tuple[]",
-      },
+        "internalType": "struct RedactCore.MappedERC20[]",
+        "name": "mapped",
+        "type": "tuple[]"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
       {
-        internalType: "address",
-        name: "erc20",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
     ],
-    name: "getFherc20",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "pendingOwner",
+    "outputs": [
       {
-        internalType: "address",
-        name: "erc20",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
     ],
-    name: "getIsStablecoin",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "erc20",
-        type: "address",
-      },
-    ],
-    name: "getIsWETH",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "owner",
-    outputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "setConfidentialERC20Implementation",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "pendingOwner",
-    outputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "renounceOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "upgradeAllWrappers",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "newOwner",
-        type: "address",
+        "internalType": "address",
+        "name": "proxy",
+        "type": "address"
       },
+      {
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
     ],
-    name: "transferOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "name": "upgradeWrapper",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [],
+    "name": "wETH",
+    "outputs": [
       {
-        internalType: "contract ConfidentialERC20",
-        name: "fherc20",
-        type: "address",
-      },
-      {
-        internalType: "string",
-        name: "updatedSymbol",
-        type: "string",
-      },
+        "internalType": "contract IWETH",
+        "name": "",
+        "type": "address"
+      }
     ],
-    name: "updateFherc20Symbol",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "stablecoin",
-        type: "address",
-      },
-      {
-        internalType: "bool",
-        name: "isStablecoin",
-        type: "bool",
-      },
-    ],
-    name: "updateStablecoin",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "wETH",
-    outputs: [
-      {
-        internalType: "contract IWETH",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
+    "stateMutability": "view",
+    "type": "function"
+  }
 ] as const;

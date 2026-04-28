@@ -132,7 +132,7 @@ const AmountInputRow = () => {
         <div className="flex justify-between items-center w-full">
           <div className="text-xs text-[#336699]">
             Balance: {isPublic && formatTokenAmount(balances?.publicBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
-            {!isPublic && formatTokenAmount(balances?.confidentialBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
+            {!isPublic && formatTokenAmount(balances?.confidentialBalance ?? 0n, pair?.confidentialToken?.decimals ?? 6)}
           </div>
           <Button
             onClick={() => setSliderValue(100)}
@@ -342,7 +342,7 @@ const ConfidentialSendButton = () => {
       confidentialTokenAddress: pair.confidentialToken?.address ?? "",
       amount: rawAmount,
       recipient: recipient,
-      tokenDecimals: pair.confidentialToken?.decimals ?? 18,
+      tokenDecimals: pair.confidentialToken?.decimals ?? 6,
     });
   };
 

@@ -14,10 +14,10 @@ import { RadioButtonGroup } from "~~/components/ui/FnxRadioGroup";
 import { Slider } from "~~/components/ui/FnxSlider";
 import { targetNetworksNoHardhat, useCofhe, useIsConnectedChainSupported } from "~~/hooks/useCofhe";
 import { useClaimAllAction, useDecryptFherc20Action } from "~~/hooks/useDecryptActions";
-import { useApproveFherc20Action, useDeployFherc20Action, useEncryptErc20Action } from "~~/hooks/useEncryptActions";
+import { useApproveFherc20Action, useEncryptErc20Action } from "~~/hooks/useEncryptActions";
 import { formatTokenAmount } from "~~/lib/common";
 import { getConfidentialSymbol } from "~~/lib/common";
-import { usePairClaims } from "~~/services/store/claim";
+import { usePairClaimableItems, usePairClaims } from "~~/services/store/claim";
 import {
   useEncryptDecryptBalances,
   useEncryptDecryptFormattedAllowance,
@@ -35,6 +35,7 @@ import {
   useUpdateEncryptDecryptValue,
   useUpdateEncryptDecryptValueByPercent,
 } from "~~/services/store/encryptDecrypt";
+import { useGlobalState } from "~~/services/store/store";
 import { useDefaultConfidentialTokenPair } from "~~/services/store/tokenStore";
 
 export function MainTokenSwapping() {
@@ -72,8 +73,16 @@ export function MainTokenSwapping() {
     }
   }, [isEncrypt, setInputValue]);
 
+  const { setMigrationModalOpen } = useGlobalState();
+
   return (
     <div className="text-center inline-block w-full">
+      <button
+        onClick={() => setMigrationModalOpen(true)}
+        className="text-md text-primary-accent cursor-pointer mb-2 hover:opacity-80 font-bold"
+      >
+        Migration instructions from old Redact version
+      </button>
       <div className="flex gap-8 items-center justify-center w-full max-w-[450px] md:w-[450px] mx-auto rounded-3xl drop-shadow-xl">
         <Card className="rounded-[inherit] w-full max-w-[450px] bg-background/60 border-component-stroke firefox-compatible-backdrop-blur-xs">
           <ConnectOverlay />
@@ -205,7 +214,9 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
     setHasInteracted(true);
     let value = e.target.value;
 
-    const currentTokenDecimals = pair?.publicToken.decimals ?? 18;
+    const currentTokenDecimals = !isEncrypt
+      ? (pair?.confidentialToken?.decimals ?? 6)
+      : (pair?.publicToken.decimals ?? 18);
 
     if (value.includes(".")) {
       const parts = value.split(".");
@@ -262,7 +273,7 @@ const AmountInputRow = ({ disabled }: { disabled: boolean }) => {
         <div className="flex justify-between items-center w-full">
           <div className="text-xs text-[#336699]">
             Balance: {isEncrypt && formatTokenAmount(balances?.publicBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
-            {!isEncrypt && formatTokenAmount(balances?.confidentialBalance ?? 0n, pair?.publicToken.decimals ?? 18)}
+            {!isEncrypt && formatTokenAmount(balances?.confidentialBalance ?? 0n, pair?.confidentialToken?.decimals ?? 6)}
           </div>
           <Button
             disabled={disabled}
@@ -311,24 +322,6 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   const setInputValue = useUpdateEncryptDecryptValue();
   const hasInteracted = useEncryptDecryptHasInteracted();
   const setHasInteracted = useSetEncryptDecryptHasInteracted();
-
-  // Deploy
-
-  const isStablecoin = pair?.isStablecoin;
-
-  const { onDeployFherc20, isDeploying } = useDeployFherc20Action();
-
-  const handleDeploy = () => {
-    if (pair == null) return;
-    onDeployFherc20({ tokenAddress: pair.publicToken.address, publicTokenSymbol: pair.publicToken.symbol });
-  };
-
-  const deployState = useMemo(() => {
-    if (pair == null) return TxGuideStepState.Ready;
-    if (pair.confidentialTokenDeployed) return TxGuideStepState.Success;
-    if (isDeploying) return TxGuideStepState.Loading;
-    return TxGuideStepState.Ready;
-  }, [pair, isDeploying]);
 
   // Encrypt
 
@@ -427,9 +420,6 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   // ERRS
 
   const missingPairErrMessage = pair == null ? `Select a token to encrypt` : undefined;
-  const stablecoinErrMessage = isStablecoin
-    ? "Stablecoin encryption disabled until FHED (FHE Dollar) release"
-    : undefined;
 
   const valueErrMessage = hasInteracted && valueError != null ? `Invalid amount:\n${valueError}` : undefined;
   const encryptErrMessage = hasInteracted && isEncryptError ? `Encryption failed` : undefined;
@@ -438,17 +428,6 @@ const EncryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   // Steps
 
   const steps = [
-    {
-      title: "Deploy",
-      cta: pair == null ? "ENCRYPT" : `DEPLOY`,
-      hint: pair?.publicToken.symbol
-        ? `e${pair.publicToken.symbol} has not been deployed yet (1 time tx)`
-        : "Please select a token",
-      state: deployState,
-      action: handleDeploy,
-      disabled: pair == null || isDeploying || isStablecoin,
-      errorMessage: sharedErrMessage ?? stablecoinErrMessage,
-    },
     {
       title: "Approve",
       cta: pair == null ? "ENCRYPT" : `APPROVE`,
@@ -476,6 +455,7 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
   const valueError = useEncryptDecryptValueError();
   const rawInputValue = useEncryptDecryptRawInputValue();
   const pairClaims = usePairClaims(pair?.publicToken.address);
+  const claimableItems = usePairClaimableItems(pair?.publicToken.address);
   const setInputValue = useUpdateEncryptDecryptValue();
   const hasInteracted = useEncryptDecryptHasInteracted();
   const setHasInteracted = useSetEncryptDecryptHasInteracted();
@@ -595,13 +575,14 @@ const DecryptTransactionGuide = ({ setIsControlsDisabled }: { setIsControlsDisab
       confidentialTokenAddress: pair.confidentialToken.address,
       claimAmount: pairClaims.totalDecryptedAmount,
       tokenDecimals: pair.confidentialToken.decimals,
+      claims: claimableItems,
     });
   };
 
   // Steps
 
   const claimAmountHint = pairClaims?.totalDecryptedAmount
-    ? formatTokenAmount(pairClaims.totalDecryptedAmount, pair?.confidentialToken?.decimals ?? 18)
+    ? formatTokenAmount(pairClaims.totalDecryptedAmount, pair?.confidentialToken?.decimals ?? 6)
     : "";
   const steps = [
     {

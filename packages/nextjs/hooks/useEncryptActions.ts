@@ -38,7 +38,7 @@ export const useDeployFherc20Action = () => {
         const writeContractObject = {
           abi: redactCoreContract.abi,
           address: redactCoreContract.address as Address,
-          functionName: "deployFherc20",
+          functionName: "deployConfidentialERC20",
           args: [tokenAddress],
         } as WriteContractVariables<Abi, string, any[], Config, number>;
 
@@ -179,7 +179,7 @@ export const useEncryptErc20Action = () => {
 
         const abi = isWeth || isEth ? confidentialEthAbi : confidentialErc20Abi;
         const address = confidentialTokenAddress;
-        const functionName = isWeth ? "encryptWETH" : isEth ? "encryptETH" : "encrypt";
+        const functionName = isWeth ? "shieldWrappedNative" : isEth ? "shieldNative" : "shield";
         const value = isEth ? amount : undefined;
         const args = isEth ? [account] : [account, amount];
 

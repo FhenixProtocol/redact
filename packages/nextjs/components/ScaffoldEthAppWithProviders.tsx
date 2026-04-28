@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DrawerBlurOverlay } from "./DrawerBlurOverlay";
+import { CofheProvider, createCofheConfig } from "@cofhe/react";
+import { baseSepolia, sepolia, arbSepolia, hardhat } from "@cofhe/sdk/chains";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { useTheme } from "next-themes";
 import { Toaster } from "react-hot-toast";
-import { WagmiProvider, useAccount } from "wagmi";
+import { WagmiProvider, useAccount, usePublicClient, useWalletClient } from "wagmi";
 import Drawer from "~~/components/Drawer";
 import { Footer } from "~~/components/Footer";
 import { Header } from "~~/components/Header";
@@ -32,9 +34,6 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
       <div className="relative min-h-screen">
         <div className="grid grid-rows-[auto_1fr_auto] min-h-screen relative">
           <Header />
-          <div className="w-full h-[30px] flex justify-center align-middle items-center p-2 bg-red-700 opacity-60 text-white font-bold">
-          We are currently experiencing slower-than-usual decryption times. Our team is working to resolve the issue
-          </div>
           <main className="relative p-2 md:p-4 flex justify-center items-center">{children}</main>
           <Footer />
           <DrawerBlurOverlay />
@@ -54,6 +53,31 @@ export const queryClient = new QueryClient({
   },
 });
 
+/**
+ * Inner component that sets up CofheProvider.
+ * Must be inside WagmiProvider to access usePublicClient/useWalletClient.
+ */
+const CofheProviderWrapper = ({ children }: { children: React.ReactNode }) => {
+  const publicClient = usePublicClient();
+  const { data: walletClient } = useWalletClient();
+
+  const cofheConfig = useMemo(
+    () =>
+      createCofheConfig({
+        supportedChains: [sepolia, arbSepolia, baseSepolia, hardhat],
+        // SSR guard: iframe-shared-storage accesses `document` at construction time.
+        fheKeyStorage: typeof window === "undefined" ? null : undefined,
+      }),
+    [],
+  );
+
+  return (
+    <CofheProvider config={cofheConfig} publicClient={publicClient} walletClient={walletClient ?? undefined}>
+      {children}
+    </CofheProvider>
+  );
+};
+
 export const ScaffoldEthAppWithProviders = ({ children }: { children: React.ReactNode }) => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -67,12 +91,14 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <ProgressBar height="3px" color="#2299dd" />
-        <RainbowKitProvider
-          avatar={BlockieAvatar}
-          theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
-        >
-          <ScaffoldEthApp>{children}</ScaffoldEthApp> {/* INFO: This is the main page */}
-        </RainbowKitProvider>
+        <CofheProviderWrapper>
+          <RainbowKitProvider
+            avatar={BlockieAvatar}
+            theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
+          >
+            <ScaffoldEthApp>{children}</ScaffoldEthApp>
+          </RainbowKitProvider>
+        </CofheProviderWrapper>
       </QueryClientProvider>
     </WagmiProvider>
   );

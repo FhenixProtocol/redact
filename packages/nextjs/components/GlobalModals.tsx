@@ -8,7 +8,7 @@ import { useGlobalState } from "~~/services/store/store";
 import { ConfidentialTokenPair } from "~~/services/store/tokenStore";
 
 export const GlobalModals = () => {
-  const { isSelectTokenModalOpen, setSelectTokenModalOpen, onSelectTokenCallback } = useGlobalState();
+  const { isSelectTokenModalOpen, setSelectTokenModalOpen, onSelectTokenCallback, isMigrationModalOpen, setMigrationModalOpen } = useGlobalState();
 
   const handleSelectToken = (tokenPair: ConfidentialTokenPair, isEncrypt?: boolean) => {
     if (onSelectTokenCallback) {
@@ -21,6 +21,31 @@ export const GlobalModals = () => {
     <>
       {/* Add Token Modal */}
       <AddTokenModal />
+
+      {/* Migration Modal */}
+      <Modal
+        isOpen={isMigrationModalOpen}
+        onClose={() => setMigrationModalOpen(false)}
+        title="Migration Instraction"
+        duration="slow"
+        className="w-[600px]"
+      >
+        <div>
+          <p>The system upgrade was successful. </p>
+          <p>Please note that legacy Redact contracts are no longer supported.</p>
+          <br/>
+          <p>
+            <a
+              href="https://x.com/RedactMoney/status/2044025923578577132"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-accent underline"
+            >
+              To learn more, click here.
+            </a>
+          </p>
+        </div>
+      </Modal>
 
       {/* Select Token Modal */}
       <Modal

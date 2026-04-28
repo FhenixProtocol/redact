@@ -10,13 +10,13 @@ import { EncryptedBalance } from "../ui/EncryptedValue";
 import { Separator } from "../ui/Separator";
 import { TokenIconSymbol } from "../ui/TokenIconSymbol";
 import { ArrowBack } from "@mui/icons-material";
-import { FheTypes } from "cofhejs/web";
+import { FheTypes } from "@cofhe/sdk";
 import { MoveDownLeft, MoveUpRight, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useClaimAllAction } from "~~/hooks/useDecryptActions";
 import { ETH_ADDRESS } from "~~/lib/common";
 import { cn } from "~~/lib/utils";
-import { usePairClaims } from "~~/services/store/claim";
+import { usePairClaimableItems, usePairClaims } from "~~/services/store/claim";
 import { useDecryptValue } from "~~/services/store/decrypted";
 import {
   DrawerPageName,
@@ -83,6 +83,7 @@ const TokenHeader = ({
         confidentialBalance={balances?.confidentialBalance ?? 0n}
         claimableAmount={pairClaims?.totalDecryptedAmount ?? 0n}
         decimals={pair.publicToken.decimals}
+        confidentialDecimals={pair.confidentialToken?.decimals}
         showBalance={false}
         infoRowPosition="bottom"
         fragmentedBalance={fragmentedBalances?.publicBalance ?? 0n}
@@ -98,18 +99,23 @@ const TokenTotalBalanceRow = ({
   pair: ConfidentialTokenPair;
   balances: ConfidentialTokenPairBalances | undefined;
 }) => {
-  const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint128, balances?.confidentialBalance);
+  const { value: decryptedBalance } = useDecryptValue(FheTypes.Uint64, balances?.confidentialBalance);
   const pairClaims = usePairClaims(pair?.publicToken.address);
   const fragmentedPair = useConfidentialTokenPair(pair?.fragmentedPair);
   const fragmentedBalances = useConfidentialTokenPairBalances(fragmentedPair?.publicToken.address);
   const fragmentedBalance = fragmentedBalances?.publicBalance ?? 0n;
 
+  const confDecimals = pair.confidentialToken?.decimals ?? pair.publicToken.decimals;
+  const pubDecimals = pair.publicToken.decimals;
+  const rate = pubDecimals > confDecimals ? 10n ** BigInt(pubDecimals - confDecimals) : 1n;
+
   const totalBalance = useMemo(() => {
     if (decryptedBalance == null) return -1n;
+    const scaledConfidential = decryptedBalance * rate;
     return (
-      (balances?.publicBalance ?? 0n) + decryptedBalance + (pairClaims?.totalDecryptedAmount ?? 0n) + fragmentedBalance
+      (balances?.publicBalance ?? 0n) + scaledConfidential + (pairClaims?.totalDecryptedAmount ?? 0n) + fragmentedBalance
     );
-  }, [decryptedBalance, balances?.publicBalance, pairClaims?.totalDecryptedAmount, fragmentedBalance]);
+  }, [decryptedBalance, balances?.publicBalance, pairClaims?.totalDecryptedAmount, fragmentedBalance, rate]);
 
   return (
     <div className="flex flex-col items-start">
@@ -164,7 +170,7 @@ const TokenBalanceRow = ({
                   <>
                     <CleartextBalance
                       balance={pairClaims.totalDecryptedAmount}
-                      decimals={pair.publicToken.decimals}
+                      decimals={pair.confidentialToken?.decimals ?? 6}
                       className="text-left min-w-[10px] text-lg text-success-500"
                       showIcon={false}
                     />
@@ -209,7 +215,7 @@ const TokenBalancesSection = ({
   const setIsEncrypt = useEncryptDecryptSetIsEncrypt();
   const setToken = useSelectEncryptDecryptToken();
   const setDrawerOpen = useSetDrawerOpen();
-  const decryptedBalance = useDecryptValue(FheTypes.Uint128, balances.confidentialBalance);
+  const decryptedBalance = useDecryptValue(FheTypes.Uint64, balances.confidentialBalance);
   const fragmentedBalances = useConfidentialTokenPairBalances(fragmentedPair?.publicToken.address);
 
   const handleEncryptDecrypt = (isEncrypt: boolean) => {
@@ -259,6 +265,7 @@ const TokenBalancesSection = ({
 
 const TokenClaimButton = ({ pair }: { pair: ConfidentialTokenPair }) => {
   const pairClaims = usePairClaims(pair.publicToken.address);
+  const claimableItems = usePairClaimableItems(pair.publicToken.address);
   const { onClaimAll, isClaiming } = useClaimAllAction();
 
   if (pairClaims == null) return null;
@@ -286,6 +293,7 @@ const TokenClaimButton = ({ pair }: { pair: ConfidentialTokenPair }) => {
       confidentialTokenAddress: pair.confidentialToken.address,
       claimAmount: pairClaims.totalDecryptedAmount,
       tokenDecimals: pair.publicToken.decimals,
+      claims: claimableItems,
     });
   };
 

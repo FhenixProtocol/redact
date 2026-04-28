@@ -14,7 +14,7 @@ const deployEeth: DeployFunction = async function (hre: HardhatRuntimeEnvironmen
     console.log("Skipping eETH deployment due to --eeth flag");
     return;
   }
- 
+
   const wethAddress = chainConfig[chainId]?.weth;
   const weth = wethAddress || (await deployments.get("wETH")).address;
 
@@ -22,16 +22,41 @@ const deployEeth: DeployFunction = async function (hre: HardhatRuntimeEnvironmen
     throw new Error(`wETH address must be provided`);
   }
 
-  await deploy("eETH", {
+  // 1. Deploy ConfidentialETH implementation (constructor calls _disableInitializers)
+  const implDeployment = await deploy("eETH_Impl", {
     contract: "ConfidentialETH",
     from: deployer,
-    args: [weth],
+    args: [],
     log: true,
     autoMine: true,
   });
+  console.log("eETH implementation deployed at:", implDeployment.address);
 
-  const eeth = await hre.ethers.getContract<Contract>("eETH", deployer);
-  console.log("eETH deployed at:", eeth.target);
+  // 2. Deploy ERC1967Proxy with initialize(weth) calldata
+  const implArtifact = await hre.artifacts.readArtifact("ConfidentialETH");
+  const iface = new hre.ethers.Interface(implArtifact.abi);
+  const initData = iface.encodeFunctionData("initialize", [weth]);
+
+  const proxyDeployment = await deploy("eETH_Proxy", {
+    contract: "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol:ERC1967Proxy",
+    from: deployer,
+    args: [implDeployment.address, initData],
+    log: true,
+    autoMine: true,
+  });
+  console.log("eETH proxy deployed at:", proxyDeployment.address);
+
+  // 3. Save the "eETH" artifact with proxy address + implementation ABI
+  //    This ensures generateTsAbis picks up the correct ABI for the proxy
+  const implDeploymentData = await hre.deployments.get("eETH_Impl");
+  await hre.deployments.save("eETH", {
+    address: proxyDeployment.address,
+    abi: implArtifact.abi,
+    metadata: implDeploymentData.metadata,
+  });
+
+  const eeth = await hre.ethers.getContractAt("ConfidentialETH", proxyDeployment.address, await hre.ethers.getSigner(deployer));
+  console.log("eETH (proxy) ready at:", await eeth.getAddress());
 };
 
 export default deployEeth;
