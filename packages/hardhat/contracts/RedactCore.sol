@@ -37,6 +37,7 @@ contract RedactCore is Ownable2Step {
     error InvalidWETH();
     error InvalidEETH();
     error InvalidImplementation();
+    error InvalidERC20();
 
     constructor(
         IWETH wETH_,
@@ -92,6 +93,7 @@ contract RedactCore is Ownable2Step {
      * Reverts if a wrapper already exists or if `erc20` is WETH (use {eETH} instead).
      */
     function deployConfidentialERC20(IERC20 erc20) public returns (address) {
+        if (address(erc20) == address(0)) revert InvalidERC20();
         if (address(erc20) == address(wETH)) revert InvalidWETH();
         if (_confidentialERC20Map.contains(address(erc20))) revert AlreadyDeployed();
 
