@@ -32,7 +32,12 @@ contract ConfidentialETH is FHERC20NativeWrapperUpgradeable, OwnableUpgradeable,
     }
 
     function _cappedDecimals(address token) private view returns (uint8) {
-        uint8 d = IERC20Metadata(token).decimals();
+        // Use a low-level staticcall so that non-standard WETH implementations
+        // that revert or omit decimals() do not brick initialization.
+        // Falls back to 18 (the ERC-20 default) on failure, matching the
+        // behaviour of ConfidentialERC20._cappedDecimals.
+        (bool ok, bytes memory data) = token.staticcall(abi.encodeCall(IERC20Metadata.decimals, ()));
+        uint8 d = (ok && data.length == 32) ? abi.decode(data, (uint8)) : 18;
         return d > 6 ? 6 : d;
     }
 
