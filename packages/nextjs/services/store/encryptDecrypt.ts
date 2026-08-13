@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useDecryptValue } from "./decrypted";
-import { useConfidentialTokenPair, useConfidentialTokenPairBalances } from "./tokenStore";
+import { ConfidentialTokenPair, useConfidentialTokenPair, useConfidentialTokenPairBalances } from "./tokenStore";
 import { FheTypes } from "@cofhe/sdk";
 import { Address, formatUnits, parseUnits } from "viem";
 import { useAccount, useChainId } from "wagmi";
@@ -28,6 +28,14 @@ export const useEncryptDecryptStore = create<EncryptDecryptStore>()(
     hasInteracted: false,
   })),
 );
+
+/**
+ * Decimals of the amount being entered. Encrypting (shield) moves the underlying token, so the
+ * amount is in public decimals. Decrypting (unshield) moves the confidential balance, which the
+ * FHERC20 denominates in its own (capped) decimals.
+ */
+const inputDecimals = (pair: ConfidentialTokenPair | undefined, isEncrypt: boolean) =>
+  isEncrypt ? (pair?.publicToken.decimals ?? 18) : (pair?.confidentialToken?.decimals ?? 6);
 
 // Actions
 
@@ -105,7 +113,7 @@ export const useUpdateEncryptDecryptValue = () => {
         // Allow only numbers and optional single decimal point, no negatives
         if (/^\d*\.?\d*$/.test(sanitized)) {
           try {
-            const amount = parseUnits(sanitized, pair.publicToken.decimals);
+            const amount = parseUnits(sanitized, inputDecimals(pair, state.isEncrypt));
             if (state.isEncrypt) {
               state.encryptValue = amount;
             } else {
@@ -134,11 +142,12 @@ export const useEncryptDecryptRawInputValue = () => {
 export const useEncryptDecryptInputValue = () => {
   const rawInputValue = useEncryptDecryptRawInputValue();
   const pair = useEncryptDecryptPair();
+  const isEncrypt = useEncryptDecryptIsEncrypt();
 
   return useMemo(() => {
     if (pair == null) return "";
-    return formatUnits(rawInputValue, pair.publicToken.decimals);
-  }, [pair, rawInputValue]);
+    return formatUnits(rawInputValue, inputDecimals(pair, isEncrypt));
+  }, [pair, isEncrypt, rawInputValue]);
 };
 
 export const useEncryptDecryptInputString = () => {
@@ -164,10 +173,7 @@ export const useUpdateEncryptDecryptValueByPercent = () => {
           state.decryptValue = amount;
         }
         // Update the input string with the formatted amount
-        const currentTokenDecimals = !state.isEncrypt
-          ? (pair?.confidentialToken?.decimals ?? 6)
-          : (pair?.publicToken.decimals ?? 18);
-        state.inputString = formatUnits(amount, currentTokenDecimals);
+        state.inputString = formatUnits(amount, inputDecimals(pair, state.isEncrypt));
       });
     },
     [pair, balances],
