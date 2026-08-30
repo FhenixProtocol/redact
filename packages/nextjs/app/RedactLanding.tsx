@@ -265,10 +265,13 @@ export default function RedactLanding() {
         <h1
           style={{
             margin: 0,
-            maxWidth: 1100,
+            // No width cap and no lower bound on the type size: mid-decrypt the
+            // headline is monospace, which runs ~9.6em wide on the second line
+            // and would otherwise wrap to a third row.
+            maxWidth: "none",
             fontFamily: "var(--fx-font-display)",
             fontWeight: 700,
-            fontSize: "clamp(44px, 8.5vw, 124px)",
+            fontSize: "min(8.5vw, 124px)",
             lineHeight: 1.02,
             letterSpacing: "-.02em",
             color: "var(--fx-ink)",
@@ -276,13 +279,13 @@ export default function RedactLanding() {
             minHeight: "1.02em",
           }}
         >
-          <span style={{ display: "block" }}>
+          <span style={{ display: "block", whiteSpace: "nowrap" }}>
             {l1done}
             <span className="fx-mono" style={{ color: "var(--fx-accent)", fontWeight: 500 }}>
               {l1noise}
             </span>
           </span>
-          <span style={{ display: "block" }}>
+          <span style={{ display: "block", whiteSpace: "nowrap" }}>
             {l2done}
             <span className="fx-mono" style={{ color: "var(--fx-accent)", fontWeight: 500 }}>
               {l2noise}
