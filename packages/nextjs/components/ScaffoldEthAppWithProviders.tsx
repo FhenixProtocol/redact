@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { DrawerBlurOverlay } from "./DrawerBlurOverlay";
 import { CofheProvider, createCofheConfig } from "@cofhe/react";
-import { baseSepolia, sepolia, arbSepolia, hardhat } from "@cofhe/sdk/chains";
+import { arbSepolia, baseSepolia, hardhat, sepolia } from "@cofhe/sdk/chains";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
@@ -22,12 +22,24 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
   const { address } = useAccount();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!address) {
       router.push("/");
     }
   }, [address, router]);
+
+  // "/" serves the sunset landing page, which paints its own full-viewport
+  // surface. The app header, footer and drawer stay out of its way.
+  if (pathname === "/") {
+    return (
+      <>
+        {children}
+        <Toaster />
+      </>
+    );
+  }
 
   return (
     <>

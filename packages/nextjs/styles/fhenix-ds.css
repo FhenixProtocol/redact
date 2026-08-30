@@ -1,0 +1,238 @@
+/*
+ * Fhenix design system - the tokens and component classes the Redact landing
+ * page uses. Values are copied verbatim from the compiled design system
+ * stylesheet (_ds_bundle.css, @fhenix/design-system 0.1.0).
+ *
+ * Only the three font tokens differ from upstream: the families are loaded
+ * through next/font/google, so they resolve via the generated CSS variables
+ * rather than bare family names.
+ */
+
+.fx-root {
+  color-scheme: light;
+  --fx-accent: #0ad9dc;
+  --fx-accent-deep: #0ba5a7;
+  --fx-accent-tint: #e6fbfc;
+  --fx-accent-hover: #0a8486;
+  --fx-accent-ink: #04252a;
+  --fx-ink: #020817;
+  --fx-ink-2: #45596a;
+  --fx-ink-3: #7e8e9a;
+  --fx-muted: #64748b;
+  --fx-bg: #ffffff;
+  --fx-surface: #f6f8f9;
+  --fx-card: #ffffff;
+  --fx-border: #e2e2e2;
+  --fx-input: #e2e8f0;
+  --fx-shadow: rgba(2, 8, 23, 0.12);
+  --fx-focus-ring: 0 0 0 3px rgba(10, 217, 220, 0.25);
+  --fx-btn-bg: #020817;
+  --fx-btn-text: #f8fafc;
+  --fx-btn-hover: #1e293b;
+  --fx-font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fx-font-display: var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif;
+  --fx-font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
+  --fx-space-1: 4px;
+  --fx-space-2: 8px;
+  --fx-space-3: 12px;
+  --fx-space-4: 16px;
+  --fx-space-5: 24px;
+  --fx-space-6: 32px;
+  --fx-space-7: 48px;
+  --fx-space-8: 64px;
+  --fx-radius-sm: 6px;
+  --fx-radius-md: 8px;
+  --fx-radius-lg: 10px;
+  --fx-radius-card: 12px;
+  --fx-radius-xl: 16px;
+  --fx-radius-pill: 999px;
+  --fx-control-sm: 32px;
+  --fx-control-md: 40px;
+  --fx-control-lg: 48px;
+  --fx-control: 44px;
+}
+
+.fx-root[data-theme="dark"] {
+  color-scheme: dark;
+  --fx-accent-tint: rgba(10, 217, 220, 0.08);
+  --fx-accent-hover: #0ad9dc;
+  --fx-ink: #f2f6f8;
+  --fx-ink-2: #9fb0bd;
+  --fx-ink-3: #5f7280;
+  --fx-muted: #9fb0bd;
+  --fx-bg: #0a0f14;
+  --fx-surface: #141b22;
+  --fx-card: #10161d;
+  --fx-border: #1e2832;
+  --fx-input: #1c2733;
+  --fx-shadow: rgba(0, 0, 0, 0.5);
+  --fx-btn-bg: #f2f6f8;
+  --fx-btn-text: #0a0f14;
+  --fx-btn-hover: #d6e2e8;
+}
+
+.fx-root {
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: var(--fx-font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.fx-root *,
+.fx-root *:before,
+.fx-root *:after {
+  box-sizing: border-box;
+}
+
+/* Anchors carrying a design system component class keep that component's own
+   colours - :not() here is what stops this rule outranking .fx-btn--cta. */
+.fx-root a:not(.fx-btn) {
+  color: var(--fx-accent);
+  text-decoration: none;
+}
+
+.fx-root a:not(.fx-btn):hover {
+  color: var(--fx-accent-deep);
+}
+
+.fx-root a.fx-btn {
+  text-decoration: none;
+}
+
+.fx-lbl {
+  font-family: var(--fx-font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fx-ink-3);
+}
+
+.fx-mono {
+  font-family: var(--fx-font-mono);
+}
+
+.fx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--fx-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--fx-radius-lg);
+  font-family: var(--fx-font-sans);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.fx-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fx-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--fx-focus-ring);
+}
+
+.fx-btn--xl {
+  height: var(--fx-control-lg);
+  padding: 0 28px;
+  font-size: 15px;
+}
+
+.fx-btn--cta {
+  background: var(--fx-accent);
+  color: var(--fx-accent-ink);
+}
+
+.fx-btn--cta:hover:not(:disabled) {
+  background: var(--fx-accent-deep);
+  color: var(--fx-accent-ink);
+}
+
+.fx-toggle {
+  width: 48px;
+  height: 28px;
+  flex: none;
+  padding: 3px;
+  border: none;
+  border-radius: var(--fx-radius-pill);
+  background: var(--fx-input);
+  display: flex;
+  justify-content: flex-start;
+  cursor: pointer;
+  transition: background-color 0.14s ease;
+}
+
+.fx-toggle--on {
+  background: var(--fx-accent);
+  justify-content: flex-end;
+}
+
+.fx-toggle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fx-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--fx-focus-ring);
+}
+
+.fx-toggle__knob {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--fx-radius-pill);
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(2, 8, 23, 0.25);
+}
+
+.fx-toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-3);
+  cursor: pointer;
+}
+
+.fx-toggle-row__label {
+  font-size: 14px;
+  color: var(--fx-ink);
+}
+
+@keyframes fxFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fxCaret {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fxSpin {
+  from {
+    transform: translateY(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
